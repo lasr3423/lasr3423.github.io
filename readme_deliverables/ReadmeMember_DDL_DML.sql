@@ -3,6 +3,7 @@
 -- DB      : PostgreSQL
 -- Schema  : public
 -- 작성일  : 2026.03.17
+-- 작성자 : 유환희
 -- 주의    : Spring Boot JPA (ddl-auto: update) 사용 환경
 --           → SpringPhysicalNamingStrategy 적용으로
 --             Java 필드명(camelCase)이 DB 컬럼명(snake_case)으로 자동 변환됨
