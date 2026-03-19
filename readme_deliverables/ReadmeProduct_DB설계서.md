@@ -1,23 +1,38 @@
+# ReadmeProduct_DB 설계서
+
 # DB 설계서
 
+> `member` 테이블은 팀원(회원 담당) 소관이며, FK 참조만 한다.
+`review` 테이블은 팀원(리뷰 담당) 소관이며, FK 참조만 한다.
+> 
+
 ---
 
-## 테이블 정의서
+# 테이블 정의서
 
----
-
-### 📌 `category` 테이블
+### 📌 `category_top` 테이블
 
 | 테이블명 | 컬럼명 | 자료형 | PK | FK | NULL 허용 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| category | id | BIGSERIAL | ✅ |  | ❌ | auto | 카테고리 고유 ID |
-| category | parent_id | BIGINT |  | category.id | ✅ | null | 부모 카테고리 ID (대분류는 NULL) |
-| category | name | VARCHAR(50) |  |  | ❌ |  | 카테고리명 |
-| category | level | INT |  |  | ❌ |  | 1=대분류, 2=중분류 |
-| category | sort_order | INT |  |  | ❌ | 0 | 화면 정렬 순서 |
-| category | category_status | enum |  |  | ❌ | ‘ACTIVATE’ | ACTIVATE, DEACTIVATE, DELETE |
-| category | created_at | TIMESTAMP |  |  | ❌ | now() | 생성 시간 |
-| category | updated_at | TIMESTAMP |  |  | ✅ | null | 수정 시간 |
+| category_top | id | BIGSERIAL | ✅ | | ❌ | auto | 도서 종류 고유 ID |
+| category_top | name | VARCHAR(50) | | | ❌ | | 도서 종류명 (국내도서, 해외도서, 일본도서) |
+| category_top | sort_order | INT | | | ❌ | 0 | 화면 정렬 순서 |
+| category_top | category_top_status | ENUM | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
+| category_top | created_at | TIMESTAMP | | | ❌ | now() | 생성 시간 |
+| category_top | updated_at | TIMESTAMP | | | ✅ | null | 수정 시간 |
+
+---
+
+### 📌 `category_sub` 테이블
+
+| 테이블명 | 컬럼명 | 자료형 | PK | FK | NULL 허용 | 기본값 | 설명 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| category_sub | id | BIGSERIAL | ✅ | | ❌ | auto | 장르 고유 ID |
+| category_sub | name | VARCHAR(50) | | | ❌ | | 장르명 (컴퓨터/IT, 외국어, 소설 등) |
+| category_sub | sort_order | INT | | | ❌ | 0 | 화면 정렬 순서 |
+| category_sub | category_sub_status | ENUM | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
+| category_sub | created_at | TIMESTAMP | | | ❌ | now() | 생성 시간 |
+| category_sub | updated_at | TIMESTAMP | | | ✅ | null | 수정 시간 |
 
 ---
 
@@ -26,8 +41,8 @@
 | 테이블명 | 컬럼명 | 자료형 | PK | FK | NULL 허용 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | product | id | BIGSERIAL | ✅ |  | ❌ | auto | 도서 고유 ID |
-| product | category_id | BIGINT |  | category.id | ❌ |  | 카테고리 |
-| product | review_id | BIGINT |  | review.id | ❌ |  | 리뷰 참조 |
+| product | category_top_id | BIGINT | | category_top.id | ❌ | | 도서 종류 (국내/해외/일본) |
+| product | category_sub_id | BIGINT | | category_sub.id | ❌ | | 장르 |
 | product | title | VARCHAR(300) |  |  | ❌ |  | 도서명 |
 | product | author | VARCHAR(200) |  |  | ❌ |  | 저자 |
 | product | description | TEXT |  |  | ✅ | null | 도서 설명 |
@@ -36,7 +51,6 @@
 | product | sale_price | INT |  |  | ❌ | 0 | 판매가 (앱에서 계산 후 저장) |
 | product | stock | INT |  |  | ❌ | 0 | 재고 수량 |
 | product | thumbnail | VARCHAR(500) |  |  | ✅ | null | 대표 이미지 경로 |
-| product | type | VARCHAR(20) |  |  | ❌ | ‘DOMESTIC’ | DOMESTIC / FOREIGN / JAPAN |
 | product | view_count | INT |  |  | ❌ | 0 | 조회수 |
 | product | sales_count | INT |  |  | ❌ | 0 | 판매량 |
 | product | product_status | enum |  |  | ❌ | ‘ACTIVATE’ | ACTIVATE, DEACTIVATE, DELETE |
@@ -51,7 +65,7 @@
 | 테이블명 | 컬럼명 | 자료형 | PK | FK | NULL 허용 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | product_image | id | BIGSERIAL | ✅ |  | ❌ | auto | 이미지 고유 ID |
-| product_image | book_id | BIGINT |  | product.id | ❌ |  | 도서 ID (CASCADE 삭제) |
+| product_image | product_id | BIGINT |  | product.id | ❌ |  | 도서 ID (CASCADE 삭제) |
 | product_image | url | VARCHAR(500) |  |  | ❌ |  | 이미지 경로 또는 URL |
 | product_image | type | VARCHAR(20) |  |  | ❌ | ‘SUB’ | MAIN(대표) / SUB(추가) |
 | product_image | sort_order | INT |  |  | ❌ | 0 | 이미지 정렬 순서 |
@@ -152,9 +166,8 @@
 | delivery | order_id | BIGINT |  | order.id | ❌ |  | 주문 ID (UNIQUE, 1:1) |
 | delivery | courier | VARCHAR(50) |  |  | ✅ | null | 택배사명 |
 | delivery | tracking_number | VARCHAR(100) |  |  | ✅ | null | 운송장 번호 |
-| delivery | status | VARCHAR(30) |  |  | ❌ | ‘READY’ | READY / SHIPPED / IN_TRANSIT / DELIVERED / FAILED |
+| delivery | delivery_status | VARCHAR(30) |  |  | ❌ | ‘READY’ | READY / SHIPPED / IN_TRANSIT / DELIVERED / FAILED |
 | delivery | created_at | TIMESTAMP |  |  | ❌ | now() | 생성 시간 |
 | delivery | updated_at | TIMESTAMP |  |  | ✅ | null | 수정 시간 |
 | delivery | shipped_at | TIMESTAMP |  |  | ✅ | null | 발송 시각 |
 | delivery | delivered_at | TIMESTAMP |  |  | ✅ | null | 배송 완료 시각 |
-
