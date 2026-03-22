@@ -664,3 +664,382 @@ erDiagram
         datetime created_at
     }
 ```
+
+---
+
+## 🛠️ DDL (테이블 및 인덱스 생성 쿼리)
+
+> **DB:** PostgreSQL
+> **작성 기준:** 본 설계서 테이블 정의서 및 ENUM 타입 정의
+> ⚠️ `order` 는 SQL 예약어이므로 반드시 큰따옴표(`"order"`)로 감싸서 사용
+> ⚠️ 테이블 생성 순서는 FK 의존성 순서를 반드시 준수
+
+---
+
+### ENUM 타입 정의
+
+```sql
+-- 회원 권한: USER(일반회원) | MANAGER(운영자) | ADMIN(최고관리자)
+CREATE TYPE member_role AS ENUM ('USER', 'MANAGER', 'ADMIN');
+
+-- 회원 상태: ACTIVATE(활성) | DEACTIVATE(강퇴) | DELETE(탈퇴)
+CREATE TYPE member_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
+
+-- 대분류 카테고리 상태
+CREATE TYPE category_top_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
+
+-- 소분류 카테고리 상태
+CREATE TYPE category_sub_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
+
+-- 상품 상태: ACTIVATE(판매중) | DEACTIVATE(판매중지) | DELETE(삭제)
+CREATE TYPE product_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
+
+-- 주문 상태: PENDING(결제대기) | PAYED(결제완료) | APPROVAL(승인) | CANCELED(취소)
+CREATE TYPE order_status AS ENUM ('PENDING', 'PAYED', 'APPROVAL', 'CANCELED');
+
+-- 결제 상태
+CREATE TYPE payment_status AS ENUM ('READY', 'PAID', 'CANCELLED', 'FAILED');
+
+-- 배송 상태
+CREATE TYPE delivery_status AS ENUM ('READY', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'FAILED');
+
+-- QnA 답변 상태
+CREATE TYPE qna_status AS ENUM ('WAITING', 'PROCESSING', 'COMPLETE');
+```
+
+---
+
+### 테이블 생성
+
+#### 📌 회원 도메인
+
+```sql
+CREATE TABLE IF NOT EXISTS member (
+    id            BIGSERIAL      PRIMARY KEY,
+    email         VARCHAR(100)   NOT NULL UNIQUE,
+    password      VARCHAR(255)   NOT NULL,
+    name          VARCHAR(50)    NOT NULL,
+    phone         VARCHAR(20)    NOT NULL,
+    address       VARCHAR(100)   NOT NULL,
+    member_role   member_role    NOT NULL DEFAULT 'USER',
+    member_status member_status  NOT NULL DEFAULT 'ACTIVATE',
+    created_at    TIMESTAMP      NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMP,
+    deleted_at    TIMESTAMP
+);
+```
+
+#### 📌 카테고리 도메인
+
+```sql
+-- 대분류 (국내도서 / 해외도서 / 일본도서)
+CREATE TABLE IF NOT EXISTS category_top (
+    id                  BIGSERIAL           PRIMARY KEY,
+    name                VARCHAR(50)         NOT NULL,
+    sort_order          INT                 NOT NULL DEFAULT 0,
+    category_top_status category_top_status NOT NULL DEFAULT 'ACTIVATE',
+    created_at          TIMESTAMP           NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMP
+);
+
+-- 소분류 (장르: 소설, IT/컴퓨터, 외국어 등)
+CREATE TABLE IF NOT EXISTS category_sub (
+    id                  BIGSERIAL           PRIMARY KEY,
+    category_top_id     BIGINT              NOT NULL REFERENCES category_top (id),
+    name                VARCHAR(50)         NOT NULL,
+    sort_order          INT                 NOT NULL DEFAULT 0,
+    category_sub_status category_sub_status NOT NULL DEFAULT 'ACTIVATE',
+    created_at          TIMESTAMP           NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMP
+);
+```
+
+#### 📌 상품 도메인
+
+```sql
+CREATE TABLE IF NOT EXISTS product (
+    id              BIGSERIAL       PRIMARY KEY,
+    category_top_id BIGINT          NOT NULL REFERENCES category_top (id),
+    category_sub_id BIGINT          NOT NULL REFERENCES category_sub (id),
+    title           VARCHAR(300)    NOT NULL,
+    author          VARCHAR(200)    NOT NULL,
+    description     TEXT,
+    price           INT             NOT NULL DEFAULT 0,
+    discount_rate   NUMERIC(5, 2)   NOT NULL DEFAULT 0,
+    sale_price      INT             NOT NULL DEFAULT 0,
+    stock           INT             NOT NULL DEFAULT 0,
+    thumbnail       VARCHAR(500),
+    view_count      INT             NOT NULL DEFAULT 0,
+    sales_count     INT             NOT NULL DEFAULT 0,
+    product_status  product_status  NOT NULL DEFAULT 'ACTIVATE',
+    created_at      TIMESTAMP       NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMP,
+    deleted_at      TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS product_image (
+    id          BIGSERIAL       PRIMARY KEY,
+    product_id  BIGINT          NOT NULL REFERENCES product (id) ON DELETE CASCADE,
+    image_url   VARCHAR(500)    NOT NULL,
+    type        VARCHAR(20)     NOT NULL DEFAULT 'SUB',   -- MAIN | SUB
+    sort_order  INT             NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP       NOT NULL DEFAULT now()
+);
+```
+
+#### 📌 장바구니 도메인
+
+```sql
+-- 장바구니 (회원 1 : 1 관계)
+CREATE TABLE IF NOT EXISTS cart (
+    id          BIGSERIAL    PRIMARY KEY,
+    member_id   BIGINT       NOT NULL UNIQUE REFERENCES member (id),
+    created_at  TIMESTAMP    NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMP
+);
+
+-- 장바구니 항목
+CREATE TABLE IF NOT EXISTS cart_item (
+    id          BIGSERIAL    PRIMARY KEY,
+    cart_id     BIGINT       NOT NULL REFERENCES cart (id) ON DELETE CASCADE,
+    product_id  BIGINT       NOT NULL REFERENCES product (id),
+    quantity    INT          NOT NULL DEFAULT 1 CHECK (quantity >= 1),
+    is_checked  BOOLEAN      NOT NULL DEFAULT true,
+    created_at  TIMESTAMP    NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMP
+);
+```
+
+#### 📌 주문 도메인
+
+```sql
+-- ⚠️ order 는 SQL 예약어 → 큰따옴표 필수
+CREATE TABLE IF NOT EXISTS "order" (
+    id                       BIGSERIAL      PRIMARY KEY,
+    member_id                BIGINT         NOT NULL REFERENCES member (id),
+    number                   VARCHAR(30)    NOT NULL UNIQUE,   -- 예: ORD-20260315-000001
+    order_status             order_status   NOT NULL DEFAULT 'PENDING',
+    total_price              INT            NOT NULL DEFAULT 0,
+    discount_amount          INT            NOT NULL DEFAULT 0,
+    final_price              INT            NOT NULL DEFAULT 0,
+    receiver_name            VARCHAR(50)    NOT NULL,
+    receiver_phone           VARCHAR(20)    NOT NULL,
+    delivery_address         VARCHAR(255)   NOT NULL,
+    delivery_address_detail  VARCHAR(255),
+    delivery_zip_code        VARCHAR(10)    NOT NULL,
+    delivery_memo            VARCHAR(300),
+    ordered_at               TIMESTAMP      NOT NULL DEFAULT now(),
+    created_at               TIMESTAMP      NOT NULL DEFAULT now(),
+    updated_at               TIMESTAMP,
+    cancelled_at             TIMESTAMP
+);
+
+-- 주문 항목 (도서명·저자·판매가 스냅샷 저장)
+CREATE TABLE IF NOT EXISTS order_item (
+    id              BIGSERIAL       PRIMARY KEY,
+    order_id        BIGINT          NOT NULL REFERENCES "order" (id) ON DELETE CASCADE,
+    product_id      BIGINT          NOT NULL REFERENCES product (id),
+    product_title   VARCHAR(300)    NOT NULL,
+    product_author  VARCHAR(200)    NOT NULL,
+    sale_price      INT             NOT NULL DEFAULT 0,
+    quantity        INT             NOT NULL DEFAULT 1 CHECK (quantity >= 1),
+    item_total      INT             NOT NULL DEFAULT 0,   -- sale_price × quantity
+    is_reviewed     BOOLEAN         NOT NULL DEFAULT false,
+    created_at      TIMESTAMP       NOT NULL DEFAULT now()
+);
+```
+
+#### 📌 결제 도메인
+
+```sql
+CREATE TABLE IF NOT EXISTS payment (
+    id              BIGSERIAL        PRIMARY KEY,
+    order_id        BIGINT           NOT NULL REFERENCES "order" (id),
+    method          VARCHAR(30)      NOT NULL,
+    payment_status  payment_status   NOT NULL DEFAULT 'READY',
+    amount          INT              NOT NULL DEFAULT 0,
+    pg_tid          VARCHAR(100),
+    paid_at         TIMESTAMP,
+    cancel_reason   VARCHAR(300),
+    created_at      TIMESTAMP        NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMP,
+    cancelled_at    TIMESTAMP
+);
+```
+
+#### 📌 배송 도메인
+
+```sql
+-- 배송 (주문 1 : 1 관계)
+CREATE TABLE IF NOT EXISTS delivery (
+    id               BIGSERIAL        PRIMARY KEY,
+    order_id         BIGINT           NOT NULL UNIQUE REFERENCES "order" (id),
+    courier          VARCHAR(50),
+    tracking_number  VARCHAR(100),
+    delivery_status  delivery_status  NOT NULL DEFAULT 'READY',
+    created_at       TIMESTAMP        NOT NULL DEFAULT now(),
+    updated_at       TIMESTAMP,
+    shipped_at       TIMESTAMP,
+    delivered_at     TIMESTAMP
+);
+```
+
+#### 📌 게시판 도메인
+
+```sql
+-- 공지사항
+CREATE TABLE IF NOT EXISTS notice (
+    id          BIGSERIAL     PRIMARY KEY,
+    member_id   BIGINT        NOT NULL REFERENCES member (id),
+    title       VARCHAR(255)  NOT NULL,
+    content     TEXT          NOT NULL,
+    is_fixed    BOOLEAN       NOT NULL DEFAULT false,
+    view_count  INTEGER       NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP     NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMP,
+    deleted_at  TIMESTAMP
+);
+
+-- 1:1 문의 (자기 참조 계층 구조, depth 최대 4)
+CREATE TABLE IF NOT EXISTS qna (
+    id           BIGSERIAL    PRIMARY KEY,
+    parent_id    BIGINT       REFERENCES qna (id),
+    depth        INT          NOT NULL DEFAULT 0,
+    member_id    BIGINT       NOT NULL REFERENCES member (id),
+    category     VARCHAR(50)  NOT NULL,
+    title        VARCHAR(255) NOT NULL,
+    content      TEXT         NOT NULL,
+    view_count   INTEGER      NOT NULL DEFAULT 0,
+    qna_status   qna_status   NOT NULL DEFAULT 'WAITING',
+    is_secret    BOOLEAN      NOT NULL DEFAULT false,
+    answered_at  TIMESTAMP,
+    created_at   TIMESTAMP    NOT NULL DEFAULT now(),
+    deleted_at   TIMESTAMP
+);
+
+-- 상품 리뷰
+CREATE TABLE IF NOT EXISTS review (
+    id          BIGSERIAL   PRIMARY KEY,
+    member_id   BIGINT      NOT NULL REFERENCES member (id),
+    product_id  BIGINT      NOT NULL REFERENCES product (id),
+    rating      INTEGER     NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    content     TEXT        NOT NULL,
+    hits        INTEGER     NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP   NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMP,
+    deleted_at  TIMESTAMP
+);
+
+-- 리뷰 이미지
+CREATE TABLE IF NOT EXISTS review_image (
+    id          BIGSERIAL     PRIMARY KEY,
+    review_id   BIGINT        NOT NULL REFERENCES review (id) ON DELETE CASCADE,
+    image_url   VARCHAR(512)  NOT NULL,
+    created_at  TIMESTAMP     NOT NULL DEFAULT now()
+);
+
+-- 리뷰 반응 (좋아요 / 싫어요, 회원당 리뷰 1개 반응만 허용)
+CREATE TABLE IF NOT EXISTS review_reaction (
+    id             BIGSERIAL    PRIMARY KEY,
+    review_id      BIGINT       NOT NULL REFERENCES review (id) ON DELETE CASCADE,
+    member_id      BIGINT       NOT NULL REFERENCES member (id),
+    reaction_type  VARCHAR(10)  NOT NULL CHECK (reaction_type IN ('LIKE', 'DISLIKE')),
+    created_at     TIMESTAMP    NOT NULL DEFAULT now(),
+    UNIQUE (review_id, member_id)
+);
+```
+
+---
+
+### 인덱스 생성
+
+#### 📌 회원 (member)
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS idx_member_email       ON member (email);
+CREATE INDEX        IF NOT EXISTS idx_member_created_at  ON member (created_at DESC);
+CREATE INDEX        IF NOT EXISTS idx_member_status      ON member (member_status);
+```
+
+#### 📌 카테고리 (category_top / category_sub)
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_category_top_status_sort  ON category_top (category_top_status, sort_order);
+CREATE INDEX IF NOT EXISTS idx_category_sub_top_id       ON category_sub (category_top_id);
+CREATE INDEX IF NOT EXISTS idx_category_sub_status_sort  ON category_sub (category_sub_status, sort_order);
+```
+
+#### 📌 상품 (product / product_image)
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_product_category_top_id   ON product (category_top_id);
+CREATE INDEX IF NOT EXISTS idx_product_category_sub_id   ON product (category_sub_id);
+CREATE INDEX IF NOT EXISTS idx_product_status            ON product (product_status);
+CREATE INDEX IF NOT EXISTS idx_product_sales_count       ON product (sales_count DESC);
+CREATE INDEX IF NOT EXISTS idx_product_created_at        ON product (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_product_title             ON product (title);
+CREATE INDEX IF NOT EXISTS idx_product_author            ON product (author);
+CREATE INDEX IF NOT EXISTS idx_product_image_product_id  ON product_image (product_id, sort_order);
+```
+
+#### 📌 장바구니 (cart / cart_item)
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cart_member_id      ON cart (member_id);
+CREATE INDEX        IF NOT EXISTS idx_cart_item_cart_id   ON cart_item (cart_id);
+CREATE INDEX        IF NOT EXISTS idx_cart_item_product_id ON cart_item (product_id);
+```
+
+#### 📌 주문 (order / order_item)
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_order_member_id          ON "order" (member_id);
+CREATE INDEX IF NOT EXISTS idx_order_status             ON "order" (order_status);
+CREATE INDEX IF NOT EXISTS idx_order_ordered_at         ON "order" (ordered_at DESC);
+CREATE INDEX IF NOT EXISTS idx_order_item_order_id      ON order_item (order_id);
+CREATE INDEX IF NOT EXISTS idx_order_item_product_id    ON order_item (product_id);
+-- 미작성 리뷰 목록 (Partial Index)
+CREATE INDEX IF NOT EXISTS idx_order_item_is_reviewed   ON order_item (is_reviewed)
+    WHERE is_reviewed = false;
+```
+
+#### 📌 결제 (payment)
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_payment_order_id  ON payment (order_id);
+CREATE INDEX IF NOT EXISTS idx_payment_status    ON payment (payment_status);
+```
+
+#### 📌 배송 (delivery)
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS idx_delivery_order_id  ON delivery (order_id);
+CREATE INDEX        IF NOT EXISTS idx_delivery_status    ON delivery (delivery_status);
+```
+
+#### 📌 게시판 (notice / qna / review)
+
+```sql
+-- notice: 고정공지 우선 정렬 + Soft Delete 제외
+CREATE INDEX IF NOT EXISTS idx_notice_is_fixed_created_at  ON notice (is_fixed DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notice_deleted_at           ON notice (deleted_at) WHERE deleted_at IS NULL;
+
+-- qna: 회원 목록 / 계층 스레드 / 상태 필터 / Soft Delete 제외
+CREATE INDEX IF NOT EXISTS idx_qna_member_id   ON qna (member_id);
+CREATE INDEX IF NOT EXISTS idx_qna_parent_id   ON qna (parent_id);
+CREATE INDEX IF NOT EXISTS idx_qna_status      ON qna (qna_status);
+CREATE INDEX IF NOT EXISTS idx_qna_deleted_at  ON qna (deleted_at) WHERE deleted_at IS NULL;
+
+-- review: 상품별 / 회원별 / 최신순 / Soft Delete 제외
+CREATE INDEX IF NOT EXISTS idx_review_product_id   ON review (product_id);
+CREATE INDEX IF NOT EXISTS idx_review_member_id    ON review (member_id);
+CREATE INDEX IF NOT EXISTS idx_review_created_at   ON review (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_review_deleted_at   ON review (deleted_at) WHERE deleted_at IS NULL;
+
+-- review_image: 리뷰별 이미지 조회
+CREATE INDEX IF NOT EXISTS idx_review_image_review_id  ON review_image (review_id);
+
+-- review_reaction: 리뷰별 집계 + 중복 방지 UNIQUE
+CREATE INDEX        IF NOT EXISTS idx_review_reaction_review_id      ON review_reaction (review_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_review_reaction_review_member  ON review_reaction (review_id, member_id);
+```
