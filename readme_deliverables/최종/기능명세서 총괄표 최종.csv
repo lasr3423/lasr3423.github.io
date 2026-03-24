@@ -1,0 +1,99 @@
+﻿기능 ID,도메인,기능명,설명,연관 UC,HTTP 메서드,요청 URL,입력값,출력값,처리 흐름
+FA-001,관리자 - 대시보드,관리자 대시보드 조회,미승인 주문·QnA·재고 부족·통계 요약 표시,UC-A-001,GET,/admin,-,대시보드 집계 데이터(JSON),1.인증 확인 → 2.각 집계 쿼리 실행 → 3.대시보드 데이터 반환
+FA-002,관리자 - 회원 관리,회원 목록 조회,전체 회원 목록 페이징·검색 조회,UC-A-002,GET,/admin/member/list,"?page, ?keyword","회원 목록(JSON, 페이징)",1.검색 조건 파싱 → 2.DB 페이징 조회 → 3.목록 반환
+FA-003,관리자 - 회원 관리,회원 상세 조회,특정 회원 정보 상세 조회,UC-A-002,GET,/admin/member/detail/{id},PathVariable: id,회원 상세 객체(JSON),1.id로 회원 조회 → 2.상세 데이터 반환
+FA-004,관리자 - 회원 관리,회원 강퇴,회원 상태 변경 (ACTIVATE/DEACTIVATE/DELETE),UC-A-003,PATCH,/admin/member/{id}/status,{ memberStatus },변경 결과(JSON),1.ADMIN 권한 확인 → 2.상태 변경 → 3.결과 반환
+FA-005,관리자 - 회원 관리,관리자 권한 변경,회원 역할 변경 (USER/MANAGER/ADMIN),UC-A-003,PATCH,/admin/member/{id}/role,{ memberRole },변경 결과(JSON),1.ADMIN 권한 확인 → 2.역할 변경 → 3.결과 반환
+FA-006,관리자 - 회원 관리,탈퇴 회원 관리,deleted_at 기준 탈퇴 회원 목록 조회,UC-A-002,GET,/admin/member/list,?status=DELETE,탈퇴 회원 목록(JSON),1.memberStatus=DELETE 필터 → 2.목록 반환
+FA-007,관리자 - 주문 관리,주문 목록 조회,전체 주문 목록 페이징·검색 조회,UC-A-006,GET,/admin/order/list,"?page, ?keyword","주문 목록(JSON, 페이징)",1.검색 조건 파싱 → 2.DB 페이징 조회 → 3.목록 반환
+FA-008,관리자 - 주문 관리,주문 상세 조회,특정 주문 상세 정보 조회,UC-A-006,GET,/admin/order/detail/{id},PathVariable: id,주문·결제·배송 상세(JSON),1.id로 주문 조회 → 2.연관 결제·배송 조회 → 3.상세 반환
+FA-009,관리자 - 주문 관리,주문 상태 변경,주문 상태 ENUM 변경,UC-A-006,PATCH,/admin/order/{id}/status,{ orderStatus },변경 결과(JSON),1.현재 상태 확인 → 2.상태 변경 → 3.결과 반환
+FA-010,관리자 - 주문 관리,주문 취소 처리,관리자 측 주문 강제 취소,UC-A-007,PATCH,/admin/order/{id}/cancel,{ cancelReason },취소 처리 결과(JSON),1.취소 가능 상태 확인 → 2.주문·결제 상태 변경 → 3.결과 반환
+FA-011,관리자 - 배송 관리,배송 목록 조회,전체 배송 목록 상태별 필터 조회,UC-A-008,GET,/admin/delivery/list,?status,"배송 목록(JSON, 페이징)",1.상태 필터 파싱 → 2.DB 조회 → 3.목록 반환
+FA-012,관리자 - 배송 관리,배송 상세 조회,특정 배송 상세 정보 조회,UC-A-008,GET,/admin/delivery/detail/{id},PathVariable: id,배송 상세 객체(JSON),1.id로 배송 조회 → 2.운송장·상태 포함 반환
+FA-013,관리자 - 배송 관리,운송장 등록,택배사명·운송장 번호 입력,UC-A-008,POST,/admin/delivery/{id},"{ carrier, trackingNumber }",등록 결과(JSON),1.배송 레코드 확인 → 2.운송장 정보 저장 → 3.결과 반환
+FA-014,관리자 - 배송 관리,배송 상태 변경,배송 상태 단계별 변경,UC-A-008,PATCH,/admin/delivery/{id}/status,{ deliveryStatus },변경 결과(JSON),1.단계 순서 유효성 확인 → 2.상태 변경 → 3.결과 반환
+FA-015,관리자 - 상품·카테고리 관리,상품 목록 조회,관리자 상품 목록 조회,UC-A-005,GET,/admin/product/list,"?page, ?keyword","상품 목록(JSON, 페이징)",1.검색 조건 파싱 → 2.DB 조회 → 3.목록·썸네일 반환
+FA-016,관리자 - 상품·카테고리 관리,상품 상세 정보 조회,관리자 특정 상품 상세 조회,UC-A-005,GET,/admin/product/detail/{id},PathVariable: id,상품 상세·이미지(JSON),1.id로 상품 조회 → 2.이미지 포함 상세 반환
+FA-017,관리자 - 상품·카테고리 관리,상품 등록,상품 정보·이미지 업로드 등록,UC-A-005,POST,/admin/product/insert,"{ title, author, price, stock, categoryId, images[] }",등록 결과(JSON),1.입력값 검증 → 2.이미지 파일 업로드 → 3.상품 DB 저장 → 4.결과 반환
+FA-018,관리자 - 상품·카테고리 관리,상품 수정,상품 정보 수정 (재고·가격 등),UC-A-005,PATCH,/admin/product/update/{id},"{ title, price, stock, ... }",수정 결과(JSON),1.상품 존재 확인 → 2.필드 수정 → 3.updated_at 갱신 → 4.결과 반환
+FA-019,관리자 - 상품·카테고리 관리,상품 삭제,soft delete 처리,UC-A-005,DELETE,/admin/product/{id},PathVariable: id,삭제 결과(JSON),1.ADMIN 권한 확인 → 2.deleted_at 기록 → 3.결과 반환
+FA-020,관리자 - 상품·카테고리 관리,카테고리 목록 조회,대분류·소분류 목록 조회,UC-A-004,GET,/admin/category/list,-,카테고리 목록(JSON),1.전체 카테고리 조회 → 2.계층 구조로 반환
+FA-021,관리자 - 상품·카테고리 관리,카테고리 등록,상위·하위 카테고리 등록,UC-A-004,POST,/admin/category/insert,"{ name, parentId }",등록 결과(JSON),1.중복명 확인 → 2.카테고리 저장 → 3.결과 반환
+FA-022,관리자 - 상품·카테고리 관리,카테고리 수정,카테고리명·정렬 순서 수정,UC-A-004,PATCH,/admin/category/update/{id},"{ name, sortOrder }",수정 결과(JSON),1.카테고리 존재 확인 → 2.수정 → 3.결과 반환
+FA-023,관리자 - 상품·카테고리 관리,카테고리 삭제,soft delete 처리,UC-A-004,DELETE,/admin/category/{id},PathVariable: id,삭제 결과(JSON),1.하위 카테고리 존재 확인 → 2.deleted_at 기록 → 3.결과 반환
+FA-024,관리자 - 공지사항 관리,공지사항 목록 조회,공지사항 목록 조회 (고정글 상단 우선),UC-A-009,GET,/admin/notice/list,?page,공지사항 목록(JSON),1.is_fixed=true 우선 정렬 → 2.목록 반환
+FA-025,관리자 - 공지사항 관리,공지사항 상세 조회,특정 공지사항 상세 조회,UC-A-009,GET,/admin/notice/detail/{id},PathVariable: id,공지사항 상세(JSON),1.id로 공지 조회 → 2.상세 반환
+FA-026,관리자 - 공지사항 관리,공지사항 등록,신규 공지사항 작성 및 고정 여부 설정,UC-A-009,POST,/admin/notice/insert,"{ title, content, isFixed }",등록 결과(JSON),1.입력값 검증 → 2.DB 저장 → 3.결과 반환
+FA-027,관리자 - 공지사항 관리,공지사항 수정,공지사항 제목·내용·고정 여부 수정,UC-A-009,PATCH,/admin/notice/update/{id},"{ title, content, isFixed }",수정 결과(JSON),1.MANAGER 권한 확인 → 2.수정 → 3.결과 반환
+FA-028,관리자 - 공지사항 관리,공지사항 삭제,soft delete 처리,UC-A-009,DELETE,/admin/notice/{id},PathVariable: id,삭제 결과(JSON),1.deleted_at 기록 → 2.결과 반환
+FA-029,관리자 - 리뷰 관리,리뷰 목록 조회,전체 리뷰 및 연관 상품명 목록 조회,UC-A-012,GET,/admin/review/list,?page,리뷰 목록(JSON),1.리뷰·상품 JOIN 조회 → 2.목록 반환
+FA-030,관리자 - 리뷰 관리,리뷰 상세 조회,특정 리뷰 상세 및 이미지 조회,UC-A-012,GET,/admin/review/detail/{id},PathVariable: id,리뷰 상세·이미지(JSON),1.id로 리뷰 조회 → 2.review_image 포함 반환
+FA-031,관리자 - 리뷰 관리,리뷰 삭제,soft delete 처리,UC-A-012,DELETE,/admin/review/{id},PathVariable: id,삭제 결과(JSON),1.deleted_at 기록 → 2.결과 반환
+FA-032,관리자 - QnA 관리,QnA 목록 조회,전체 QnA 목록 qna_status 필터 조회,UC-A-010,GET,/admin/qna/list,"?page, ?status",QnA 목록(JSON),1.상태 필터 파싱 → 2.DB 조회 → 3.목록 반환
+FA-033,관리자 - QnA 관리,QnA 질문 상세 조회,질문 내용·답변 현황 depth 구조 조회,UC-A-010,GET,/admin/qna/detail/{id},PathVariable: id,QnA 상세·계층 구조(JSON),1.id로 질문 조회 → 2.depth 구조 포함 반환
+FA-034,관리자 - QnA 관리,QnA 상태 변경,WAITING→PROCESSING→COMPLETE 상태 변경,UC-A-010,PATCH,/admin/qna/{id}/status,{ qnaStatus },변경 결과(JSON),1.현재 상태 확인 → 2.qna_status 변경 → 3.answered_at 기록
+FA-035,관리자 - QnA 관리,QnA 답변 등록,질문에 대한 관리자 공식 답변 등록,UC-A-010,POST,/admin/qna/{id}/insert,"{ content, memberId }",등록 결과(JSON),1.parent_id 설정 → 2.답변 저장 → 3.상태 COMPLETE 변경
+FA-036,관리자 - QnA 관리,QnA 답변 수정,등록된 답변 내용 수정,UC-A-010,PATCH,/admin/qna/update/{id},{ content },수정 결과(JSON),1.답변 존재 확인 → 2.수정 → 3.updated_at 갱신
+FA-037,관리자 - QnA 관리,QnA 답변 삭제,soft delete 처리,UC-A-010,DELETE,/admin/qna/{id},PathVariable: id,삭제 결과(JSON),1.deleted_at 기록 → 2.결과 반환
+FM-001,회원 - 인증,회원가입,이메일·비밀번호·이름·전화번호·주소 입력 후 가입,UC-M-001,POST,/signup,"{ email, password, name, phone, address }",가입 결과(JSON),1.이메일 중복 확인 → 2.BCrypt 암호화 → 3.DB 저장 → 4.결과 반환
+FM-002,회원 - 인증,로그인,이메일+비밀번호 인증 후 JWT 발급,UC-M-002,POST,/signin,"{ email, password }","AccessToken, RefreshToken(JSON)",1.이메일 조회 → 2.BCrypt 비교 → 3.JWT 발급 → 4.토큰 반환
+FM-003,회원 - 인증,로그아웃,클라이언트 토큰 삭제 및 무효화,UC-M-003,POST,/signout,Authorization Header,로그아웃 결과(JSON),1.토큰 검증 → 2.서버 토큰 무효화 → 3.결과 반환
+FM-004,회원 - 마이페이지,마이페이지 주문 현황 조회,주문 상태별 건수 요약 조회,UC-M-004,GET,/mypage,Authorization Header,주문 상태 요약(JSON),1.토큰 인증 → 2.주문 상태별 집계 → 3.반환
+FM-005,회원 - 마이페이지,마이페이지 주문/배송 목록 조회,최신 주문·배송 목록 요약 조회,UC-M-004,GET,/mypage,Authorization Header,"주문 목록(최신 10건, JSON)",1.토큰 인증 → 2.최신 주문 10건 조회 → 3.반환
+FM-006,회원 - 마이페이지,마이페이지 리뷰 조회,작성한 리뷰 목록 요약 조회,UC-M-004,GET,/mypage,Authorization Header,"리뷰 목록(최신 10건, JSON)",1.토큰 인증 → 2.최신 리뷰 10건 조회 → 3.반환
+FM-007,회원 - 마이페이지,마이페이지 QnA 조회,작성한 QnA 목록·답변 상태 요약 조회,UC-M-004,GET,/mypage,Authorization Header,"QnA 목록(최신 10건, JSON)",1.토큰 인증 → 2.최신 QnA 10건 조회 → 3.반환
+FM-008,회원 - 정보 관리,회원 정보 수정,이름·전화번호·주소 수정,UC-M-005,PATCH,/mypage/edit,"{ name, phone, address }",수정 결과(JSON),1.토큰 인증 → 2.입력값 검증 → 3.수정 → 4.updated_at 갱신
+FM-009,회원 - 정보 관리,비밀번호 변경,현재 비밀번호 확인 후 신규 비밀번호 변경,UC-M-005,PATCH,/mypage/password,"{ currentPassword, newPassword }",변경 결과(JSON),1.현재 비밀번호 BCrypt 비교 → 2.신규 암호화 → 3.저장
+FM-010,회원 - 정보 관리,회원 탈퇴,soft delete 처리 (memberStatus → DELETE),UC-M-005,DELETE,/mypage,Authorization Header,탈퇴 결과(JSON),1.비밀번호 재확인 → 2.deleted_at 기록 → 3.상태 변경 → 4.토큰 무효화
+FM-011,회원 - 주문/배송 조회,주문 목록 조회,본인 전체 주문 목록 최신순 조회,UC-M-004,GET,/mypage/order/list,"Authorization Header, ?status","주문 목록(JSON, 페이징)",1.토큰 인증 → 2.본인 주문 조회 → 3.상태 필터 적용 → 4.반환
+FM-012,회원 - 주문/배송 조회,주문 상세 조회,주문 상품·결제금액·배송지 상세 조회,UC-M-010,GET,/mypage/order/detail/{id},PathVariable: id,주문 상세·배송 정보(JSON),1.본인 주문 확인 → 2.결제·배송 JOIN 조회 → 3.반환
+FM-013,회원 - 주문/배송 조회,주문 취소 요청,결제 전후 주문 취소 요청,UC-M-012,PATCH,/mypage/order/{id}/cancel,{ cancelReason },취소 처리 결과(JSON),1.취소 가능 상태 확인 → 2.주문 취소 → 3.결제 상태 연동
+FM-014,회원 - 주문/배송 조회,배송 상태 조회,주문별 현재 배송 상태 확인,UC-M-013,GET,/mypage/order/detail/{id},PathVariable: id,배송 상태(JSON),1.본인 주문 확인 → 2.delivery 조회 → 3.상태 반환
+FM-015,회원 - 주문/배송 조회,운송장 번호 조회,택배사명·운송장 번호 확인,UC-M-013,GET,/mypage/order/detail/{id},PathVariable: id,운송장 정보(JSON),1.배송 레코드 조회 → 2.carrier·trackingNumber 반환
+FM-016,회원 - 리뷰 관리,작성 리뷰 목록 조회,본인이 작성한 리뷰 전체 목록 최신순 조회,UC-M-015,GET,/mypage/review/list,Authorization Header,"리뷰 목록(JSON, 페이징)",1.토큰 인증 → 2.본인 리뷰 조회 → 3.반환
+FM-017,회원 - 리뷰 관리,작성 리뷰 상세 조회,리뷰 내용·평점·이미지 상세 확인,UC-M-015,GET,/mypage/review/detail/{id},PathVariable: id,리뷰 상세·이미지(JSON),1.본인 리뷰 확인 → 2.review_image 포함 조회 → 3.반환
+FM-018,회원 - 리뷰 관리,리뷰 수정,리뷰 내용·평점 수정,UC-M-015,PATCH,/mypage/review/update/{id},"{ content, rating }",수정 결과(JSON),1.본인 리뷰 확인 → 2.수정 → 3.updated_at 갱신
+FM-019,회원 - 리뷰 관리,리뷰 삭제,작성한 리뷰 soft delete,UC-M-015,DELETE,/mypage/review/{id},PathVariable: id,삭제 결과(JSON),1.본인 리뷰 확인 → 2.deleted_at 기록
+FM-020,회원 - 리뷰 관리,미작성 리뷰 목록 조회,구매 완료 후 리뷰 미작성 상품 목록 조회,UC-M-015,GET,/mypage/review/list,?written=false,미작성 상품 목록(JSON),1.is_reviewed=false 주문 상품 조회 → 2.반환
+FM-021,회원 - QnA 관리,작성한 질문 목록 조회,본인 QnA 목록 최신순 조회,UC-M-020,GET,/mypage/qna/list,Authorization Header,"QnA 목록(JSON, 페이징)",1.토큰 인증 → 2.본인 QnA 조회 → 3.반환
+FM-022,회원 - QnA 관리,작성한 질문 상세 조회,질문 내용·답변 여부 상세 조회,UC-M-020,GET,/mypage/qna/detail/{id},PathVariable: id,QnA 상세(JSON),1.본인 QnA 확인 → 2.qna_status 포함 반환
+FM-023,회원 - QnA 관리,질문 수정,작성한 질문 내용 수정,UC-M-020,PATCH,/mypage/qna/update/{id},{ content },수정 결과(JSON),1.답변 완료 여부 확인 → 2.수정 → 3.updated_at 갱신
+FM-024,회원 - QnA 관리,질문 삭제,작성한 질문 soft delete,UC-M-020,DELETE,/mypage/qna/{id},PathVariable: id,삭제 결과(JSON),1.본인 질문 확인 → 2.deleted_at 기록
+FCAT-001,카테고리,상위 카테고리 조회,상위 카테고리 전체 목록 조회,UC-M-006,GET,/category,-,상위 카테고리 목록(JSON),1.category_top 전체 조회 → 2.반환
+FCAT-002,카테고리,하위 카테고리 조회,상위 카테고리 기준 하위 목록 조회,UC-M-006,GET,/category,?parentId,하위 카테고리 목록(JSON),1.parentId로 category_sub 조회 → 2.반환
+FP-001,상품,상품 목록 조회,카테고리별 상품 목록 페이징 조회,UC-M-007,GET,/product/category/list,"?categoryId, ?page","상품 목록(JSON, 페이징)",1.카테고리 필터 파싱 → 2.DB 페이징 조회 → 3.목록·썸네일 반환
+FP-002,상품,상품 상세 조회,상품 이미지·가격·설명·재고 상세 표시,UC-M-008,GET,/product/category/detail/{id},PathVariable: id,상품 상세·이미지(JSON),1.id로 상품 조회 → 2.view_count 증가 → 3.관련 상품 추천 → 4.반환
+FP-003,상품,상품 검색,키워드 기반 상품 검색,UC-M-007,GET,/product/category/search,"?keyword, ?page","검색 결과 목록(JSON, 페이징)",1.keyword로 제목·저자·출판사 검색 → 2.페이징 반환
+FP-004,상품,카테고리 필터,상위·하위 카테고리 기반 필터링,UC-M-007,GET,/product/category/list,"?topId, ?subId, ?page",필터링된 상품 목록(JSON),1.카테고리 조건 적용 → 2.DB 조회 → 3.반환
+FC-001,장바구니,장바구니 조회,사용자 장바구니 전체 조회,UC-M-009,GET,/cart,Authorization Header,장바구니·상품 목록(JSON),1.토큰 인증 → 2.cart_item 조회 → 3.반환
+FC-002,장바구니,상품 담기,장바구니에 상품 추가,UC-M-009,POST,/cart,"{ productId, quantity }",담기 결과(JSON),1.재고 확인 → 2.동일 상품 시 수량 증가 → 3.cart_item 저장
+FC-003,장바구니,수량 변경,장바구니 내 상품 수량 수정,UC-M-009,PATCH,/cart,"{ cartItemId, quantity }",수정 결과(JSON),1.최소 수량(1) 확인 → 2.수량 수정 → 3.결과 반환
+FC-004,장바구니,선택 여부 변경,주문 포함 체크 여부 변경,UC-M-009,PATCH,/cart,"{ cartItemId, isChecked }",변경 결과(JSON),1.is_checked 값 토글 → 2.결과 반환
+FC-005,장바구니,상품 삭제,장바구니 내 특정 상품 삭제,UC-M-009,DELETE,/cart,{ cartItemId },삭제 결과(JSON),1.cart_item 존재 확인 → 2.삭제 → 3.결과 반환
+FO-001,주문,주문 생성,장바구니 선택 상품 기반 주문 생성,UC-M-010,POST,/order,"{ cartItemIds[], deliveryAddress, recipient }",주문 결과·주문번호(JSON),1.재고 확인 → 2.주문번호 생성 → 3.order·order_item 저장 → 4.재고 차감 (트랜잭션)
+FO-002,주문,주문 정보 입력,배송지·수령인 정보 입력,UC-M-010,POST,/order,"{ address, recipient, phone }",주문 입력 결과(JSON),1.필수값 검증 → 2.배송지 저장 → 3.결과 반환
+FO-003,주문,주문 내역 조회,본인 주문 목록 상태별 필터 조회,UC-M-004,GET,/mypage/order/list,"Authorization Header, ?status","주문 목록(JSON, 페이징)",1.토큰 인증 → 2.본인 주문 조회 → 3.반환
+FO-004,주문,주문 취소,주문 취소 요청,UC-M-012,PATCH,/mypage/order/{id}/cancel,{ cancelReason },취소 처리 결과(JSON),1.취소 가능 상태 확인 → 2.취소 처리 → 3.결제 상태 연동
+FOI-001,주문 상품,주문 상품 저장,주문 시 상품 정보 스냅샷 저장,UC-M-010,- (내부 처리),-,주문 상품 정보,order_item 레코드,1.주문 생성 시 자동 실행 → 2.가격·수량 스냅샷 저장
+FOI-002,주문 상품,금액 계산,(가격 × 수량) - 할인율 계산,UC-M-010,- (내부 처리),-,계산 파라미터,item_total 값,1.주문 생성 시 자동 계산 → 2.item_total 저장
+FOI-003,주문 상품,리뷰 여부 관리,리뷰 작성 여부 플래그 관리,UC-M-015,- (내부 처리),-,-,is_reviewed 업데이트,1.리뷰 등록 완료 시 → 2.is_reviewed=true 업데이트
+FPAY-001,결제,결제 요청,주문에 대한 결제 요청,UC-M-011,POST,/order/payment,"{ orderId, paymentMethod, amount }",결제 요청 결과(JSON),1.주문 상태 확인 → 2.PG 연동 요청 → 3.결과 대기
+FPAY-002,결제,결제 완료 처리,결제 성공 시 주문 상태 PAYED 변경,UC-M-011,POST,/order/payment,"{ orderId, pgTransactionId }",결제 완료 결과(JSON),1.PG 응답 검증 → 2.payment 저장 → 3.order_status PAYED 변경
+FPAY-003,결제,결제 실패 처리,결제 실패 시 안내 및 재시도 처리,UC-M-011,POST,/order/payment,"{ orderId, failReason }",실패 결과(JSON),1.PG 실패 응답 수신 → 2.주문 상태 유지 → 3.실패 메시지 반환
+FPAY-004,결제,결제 취소 처리,결제 취소 및 사유 저장,UC-M-012,PATCH,/mypage/order/{id}/cancel,{ cancelReason },취소 처리 결과(JSON),1.PG 취소 요청 → 2.payment 상태 변경 → 3.취소 사유 저장
+FD-001,배송,배송 자동 생성,결제 완료 시 배송 레코드 자동 생성,UC-M-011,- (내부 처리),-,결제 완료 이벤트,delivery 레코드,1.결제 완료 이벤트 수신 → 2.delivery 레코드 생성 (status=READY)
+FD-002,배송,배송 상태 조회,사용자 배송 상태 확인,UC-M-013,GET,/mypage/order/detail/{id},PathVariable: id,배송 상태·단계(JSON),1.order id로 delivery 조회 → 2.READY~DELIVERED 상태 반환
+FN-001,공지사항,공지사항 목록 조회,고정글 상단 우선 공지 목록 조회,UC-M-014,GET,/notice/list,?page,"공지사항 목록(JSON, 페이징)",1.is_fixed=true 상단 정렬 → 2.최신순 정렬 → 3.반환
+FN-002,공지사항,공지사항 상세 조회,공지사항 제목·내용·작성일 상세 조회,UC-M-014,GET,/notice/detail/{id},PathVariable: id,공지사항 상세(JSON),1.id로 공지 조회 → 2.view_count 증가 → 3.반환
+FQ-001,QnA,QnA 목록 조회,전체 QnA 목록 조회 (비밀글 처리 포함),UC-M-020,GET,/qna/list,?page,"QnA 목록(JSON, 페이징)",1.비밀글 is_secret 처리 → 2.qna_status 표시 → 3.목록 반환
+FQ-002,QnA,QnA 질문 등록,카테고리 선택 후 신규 문의 작성,UC-M-020,POST,/qna/write,"{ title, content, category, isSecret, productId }",등록 결과(JSON),1.입력값 검증 → 2.parent_id 생성 → 3.저장 (status=WAITING)
+FQ-003,QnA,비밀글 설정,작성자·관리자만 열람 가능 설정,UC-M-018,POST,/qna/write,{ isSecret: true },등록 결과(JSON),1.is_secret=true 저장 → 2.비회원·타회원 내용 숨김 처리
+FQ-004,QnA,n차 재문의 작성,답변에 대한 추가 문의 (최대 depth 4),UC-M-019,POST,/qna/{id},"{ content, parentId }",등록 결과(JSON),1.depth 확인 (최대 4) → 2.parent_id 설정 → 3.저장
+FQ-005,QnA,답변 상태 확인,WAITING→PROCESSING→COMPLETE 상태 실시간 확인,UC-M-020,GET,/qna/list,Authorization Header,QnA 목록·상태(JSON),1.본인 QnA 조회 → 2.qna_status 포함 반환
+FQ-006,QnA,QnA 상세 조회,질문 내용·답변 계층 구조 조회,UC-M-020,GET,/qna/detail/{id},PathVariable: id,QnA 상세·depth 구조(JSON),1.id로 QnA 조회 → 2.비밀글 권한 확인 → 3.depth 구조 반환
+FR-001,리뷰,리뷰 목록 조회,상품별 리뷰 목록 조회,UC-M-008,GET,/product/category/detail/{id},PathVariable: productId,리뷰 목록·평점 평균(JSON),1.productId로 리뷰 조회 → 2.평점 평균 계산 → 3.반환
+FR-002,리뷰,리뷰 작성,구매 확정 후 평점·내용 작성,UC-M-015,POST,/review/write,"{ productId, rating, content }",등록 결과(JSON),1.구매자 여부 확인 → 2.중복 리뷰 확인 → 3.저장 → 4.is_reviewed=true
+FR-003,리뷰,리뷰 이미지 첨부,리뷰 작성 시 다중 이미지 첨부,UC-M-016,POST,/review/write,"images[] (MultipartFile, 최대 5장)",이미지 업로드 결과(JSON),1.파일 크기 검증 → 2.파일 서버 업로드 → 3.review_image 저장
+FR-004,리뷰,리뷰 반응 (좋아요/싫어요),타인의 리뷰에 LIKE/DISLIKE 반응,UC-M-017,POST,/review/{id}/reaction,{ reactionType },반응 처리 결과(JSON),1.본인 리뷰 여부 확인 → 2.중복 반응 처리 → 3.review_reaction 저장
+FR-005,리뷰,조회수 카운트,리뷰 상세 조회 시 view_count 자동 증가,UC-M-008,GET,/review/detail/{id},PathVariable: id,리뷰 상세(JSON),1.id로 리뷰 조회 → 2.view_count +1 → 3.반환

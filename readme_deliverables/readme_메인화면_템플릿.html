@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>readme - 온라인 서점</title>
+<style>
+  @font-face {
+    font-family: 'KoreanFallback';
+    src: url('file:///usr/share/fonts-droid-fallback/truetype/DroidSansFallback.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'LatinSans';
+    src: url('file:///usr/share/fonts/truetype/dejavu/DejaVuSans.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'LatinSans';
+    font-weight: bold;
+    src: url('file:///usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'LatinSerif';
+    src: url('file:///usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf') format('truetype');
+  }
+  @font-face {
+    font-family: 'LatinSerif';
+    font-weight: bold;
+    src: url('file:///usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf') format('truetype');
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    color: #222;
+    background: #fff;
+    width: 1920px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 40px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+  }
+
+  .logo {
+    font-family: 'LatinSerif', serif;
+    font-size: 27px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    color: #1a1a1a;
+  }
+  .logo span { color: #c0392b; }
+
+  .header-nav {
+    display: flex;
+    gap: 24px;
+    font-size: 17px;
+    color: #888;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── LAYOUT ─── */
+  .layout { display: flex; }
+
+  /* ─── LEFT SIDEBAR ─── */
+  .sidebar {
+    width: 220px;
+    border-right: 1px solid #ececec;
+    padding: 14px 0;
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .sidebar-label { display: none; }
+
+  .sidebar-menu { list-style: none; }
+  .sidebar-menu li {
+    padding: 8px 20px;
+    font-size: 20px;
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    color: #555;
+    border-bottom: none;
+    line-height: 1.5;
+  }
+  .sidebar-menu li.active {
+    color: #c0392b;
+    font-weight: bold;
+  }
+
+  /* ─── MAIN CONTENT ─── */
+  .main-content { flex: 1; overflow: hidden; }
+
+  /* ─── HERO BANNER ─── */
+  .hero {
+    width: 100%;
+    height: 520px;
+    background: linear-gradient(135deg, #12192b 0%, #1a2744 40%, #0d3b6e 70%, #3b1f6b 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Book shelves decoration */
+  .hero svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  .hero-overlay {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+  }
+  .hero-eyebrow {
+    font-family: 'LatinSans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #8ab4e0;
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: 'LatinSerif', 'KoreanFallback', serif;
+    font-size: 64px;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    color: #fff;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: #f5c842;
+  }
+  .hero-sub {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 13px;
+    color: #9ab8d8;
+    letter-spacing: 1px;
+  }
+
+  /* ─── SECTION ─── */
+  .section { padding: 60px 80px 24px; }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  .section-title {
+    font-family: 'LatinSans', sans-serif;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .section-sub {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 1px;
+  }
+
+  /* ─── EXHIBITION GRID ─── */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .book-card { overflow: hidden; }
+
+  .book-cover {
+    width: 100%;
+    height: 340px;
+    border-radius: 3px 6px 6px 3px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    padding: 14px;
+  }
+  .bc-navy  { background: linear-gradient(155deg, #1e3a5f 0%, #2e6190 100%); }
+  .bc-red   { background: linear-gradient(155deg, #6b1f2c 0%, #b5292a 100%); }
+  .bc-green { background: linear-gradient(155deg, #165a35 0%, #23944f 100%); }
+  .bc-purple{ background: linear-gradient(155deg, #3d1f6b 0%, #7236bd 100%); }
+  .bc-amber { background: linear-gradient(155deg, #6b3d10 0%, #d4751a 100%); }
+  .bc-steel { background: linear-gradient(155deg, #1a3350 0%, #1a74d4 100%); }
+
+  .book-spine {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 10px;
+    background: rgba(0,0,0,0.28);
+    border-radius: 3px 0 0 3px;
+  }
+  .book-title-text {
+    font-family: 'LatinSerif', 'KoreanFallback', serif;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.4;
+    z-index: 1;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .book-author-tag {
+    position: absolute;
+    top: 14px; right: 12px;
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 9px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.5px;
+  }
+  .book-deco {
+    position: absolute;
+    top: 50%; left: 54%;
+    transform: translate(-50%, -50%);
+    font-size: 58px;
+    opacity: 0.10;
+    color: #fff;
+    font-family: 'LatinSerif', serif;
+  }
+  .book-badge {
+    position: absolute;
+    top: 10px; left: 18px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 2px;
+    padding: 2px 6px;
+    font-family: 'LatinSans', sans-serif;
+    font-size: 8px;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .book-info { padding: 9px 2px 4px; }
+  .book-name {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1a1a1a;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .book-auth {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 3px;
+  }
+  .book-price {
+    font-family: 'LatinSans', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    color: #c0392b;
+  }
+
+  /* NEW ARRIVAL */
+  .new-arrival-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 0 80px 60px;
+  }
+  .new-arrival-grid .book-cover { height: 280px; }
+
+  /* ─── PROMO ─── */
+  .promo {
+    margin: 0 80px 50px;
+    background: #f6f2ec;
+    border-radius: 5px;
+    padding: 36px 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 4px solid #c0392b;
+  }
+  .promo-text h3 {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  .promo-text p {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 11.5px;
+    color: #888;
+    line-height: 1.9;
+  }
+  .promo-cta {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 9px 20px;
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 11px;
+    border-radius: 2px;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    background: #191919;
+    color: #aaa;
+    padding: 40px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .footer-logo {
+    font-family: 'LatinSerif', serif;
+    font-size: 32px;
+    font-weight: bold;
+    color: #fff;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+  .footer-info {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 10.5px;
+    line-height: 2;
+    color: #777;
+  }
+  .footer-right {
+    font-family: 'LatinSans', 'KoreanFallback', sans-serif;
+    font-size: 10.5px;
+    color: #666;
+    line-height: 2.2;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">read<span>me</span></div>
+  <div class="header-nav">
+    <span>SIGN IN</span>
+    <span>SIGN UP</span>
+    <span>CART</span>
+    <span>MY PAGE</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-label">MENU</div>
+    <ul class="sidebar-menu">
+      <li class="active">신상품</li>
+      <li>베스트</li>
+      <li>추천도서</li>
+      <li>국내</li>
+      <li>해외</li>
+      <li>일본</li>
+    </ul>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <!-- HERO BANNER -->
+    <div class="hero">
+      <svg viewBox="0 0 792 330" xmlns="http://www.w3.org/2000/svg">
+        <!-- bookshelf rows -->
+        <rect x="0" y="295" width="792" height="35" fill="rgba(0,0,0,0.25)" rx="0"/>
+        <rect x="0" y="255" width="792" height="3"  fill="rgba(255,255,255,0.06)"/>
+        <!-- Row 1 books (bottom shelf) -->
+        <rect x="20"  y="200" width="28" height="95" rx="2" fill="#4a8fd4" opacity="0.55"/>
+        <rect x="20"  y="200" width="4"  height="95" rx="1" fill="#2c6fb0" opacity="0.65"/>
+        <rect x="52"  y="215" width="24" height="80" rx="2" fill="#d94f3a" opacity="0.55"/>
+        <rect x="80"  y="190" width="34" height="105" rx="2" fill="#e8c730" opacity="0.5"/>
+        <rect x="80"  y="190" width="4"  height="105" rx="1" fill="#c9a820" opacity="0.6"/>
+        <rect x="118" y="205" width="26" height="90" rx="2" fill="#3caa6e" opacity="0.5"/>
+        <rect x="148" y="185" width="36" height="110" rx="2" fill="#8e44ad" opacity="0.5"/>
+        <rect x="148" y="185" width="4"  height="110" rx="1" fill="#6c3483" opacity="0.6"/>
+        <rect x="188" y="210" width="22" height="85" rx="2" fill="#e67e22" opacity="0.5"/>
+        <rect x="214" y="195" width="30" height="100" rx="2" fill="#1abc9c" opacity="0.5"/>
+        <rect x="248" y="200" width="28" height="95" rx="2" fill="#e74c3c" opacity="0.5"/>
+        <rect x="280" y="188" width="32" height="107" rx="2" fill="#3498db" opacity="0.5"/>
+        <rect x="316" y="205" width="24" height="90" rx="2" fill="#f39c12" opacity="0.5"/>
+        <rect x="344" y="192" width="34" height="103" rx="2" fill="#9b59b6" opacity="0.5"/>
+        <rect x="382" y="200" width="28" height="95" rx="2" fill="#2ecc71" opacity="0.5"/>
+        <rect x="414" y="185" width="36" height="110" rx="2" fill="#e74c3c" opacity="0.48"/>
+        <rect x="454" y="207" width="22" height="88" rx="2" fill="#5dade2" opacity="0.5"/>
+        <rect x="480" y="195" width="30" height="100" rx="2" fill="#a569bd" opacity="0.5"/>
+        <rect x="514" y="188" width="34" height="107" rx="2" fill="#45b39d" opacity="0.5"/>
+        <rect x="552" y="202" width="26" height="93" rx="2" fill="#dc7633" opacity="0.5"/>
+        <rect x="582" y="190" width="32" height="105" rx="2" fill="#5499c9" opacity="0.5"/>
+        <rect x="618" y="185" width="36" height="110" rx="2" fill="#c0392b" opacity="0.48"/>
+        <rect x="658" y="198" width="28" height="97" rx="2" fill="#2874a6" opacity="0.5"/>
+        <rect x="690" y="190" width="30" height="105" rx="2" fill="#7d6608" opacity="0.5"/>
+        <rect x="724" y="200" width="26" height="95" rx="2" fill="#1a5276" opacity="0.5"/>
+        <rect x="754" y="185" width="34" height="110" rx="2" fill="#76448a" opacity="0.5"/>
+        <!-- Row 2 books (upper shelf) -->
+        <rect x="0"   y="250" width="792" height="2" fill="rgba(255,255,255,0.08)"/>
+        <rect x="30"  y="140" width="26" height="108" rx="2" fill="#85c1e9" opacity="0.35"/>
+        <rect x="60"  y="148" width="32" height="100" rx="2" fill="#f1948a" opacity="0.35"/>
+        <rect x="96"  y="135" width="28" height="113" rx="2" fill="#82e0aa" opacity="0.35"/>
+        <rect x="128" y="142" width="24" height="106" rx="2" fill="#f8c471" opacity="0.35"/>
+        <rect x="156" y="138" width="34" height="110" rx="2" fill="#bb8fce" opacity="0.35"/>
+        <rect x="194" y="145" width="28" height="103" rx="2" fill="#7fb3d3" opacity="0.35"/>
+        <rect x="226" y="132" width="36" height="116" rx="2" fill="#7dcea0" opacity="0.35"/>
+        <rect x="266" y="140" width="26" height="108" rx="2" fill="#f0b27a" opacity="0.35"/>
+        <rect x="296" y="135" width="32" height="113" rx="2" fill="#a9cce3" opacity="0.35"/>
+        <rect x="332" y="142" width="24" height="106" rx="2" fill="#fadbd8" opacity="0.35"/>
+        <rect x="360" y="130" width="38" height="118" rx="2" fill="#a3e4d7" opacity="0.35"/>
+        <rect x="402" y="138" width="28" height="110" rx="2" fill="#f9e79f" opacity="0.35"/>
+        <rect x="434" y="132" width="34" height="116" rx="2" fill="#d2b4de" opacity="0.35"/>
+        <rect x="472" y="140" width="26" height="108" rx="2" fill="#a2d9ce" opacity="0.35"/>
+        <rect x="502" y="135" width="32" height="113" rx="2" fill="#fad7a0" opacity="0.35"/>
+        <rect x="538" y="128" width="36" height="120" rx="2" fill="#abebc6" opacity="0.35"/>
+        <rect x="578" y="140" width="24" height="108" rx="2" fill="#d5d8dc" opacity="0.35"/>
+        <rect x="606" y="133" width="30" height="115" rx="2" fill="#f5cba7" opacity="0.35"/>
+        <rect x="640" y="140" width="28" height="108" rx="2" fill="#a9cce3" opacity="0.35"/>
+        <rect x="672" y="130" width="36" height="118" rx="2" fill="#c9cfe9" opacity="0.35"/>
+        <rect x="712" y="138" width="26" height="110" rx="2" fill="#abebc6" opacity="0.35"/>
+        <rect x="742" y="133" width="32" height="115" rx="2" fill="#f8c471" opacity="0.35"/>
+      </svg>
+
+      <div class="hero-overlay">
+        <div class="hero-eyebrow">YOUR NEXT GREAT READ AWAITS</div>
+        <div class="hero-title">Everything About<br><em>Books</em></div>
+        <div class="hero-sub">읽고 싶은 책을 발견하는 가장 좋은 방법</div>
+      </div>
+    </div>
+
+    <!-- EXHIBITION -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">EDITOR'S PICK</span>
+        <span class="section-sub">이달의 큐레이션</span>
+      </div>
+      <div class="grid-3">
+
+        <div class="book-card">
+          <div class="book-cover bc-navy">
+            <div class="book-spine"></div>
+            <div class="book-badge">PICK</div>
+            <div class="book-deco">&#9670;</div>
+            <div class="book-author-tag">김영하</div>
+            <div class="book-title-text">빛의 제국</div>
+          </div>
+          <div class="book-info">
+            <div class="book-name">빛의 제국</div>
+            <div class="book-auth">김영하 저</div>
+            <div class="book-price">&#8361;15,300</div>
+          </div>
+        </div>
+
+        <div class="book-card">
+          <div class="book-cover bc-red">
+            <div class="book-spine"></div>
+            <div class="book-badge">BEST</div>
+            <div class="book-deco">&#9679;</div>
+            <div class="book-author-tag">한강</div>
+            <div class="book-title-text">채식주의자</div>
+          </div>
+          <div class="book-info">
+            <div class="book-name">채식주의자</div>
+            <div class="book-auth">한강 저</div>
+            <div class="book-price">&#8361;13,500</div>
+          </div>
+        </div>
+
+        <div class="book-card">
+          <div class="book-cover bc-green">
+            <div class="book-spine"></div>
+            <div class="book-badge">NEW</div>
+            <div class="book-deco">&#9651;</div>
+            <div class="book-author-tag">정유정</div>
+            <div class="book-title-text">종의 기원</div>
+          </div>
+          <div class="book-info">
+            <div class="book-name">종의 기원</div>
+            <div class="book-auth">정유정 저</div>
+            <div class="book-price">&#8361;16,200</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NEW ARRIVAL -->
+    <div class="section" style="padding-top:8px; padding-bottom:14px;">
+      <div class="section-header">
+        <span class="section-title">NEW ARRIVAL</span>
+        <span class="section-sub">신규 입고</span>
+      </div>
+    </div>
+    <div class="new-arrival-grid">
+
+      <div class="book-card">
+        <div class="book-cover bc-purple">
+          <div class="book-spine"></div>
+          <div class="book-deco">&#9670;</div>
+          <div class="book-author-tag">무라카미 하루키</div>
+          <div class="book-title-text">해변의 카프카</div>
+        </div>
+        <div class="book-info">
+          <div class="book-name">해변의 카프카</div>
+          <div class="book-auth">무라카미 하루키</div>
+          <div class="book-price">&#8361;17,100</div>
+        </div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover bc-amber">
+          <div class="book-spine"></div>
+          <div class="book-deco">&#9632;</div>
+          <div class="book-author-tag">조지 오웰</div>
+          <div class="book-title-text">1984</div>
+        </div>
+        <div class="book-info">
+          <div class="book-name">1984</div>
+          <div class="book-auth">조지 오웰 저</div>
+          <div class="book-price">&#8361;14,400</div>
+        </div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover bc-steel">
+          <div class="book-spine"></div>
+          <div class="book-deco">&#9675;</div>
+          <div class="book-author-tag">헤밍웨이</div>
+          <div class="book-title-text">노인과 바다</div>
+        </div>
+        <div class="book-info">
+          <div class="book-name">노인과 바다</div>
+          <div class="book-auth">헤밍웨이 저</div>
+          <div class="book-price">&#8361;11,700</div>
+        </div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover bc-navy">
+          <div class="book-spine"></div>
+          <div class="book-deco">&#9651;</div>
+          <div class="book-author-tag">알베르 카뮈</div>
+          <div class="book-title-text">이방인</div>
+        </div>
+        <div class="book-info">
+          <div class="book-name">이방인</div>
+          <div class="book-auth">알베르 카뮈 저</div>
+          <div class="book-price">&#8361;10,800</div>
+        </div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover bc-red">
+          <div class="book-spine"></div>
+          <div class="book-deco">&#9679;</div>
+          <div class="book-author-tag">G. 마르케스</div>
+          <div class="book-title-text">백년의 고독</div>
+        </div>
+        <div class="book-info">
+          <div class="book-name">백년의 고독</div>
+          <div class="book-auth">G. 마르케스 저</div>
+          <div class="book-price">&#8361;18,000</div>
+        </div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover bc-green">
+          <div class="book-spine"></div>
+          <div class="book-deco">&#9632;</div>
+          <div class="book-author-tag">나쓰메 소세키</div>
+          <div class="book-title-text">나는 고양이로소이다</div>
+        </div>
+        <div class="book-info">
+          <div class="book-name">나는 고양이로소이다</div>
+          <div class="book-auth">나쓰메 소세키 저</div>
+          <div class="book-price">&#8361;13,500</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PROMO -->
+    <div class="promo">
+      <div class="promo-text">
+        <h3>이번 달 추천 — 작가의 서재를 탐험하세요</h3>
+        <p>매달 엄선된 큐레이션 도서를 만나보세요.<br>회원 가입 시 첫 구매 10% 할인 혜택을 드립니다.</p>
+      </div>
+      <div class="promo-cta">바로가기 &rarr;</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div>
+    <div class="footer-logo">readme</div>
+    <div class="footer-info">
+      &copy; 2025 readme. All rights reserved.<br>
+      이용약관 &nbsp;|&nbsp; 개인정보처리방침 &nbsp;|&nbsp; 고객센터
+    </div>
+  </div>
+  <div class="footer-right">
+    사업자등록번호 : 123-45-67890<br>
+    대표자 : 홍길동<br>
+    고객센터 : 1588-0000<br>
+    이메일 : help@readme.kr
+  </div>
+</div>
+
+</body>
+</html>
