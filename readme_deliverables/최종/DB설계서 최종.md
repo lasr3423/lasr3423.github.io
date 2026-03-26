@@ -87,6 +87,7 @@
 | category_sub | name | VARCHAR(50) | | | ❌ | | 장르명 (컴퓨터/IT, 외국어, 소설 등) |
 | category_sub | sort_order | INT | | | ❌ | 0 | 화면 정렬 순서 |
 | category_sub | category_sub_status | ENUM | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
+| category_sub | category_top_id | BIGINT | | category_top.id | ❌ | | 도서 종류 (국내/해외/일본) |
 | category_sub | created_at | TIMESTAMP | | | ❌ | now() | 생성 시간 |
 | category_sub | updated_at | TIMESTAMP | | | ✅ | null | 수정 시간 |
 

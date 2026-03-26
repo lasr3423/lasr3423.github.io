@@ -1,0 +1,982 @@
+# 11_클래스 & 시퀀스 다이어그램
+
+| 항목 | 내용 |
+| --- | --- |
+| 프로젝트명 | 교보문고 쇼핑몰 시스템 (README) |
+| 개발 환경 | Java 21 / Spring Boot 3.5 / PostgreSQL / Vue.js 3 |
+| 작성일 | 2026-03-24 |
+| 연관 문서 | DB설계서 최종.md / 유스케이스 명세서 최종.md / 기능명세서 최종.md |
+
+---
+
+## 📐 1. 클래스 다이어그램
+
+### 1-1. Entity 전체 구조 (핵심 관계)
+
+```mermaid
+classDiagram
+    direction TB
+
+    class BaseEntity {
+        <<abstract>>
+        +Long id
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+    }
+
+    class Member {
+        +String email
+        +String password
+        +String name
+        +String phone
+        +String address
+        +MemberRole memberRole
+        +MemberStatus memberStatus
+        +LocalDateTime deletedAt
+    }
+
+    class CategoryTop {
+        +String name
+        +Integer sortOrder
+        +CategoryTopStatus categoryTopStatus
+    }
+
+    class CategorySub {
+        +String name
+        +Integer sortOrder
+        +CategorySubStatus categorySubStatus
+    }
+
+    class Product {
+        +String title
+        +String author
+        +String description
+        +Integer price
+        +BigDecimal discountRate
+        +Integer salePrice
+        +Integer stock
+        +String thumbnail
+        +Integer viewCount
+        +Integer salesCount
+        +ProductStatus productStatus
+        +LocalDateTime deletedAt
+    }
+
+    class ProductImage {
+        +String imageUrl
+        +String type
+        +Integer sortOrder
+    }
+
+    class Cart {
+    }
+
+    class CartItem {
+        +Integer quantity
+        +Boolean isChecked
+    }
+
+    class Order {
+        +String number
+        +OrderStatus orderStatus
+        +Integer totalPrice
+        +Integer discountAmount
+        +Integer finalPrice
+        +String receiverName
+        +String receiverPhone
+        +String deliveryAddress
+        +String deliveryMemo
+        +LocalDateTime orderedAt
+        +LocalDateTime cancelledAt
+    }
+
+    class OrderItem {
+        +String productTitle
+        +String productAuthor
+        +Integer salePrice
+        +Integer quantity
+        +Integer itemTotal
+        +Boolean isReviewed
+    }
+
+    class Payment {
+        +String method
+        +PaymentStatus paymentStatus
+        +Integer amount
+        +String pgTid
+        +LocalDateTime paidAt
+        +String cancelReason
+        +LocalDateTime cancelledAt
+    }
+
+    class Delivery {
+        +String courier
+        +String trackingNumber
+        +DeliveryStatus deliveryStatus
+        +LocalDateTime shippedAt
+        +LocalDateTime deliveredAt
+    }
+
+    class Notice {
+        +String title
+        +String content
+        +Boolean isFixed
+        +Integer viewCount
+        +LocalDateTime deletedAt
+    }
+
+    class Qna {
+        +Integer depth
+        +String category
+        +String title
+        +String content
+        +Integer viewCount
+        +QnaStatus qnaStatus
+        +Boolean isSecret
+        +LocalDateTime answeredAt
+        +LocalDateTime deletedAt
+    }
+
+    class Review {
+        +Integer rating
+        +String content
+        +Integer hits
+        +LocalDateTime deletedAt
+    }
+
+    class ReviewImage {
+        +String imageUrl
+    }
+
+    class ReviewReaction {
+        +String reactionType
+    }
+
+    %% ENUM 클래스
+    class MemberRole {
+        <<enumeration>>
+        USER
+        MANAGER
+        ADMIN
+    }
+
+    class MemberStatus {
+        <<enumeration>>
+        ACTIVATE
+        DEACTIVATE
+        DELETE
+    }
+
+    class CategoryTopStatus {
+        <<enumeration>>
+        ACTIVATE
+        DEACTIVATE
+        DELETE
+    }
+
+    class CategorySubStatus {
+        <<enumeration>>
+        ACTIVATE
+        DEACTIVATE
+        DELETE
+    }
+
+    class ProductStatus {
+        <<enumeration>>
+        ACTIVATE
+        DEACTIVATE
+        DELETE
+    }
+
+    class OrderStatus {
+        <<enumeration>>
+        PENDING
+        PAYED
+        APPROVAL
+        CANCELED
+    }
+
+    class PaymentStatus {
+        <<enumeration>>
+        READY
+        PAID
+        CANCELLED
+        FAILED
+    }
+
+    class DeliveryStatus {
+        <<enumeration>>
+        READY
+        SHIPPED
+        IN_TRANSIT
+        DELIVERED
+        FAILED
+    }
+
+    class QnaStatus {
+        <<enumeration>>
+        WAITING
+        PROCESSING
+        COMPLETE
+    }
+
+    %% BaseEntity 상속
+    BaseEntity <|-- Member
+    BaseEntity <|-- CategoryTop
+    BaseEntity <|-- CategorySub
+    BaseEntity <|-- Product
+    BaseEntity <|-- Cart
+    BaseEntity <|-- CartItem
+    BaseEntity <|-- Order
+    BaseEntity <|-- OrderItem
+    BaseEntity <|-- Payment
+    BaseEntity <|-- Delivery
+    BaseEntity <|-- Notice
+    BaseEntity <|-- Qna
+    BaseEntity <|-- Review
+    BaseEntity <|-- ReviewImage
+    BaseEntity <|-- ReviewReaction
+
+    %% 연관 관계
+    Member "1" --> "1" Cart : has
+    Member "1" --> "0..*" Order : places
+    Member "1" --> "0..*" Notice : writes
+    Member "1" --> "0..*" Qna : asks
+    Member "1" --> "0..*" Review : writes
+    Member "1" --> "0..*" ReviewReaction : reacts
+
+    CategoryTop "1" --> "0..*" CategorySub : contains
+    CategoryTop "1" --> "0..*" Product : classifies
+    CategorySub "1" --> "0..*" Product : classifies
+
+    Product "1" --> "0..*" ProductImage : has
+    Product "1" --> "0..*" CartItem : in cart
+    Product "1" --> "0..*" OrderItem : ordered
+    Product "1" --> "0..*" Review : reviewed
+
+    Cart "1" --> "0..*" CartItem : contains
+    Order "1" --> "0..*" OrderItem : contains
+    Order "1" --> "1" Payment : paid by
+    Order "1" --> "1" Delivery : shipped by
+
+    Qna "0..1" --> "0..*" Qna : replies
+    Review "1" --> "0..*" ReviewImage : has
+    Review "1" --> "0..*" ReviewReaction : receives
+
+    Member ..> MemberRole : uses
+    Member ..> MemberStatus : uses
+    CategoryTop ..> CategoryTopStatus : uses
+    CategorySub ..> CategorySubStatus : uses
+    Product ..> ProductStatus : uses
+    Order ..> OrderStatus : uses
+    Payment ..> PaymentStatus : uses
+    Delivery ..> DeliveryStatus : uses
+    Qna ..> QnaStatus : uses
+```
+
+---
+
+### 1-2. 레이어 아키텍처 클래스 구조
+
+```mermaid
+classDiagram
+    direction LR
+
+    class AuthController {
+        +signup(SignupRequest) ResponseEntity
+        +signin(SigninRequest) ResponseEntity
+        +signout(HttpServletRequest) ResponseEntity
+    }
+
+    class MemberController {
+        +getMyPage(Member) ResponseEntity
+        +updateInfo(UpdateRequest, Member) ResponseEntity
+        +updatePassword(PasswordRequest, Member) ResponseEntity
+        +withdraw(Member) ResponseEntity
+    }
+
+    class ProductController {
+        +getProductList(Pageable, keyword) ResponseEntity
+        +getProductDetail(Long) ResponseEntity
+        +searchProducts(keyword, Pageable) ResponseEntity
+    }
+
+    class CartController {
+        +getCart(Member) ResponseEntity
+        +addItem(CartItemRequest, Member) ResponseEntity
+        +updateQuantity(CartUpdateRequest, Member) ResponseEntity
+        +removeItem(Long, Member) ResponseEntity
+    }
+
+    class OrderController {
+        +createOrder(OrderRequest, Member) ResponseEntity
+        +getOrderList(Member, Pageable) ResponseEntity
+        +getOrderDetail(Long, Member) ResponseEntity
+        +cancelOrder(Long, Member) ResponseEntity
+    }
+
+    class PaymentController {
+        +requestPayment(PaymentRequest, Member) ResponseEntity
+        +completePayment(PaymentCompleteRequest) ResponseEntity
+        +cancelPayment(Long, Member) ResponseEntity
+    }
+
+    class DeliveryController {
+        +getDeliveryStatus(Long, Member) ResponseEntity
+    }
+
+    class ReviewController {
+        +writeReview(ReviewRequest, Member) ResponseEntity
+        +updateReview(Long, ReviewRequest, Member) ResponseEntity
+        +deleteReview(Long, Member) ResponseEntity
+        +addReaction(Long, ReactionRequest, Member) ResponseEntity
+    }
+
+    class QnaController {
+        +getQnaList(Pageable) ResponseEntity
+        +writeQuestion(QnaRequest, Member) ResponseEntity
+        +getQnaDetail(Long, Member) ResponseEntity
+        +updateQuestion(Long, QnaRequest, Member) ResponseEntity
+        +deleteQuestion(Long, Member) ResponseEntity
+    }
+
+    class NoticeController {
+        +getNoticeList(Pageable) ResponseEntity
+        +getNoticeDetail(Long) ResponseEntity
+    }
+
+    class AdminController {
+        +getDashboard() ResponseEntity
+        +getMembers(Pageable, keyword) ResponseEntity
+        +changeMemberStatus(Long, StatusRequest) ResponseEntity
+        +changeMemberRole(Long, RoleRequest) ResponseEntity
+    }
+
+    class AdminProductController {
+        +getProductList(Pageable, keyword) ResponseEntity
+        +getProductDetail(Long) ResponseEntity
+        +createProduct(ProductRequest) ResponseEntity
+        +updateProduct(Long, ProductRequest) ResponseEntity
+        +deleteProduct(Long) ResponseEntity
+    }
+
+    class AdminOrderController {
+        +getOrderList(Pageable, keyword) ResponseEntity
+        +getOrderDetail(Long) ResponseEntity
+        +updateOrderStatus(Long, StatusRequest) ResponseEntity
+        +cancelOrder(Long, CancelRequest) ResponseEntity
+    }
+
+    class AdminPaymentController {
+        +getPaymentList(Pageable) ResponseEntity
+        +getPaymentDetail(Long) ResponseEntity
+    }
+
+    class AdminDeliveryController {
+        +getDeliveryList(Pageable, status) ResponseEntity
+        +getDeliveryDetail(Long) ResponseEntity
+        +registerTracking(Long, TrackingRequest) ResponseEntity
+        +updateDeliveryStatus(Long, DeliveryRequest) ResponseEntity
+    }
+
+    class AdminReviewController {
+        +getReviewList(Pageable) ResponseEntity
+        +getReviewDetail(Long) ResponseEntity
+        +deleteReview(Long) ResponseEntity
+    }
+
+    class AdminQnaController {
+        +getQnaList(Pageable, status) ResponseEntity
+        +getQnaDetail(Long) ResponseEntity
+        +answerQna(Long, AnswerRequest) ResponseEntity
+        +updateAnswer(Long, AnswerRequest) ResponseEntity
+        +deleteQna(Long) ResponseEntity
+    }
+
+    class AdminNoticeController {
+        +getNoticeList(Pageable) ResponseEntity
+        +getNoticeDetail(Long) ResponseEntity
+        +createNotice(NoticeRequest) ResponseEntity
+        +updateNotice(Long, NoticeRequest) ResponseEntity
+        +deleteNotice(Long) ResponseEntity
+    }
+
+    class MemberService {
+        +signup(SignupRequest) void
+        +signin(SigninRequest) TokenResponse
+        +signout(String) void
+        +updateInfo(Long, UpdateRequest) void
+        +updatePassword(Long, PasswordRequest) void
+        +withdraw(Long) void
+        +validateEmail(String) void
+        +loadUserByEmail(String) Member
+    }
+
+    class ProductService {
+        +getProductList(Pageable, keyword) Page
+        +getProductDetail(Long) ProductResponse
+        +searchProducts(keyword, Pageable) Page
+        +increaseViewCount(Long) void
+        +createProduct(ProductRequest) void
+        +updateProduct(Long, ProductRequest) void
+        +deleteProduct(Long) void
+    }
+
+    class CartService {
+        +getCart(Long) CartResponse
+        +addItem(CartItemRequest, Long) void
+        +updateQuantity(CartUpdateRequest, Long) void
+        +removeItem(Long, Long) void
+    }
+
+    class OrderService {
+        +createOrder(OrderRequest, Long) OrderResponse
+        +cancelOrder(Long, Long) void
+        +getOrderList(Long, Pageable) Page
+        +getOrderDetail(Long, Long) OrderDetailResponse
+        +validateOwnership(Long, Long) void
+    }
+
+    class PaymentService {
+        +requestPayment(PaymentRequest) PaymentResponse
+        +completePayment(String, String) void
+        +cancelPayment(Long) void
+    }
+
+    class DeliveryService {
+        +getDeliveryStatus(Long, Long) DeliveryResponse
+        +updateDeliveryStatus(Long, DeliveryStatus) void
+        +registerTracking(Long, TrackingRequest) void
+    }
+
+    class ReviewService {
+        +writeReview(ReviewRequest, Long) void
+        +updateReview(Long, ReviewRequest, Long) void
+        +deleteReview(Long, Long) void
+        +addReaction(Long, String, Long) void
+        +validatePurchaser(Long, Long) void
+    }
+
+    class QnaService {
+        +writeQuestion(QnaRequest, Long) void
+        +answerQuestion(Long, AnswerRequest, Long) void
+        +updateQuestion(Long, QnaRequest, Long) void
+        +deleteQuestion(Long, Long) void
+    }
+
+    class NoticeService {
+        +getNoticeList(Pageable) Page
+        +getNoticeDetail(Long) NoticeResponse
+        +createNotice(NoticeRequest, Long) void
+        +updateNotice(Long, NoticeRequest) void
+        +deleteNotice(Long) void
+    }
+
+    class JwtUtil {
+        +generateAccessToken(Long, String) String
+        +generateRefreshToken(Long) String
+        +validateToken(String) boolean
+        +getMemberId(String) Long
+    }
+
+    class MemberRepository {
+        <<interface>>
+        +findByEmail(String) Optional~Member~
+        +existsByEmail(String) boolean
+    }
+
+    class ProductRepository {
+        <<interface>>
+        +findAllByStatusAndKeyword(Pageable, String) Page
+        +findByIdAndStatus(Long, ProductStatus) Optional
+    }
+
+    class CartRepository {
+        <<interface>>
+        +findByMemberId(Long) Optional~Cart~
+    }
+
+    class OrderRepository {
+        <<interface>>
+        +findByMemberId(Long, Pageable) Page
+        +findByIdAndMemberId(Long, Long) Optional
+    }
+
+    class PaymentRepository {
+        <<interface>>
+        +findByOrderId(Long) Optional~Payment~
+    }
+
+    class DeliveryRepository {
+        <<interface>>
+        +findByOrderId(Long) Optional~Delivery~
+        +findAllByStatus(DeliveryStatus, Pageable) Page
+    }
+
+    class ReviewRepository {
+        <<interface>>
+        +findByMemberId(Long, Pageable) Page
+        +existsByMemberIdAndProductId(Long, Long) boolean
+    }
+
+    class QnaRepository {
+        <<interface>>
+        +findByMemberIdAndDepth(Long, Integer, Pageable) Page
+        +findByIdAndDepth(Long, Integer) Optional
+    }
+
+    class NoticeRepository {
+        <<interface>>
+        +findAllByOrderByIsFixedDescCreatedAtDesc(Pageable) Page
+        +findByIdAndDeletedAtIsNull(Long) Optional
+    }
+
+    %% 일반 회원 Controller → Service
+    AuthController --> MemberService
+    MemberController --> MemberService
+    ProductController --> ProductService
+    CartController --> CartService
+    OrderController --> OrderService
+    PaymentController --> PaymentService
+    DeliveryController --> DeliveryService
+    ReviewController --> ReviewService
+    QnaController --> QnaService
+    NoticeController --> NoticeService
+
+    %% 관리자 Controller → Service
+    AdminController --> MemberService
+    AdminProductController --> ProductService
+    AdminOrderController --> OrderService
+    AdminPaymentController --> PaymentService
+    AdminDeliveryController --> DeliveryService
+    AdminReviewController --> ReviewService
+    AdminQnaController --> QnaService
+    AdminNoticeController --> NoticeService
+
+    %% Service → Repository
+    MemberService --> MemberRepository
+    MemberService --> JwtUtil
+    ProductService --> ProductRepository
+    CartService --> CartRepository
+    OrderService --> OrderRepository
+    OrderService --> ProductRepository
+    PaymentService --> PaymentRepository
+    PaymentService --> OrderRepository
+    DeliveryService --> DeliveryRepository
+    DeliveryService --> OrderRepository
+    ReviewService --> ReviewRepository
+    ReviewService --> OrderRepository
+    QnaService --> QnaRepository
+    NoticeService --> NoticeRepository
+```
+
+---
+
+## 🔄 2. 시퀀스 다이어그램
+
+---
+
+### 2-1. 회원가입 (UC-M-001 / FM-001)
+
+```mermaid
+sequenceDiagram
+    actor Client as Vue.js 클라이언트
+    participant AC as AuthController
+    participant MS as MemberService
+    participant MR as MemberRepository
+    participant DB as PostgreSQL
+
+    Client->>AC: POST /signup { email, password, name, phone, address }
+    AC->>MS: signup(SignupRequest)
+    MS->>MR: existsByEmail(email)
+    MR->>DB: SELECT * FROM member WHERE email = ?
+    DB-->>MR: result
+    alt 이메일 중복
+        MR-->>MS: true
+        MS-->>AC: throw DuplicateEmailException
+        AC-->>Client: 409 Conflict "이미 사용 중인 이메일입니다."
+    else 사용 가능
+        MR-->>MS: false
+        MS->>MS: BCrypt.encode(password)
+        MS->>MR: save(Member)
+        MR->>DB: INSERT INTO member (email, password, name, phone, address, member_role, member_status)
+        DB-->>MR: saved Member
+        MR-->>MS: Member
+        MS-->>AC: void
+        AC-->>Client: 201 Created "회원가입이 완료되었습니다."
+    end
+```
+
+---
+
+### 2-2. 로그인 & JWT 발급 (UC-M-002 / FM-002)
+
+```mermaid
+sequenceDiagram
+    actor Client as Vue.js 클라이언트
+    participant AC as AuthController
+    participant MS as MemberService
+    participant JU as JwtUtil
+    participant MR as MemberRepository
+    participant DB as PostgreSQL
+
+    Client->>AC: POST /signin { email, password }
+    AC->>MS: signin(SigninRequest)
+    MS->>MR: findByEmail(email)
+    MR->>DB: SELECT * FROM member WHERE email = ?
+    DB-->>MR: Member | null
+    alt 회원 미존재
+        MR-->>MS: Optional.empty()
+        MS-->>AC: throw MemberNotFoundException
+        AC-->>Client: 401 Unauthorized "이메일 또는 비밀번호가 올바르지 않습니다."
+    else 회원 존재
+        MR-->>MS: Optional[Member]
+        MS->>MS: BCrypt.matches(rawPw, encodedPw)
+        alt 비밀번호 불일치
+            MS-->>AC: throw InvalidPasswordException
+            AC-->>Client: 401 Unauthorized
+        else 비밀번호 일치
+            MS->>MS: memberStatus == ACTIVATE 확인
+            alt 비활성/탈퇴 계정
+                MS-->>AC: throw InactiveMemberException
+                AC-->>Client: 403 Forbidden "접근이 제한된 계정입니다."
+            else 정상 계정
+                MS->>JU: generateAccessToken(memberId, role)
+                JU-->>MS: accessToken (단기)
+                MS->>JU: generateRefreshToken(memberId)
+                JU-->>MS: refreshToken (장기)
+                MS-->>AC: TokenResponse { accessToken, refreshToken }
+                AC-->>Client: 200 OK { accessToken, refreshToken }
+            end
+        end
+    end
+```
+
+---
+
+### 2-3. 주문 생성 (UC-M-010 / FO-001)
+
+```mermaid
+sequenceDiagram
+    actor Client as Vue.js 클라이언트
+    participant OC as OrderController
+    participant OS as OrderService
+    participant PR as ProductRepository
+    participant CR as CartItemRepository
+    participant OR as OrderRepository
+    participant OIR as OrderItemRepository
+    participant DR as DeliveryRepository
+    participant DB as PostgreSQL
+
+    Client->>OC: POST /order { cartItemIds[], deliveryAddress, receiver, phone }
+    Note over OC: JWT 인증 → memberId 추출
+    OC->>OS: createOrder(OrderRequest, memberId)
+
+    OS->>CR: findCheckedItemsByIds(cartItemIds)
+    CR->>DB: SELECT * FROM cart_item WHERE id IN (...)
+    DB-->>CR: List~CartItem~
+    CR-->>OS: List~CartItem~
+
+    loop 각 CartItem에 대해
+        OS->>PR: findByIdAndStatus(productId, ACTIVATE)
+        PR->>DB: SELECT * FROM product WHERE id = ? AND product_status = 'ACTIVATE'
+        DB-->>PR: Product
+        PR-->>OS: Product
+        OS->>OS: 재고(stock) >= quantity 확인
+        alt 재고 부족
+            OS-->>OC: throw OutOfStockException
+            OC-->>Client: 409 Conflict "재고가 부족합니다."
+        end
+    end
+
+    OS->>OS: 주문번호 생성 (ORD-YYYYMMDD-XXXXXX)
+    OS->>OR: save(Order)
+    OR->>DB: INSERT INTO order (member_id, number, order_status, ...)
+    DB-->>OR: Order
+
+    loop 각 상품별 스냅샷 저장
+        OS->>OIR: save(OrderItem)
+        OIR->>DB: INSERT INTO order_item (order_id, product_id, product_title, product_author, sale_price, quantity, item_total)
+        DB-->>OIR: OrderItem
+        OS->>PR: decreaseStock(productId, quantity)
+        PR->>DB: UPDATE product SET stock = stock - ? WHERE id = ?
+    end
+
+    OS->>DR: save(Delivery)
+    DR->>DB: INSERT INTO delivery (order_id, delivery_status='READY')
+
+    OS->>CR: deleteAllByIds(cartItemIds)
+    CR->>DB: DELETE FROM cart_item WHERE id IN (...)
+
+    OR-->>OS: Order
+    OS-->>OC: OrderResponse { orderId, orderNumber }
+    OC-->>Client: 201 Created { orderId, orderNumber }
+```
+
+---
+
+### 2-4. 결제 요청 & 완료 처리 (UC-M-011 / FPAY-001~002)
+
+```mermaid
+sequenceDiagram
+    actor Client as Vue.js 클라이언트
+    participant PC as PaymentController
+    participant PS as PaymentService
+    participant OR as OrderRepository
+    participant PR as PaymentRepository
+    participant DR as DeliveryRepository
+    participant PG as PG 모듈(Mock)
+    participant DB as PostgreSQL
+
+    Client->>PC: POST /order/payment { orderId, paymentMethod, amount }
+    Note over PC: JWT 인증 → memberId 추출
+    PC->>PS: requestPayment(PaymentRequest, memberId)
+
+    PS->>OR: findByIdAndMemberId(orderId, memberId)
+    OR->>DB: SELECT * FROM order WHERE id = ? AND member_id = ?
+    DB-->>OR: Order
+    OR-->>PS: Order
+
+    PS->>PS: order_status == PENDING 확인
+    PS->>PS: amount == order.finalPrice 검증
+
+    PS->>PR: save(Payment{status=READY})
+    PR->>DB: INSERT INTO payment (order_id, method, payment_status='READY', amount)
+    DB-->>PR: Payment
+    PR-->>PS: Payment
+
+    PS->>PG: requestPay(amount, orderId)
+    PG-->>PS: pgTid (PG 트랜잭션 ID)
+
+    PS-->>PC: PaymentReadyResponse { pgTid }
+    PC-->>Client: 200 OK { pgTid }
+
+    Note over Client: PG 창에서 결제 진행
+
+    Client->>PC: POST /order/payment/complete { orderId, pgTid }
+    PC->>PS: completePayment(orderId, pgTid)
+
+    PS->>PG: verifyPayment(pgTid)
+    alt PG 검증 실패
+        PG-->>PS: FAILED
+        PS->>PR: updateStatus(FAILED)
+        PR->>DB: UPDATE payment SET payment_status = 'FAILED'
+        PS-->>PC: throw PaymentFailedException
+        PC-->>Client: 400 Bad Request "결제에 실패했습니다."
+    else PG 검증 성공
+        PG-->>PS: SUCCESS
+        PS->>PR: updateStatus(PAID, pgTid, paidAt)
+        PR->>DB: UPDATE payment SET payment_status = 'PAID', pg_tid = ?, paid_at = now()
+        PS->>OR: updateStatus(PAYED)
+        OR->>DB: UPDATE order SET order_status = 'PAYED'
+        PS-->>PC: void
+        PC-->>Client: 200 OK "결제가 완료되었습니다."
+    end
+```
+
+---
+
+### 2-5. 관리자 배송 상태 변경 (UC-A-008 / FA-014)
+
+```mermaid
+sequenceDiagram
+    actor Admin as 관리자(Vue.js)
+    participant ADC as AdminDeliveryController
+    participant DS as DeliveryService
+    participant DR as DeliveryRepository
+    participant OR as OrderRepository
+    participant DB as PostgreSQL
+
+    Admin->>ADC: PATCH /admin/delivery/{id}/status { deliveryStatus }
+    Note over ADC: JWT 인증 → MANAGER/ADMIN 권한 확인
+
+    ADC->>DS: updateDeliveryStatus(deliveryId, deliveryStatus)
+    DS->>DR: findById(deliveryId)
+    DR->>DB: SELECT * FROM delivery WHERE id = ?
+    DB-->>DR: Delivery
+    DR-->>DS: Delivery
+
+    DS->>DS: 상태 전이 유효성 확인
+    Note over DS: READY→SHIPPED→IN_TRANSIT→DELIVERED 순서 강제
+
+    alt 운송장 미등록 상태에서 SHIPPED 시도
+        DS-->>ADC: throw TrackingNumberRequiredException
+        ADC-->>Admin: 400 Bad Request "운송장 번호를 먼저 등록하세요."
+    else 유효한 상태 전이
+        DS->>DR: save(delivery.setStatus(deliveryStatus))
+        DR->>DB: UPDATE delivery SET delivery_status = ?, updated_at = now()
+        alt deliveryStatus == DELIVERED
+            DS->>OR: updateStatus(APPROVAL)
+            OR->>DB: UPDATE order SET order_status = 'APPROVAL'
+            DS->>DR: save(delivery.setDeliveredAt(now()))
+            DR->>DB: UPDATE delivery SET delivered_at = now()
+        end
+        DR-->>DS: Delivery
+        DS-->>ADC: void
+        ADC-->>Admin: 200 OK "배송 상태가 변경되었습니다."
+    end
+```
+
+---
+
+### 2-6. 리뷰 작성 (UC-M-015 / FR-002)
+
+```mermaid
+sequenceDiagram
+    actor Client as Vue.js 클라이언트
+    participant RC as ReviewController
+    participant RS as ReviewService
+    participant OIR as OrderItemRepository
+    participant RR as ReviewRepository
+    participant RIR as ReviewImageRepository
+    participant DB as PostgreSQL
+
+    Client->>RC: POST /review/write { productId, rating, content, images[] }
+    Note over RC: JWT 인증 → memberId 추출
+    RC->>RS: writeReview(ReviewRequest, memberId)
+
+    RS->>OIR: findDeliveredItemByMemberAndProduct(memberId, productId)
+    OIR->>DB: SELECT oi.* FROM order_item oi JOIN order o ON o.id = oi.order_id WHERE o.member_id = ? AND oi.product_id = ? AND o.order_status = 'APPROVAL' AND oi.is_reviewed = false
+    DB-->>OIR: OrderItem | null
+
+    alt 구매 이력 없음 / 이미 리뷰 작성
+        OIR-->>RS: null
+        RS-->>RC: throw ReviewNotAllowedException
+        RC-->>Client: 403 Forbidden "리뷰 작성 권한이 없습니다."
+    else 구매 이력 확인됨
+        OIR-->>RS: OrderItem
+        RS->>RR: existsByMemberIdAndProductId(memberId, productId)
+        RR->>DB: SELECT COUNT(*) FROM review WHERE member_id = ? AND product_id = ? AND deleted_at IS NULL
+        DB-->>RR: count
+
+        alt 중복 리뷰
+            RR-->>RS: true
+            RS-->>RC: throw DuplicateReviewException
+            RC-->>Client: 409 Conflict "이미 리뷰를 작성하셨습니다."
+        else 최초 작성
+            RR-->>RS: false
+            RS->>RS: rating 1~5 범위 검증
+            RS->>RR: save(Review)
+            RR->>DB: INSERT INTO review (member_id, product_id, rating, content)
+            DB-->>RR: Review
+
+            loop 이미지 첨부 (최대 5장)
+                RS->>RIR: save(ReviewImage)
+                RIR->>DB: INSERT INTO review_image (review_id, image_url)
+            end
+
+            RS->>OIR: updateIsReviewed(orderItemId, true)
+            OIR->>DB: UPDATE order_item SET is_reviewed = true WHERE id = ?
+
+            RS-->>RC: void
+            RC-->>Client: 201 Created "리뷰가 등록되었습니다."
+        end
+    end
+```
+
+---
+
+### 2-7. QnA 질문 등록 & 관리자 답변 (UC-M-020 / UC-A-010)
+
+```mermaid
+sequenceDiagram
+    actor Member as 회원(Vue.js)
+    actor Admin as 관리자(Vue.js)
+    participant QC as QnaController
+    participant ADC as AdminQnaController
+    participant QS as QnaService
+    participant QR as QnaRepository
+    participant DB as PostgreSQL
+
+    Note over Member, DB: [1단계] 회원 질문 등록
+    Member->>QC: POST /qna/write { title, content, category, isSecret, productId }
+    Note over QC: JWT 인증 → memberId 추출
+    QC->>QS: writeQuestion(QnaRequest, memberId)
+    QS->>QR: save(Qna{depth=0, qnaStatus=WAITING})
+    QR->>DB: INSERT INTO qna (member_id, depth=0, title, content, qna_status='WAITING', is_secret, parent_id=NULL)
+    DB-->>QR: Qna
+    QR-->>QS: Qna
+    QS-->>QC: void
+    QC-->>Member: 201 Created "문의가 등록되었습니다."
+
+    Note over Admin, DB: [2단계] 관리자 답변 등록
+    Admin->>ADC: POST /admin/qna/{id}/insert { content }
+    Note over ADC: JWT 인증 → MANAGER/ADMIN 권한 확인
+    ADC->>QS: answerQuestion(parentId, AnswerRequest, adminMemberId)
+
+    QS->>QR: findByIdAndDepth(parentId, 0)
+    QR->>DB: SELECT * FROM qna WHERE id = ? AND depth = 0 AND deleted_at IS NULL
+    DB-->>QR: Qna(질문)
+    QR-->>QS: Qna
+
+    QS->>QS: qnaStatus == WAITING 또는 PROCESSING 확인
+    alt 이미 COMPLETE 상태
+        QS-->>ADC: throw AlreadyAnsweredException
+        ADC-->>Admin: 409 Conflict "이미 답변이 완료된 문의입니다."
+    else 답변 가능
+        QS->>QR: save(Qna{depth=1, parentId=parentId, qnaStatus=COMPLETE})
+        QR->>DB: INSERT INTO qna (member_id, parent_id=?, depth=1, title='RE:...', content, qna_status='COMPLETE', answered_at=now())
+        DB-->>QR: Qna(답변)
+        QS->>QR: updateStatus(parentId, COMPLETE)
+        QR->>DB: UPDATE qna SET qna_status = 'COMPLETE', answered_at = now() WHERE id = ?
+        DB-->>QR: updated
+        QS-->>ADC: void
+        ADC-->>Admin: 201 Created "답변이 등록되었습니다."
+    end
+
+    Note over Member: [3단계] 회원 답변 확인
+    Member->>QC: GET /mypage/qna/{id}
+    QC->>QS: getQnaDetail(qnaId, memberId)
+    QS->>QR: findByIdWithChildren(qnaId)
+    QR->>DB: SELECT * FROM qna WHERE id = ? OR parent_id = ? ORDER BY depth ASC
+    DB-->>QR: List~Qna~ (질문 + 답변)
+    QR-->>QS: List~Qna~
+    QS->>QS: isSecret 권한 확인 (본인 또는 관리자만 열람)
+    QS-->>QC: QnaDetailResponse
+    QC-->>Member: 200 OK { question, answer, qnaStatus: COMPLETE }
+```
+
+---
+
+### 2-8. 관리자 대시보드 조회 (UC-A-001 / FA-001)
+
+```mermaid
+sequenceDiagram
+    actor Admin as 관리자(Vue.js)
+    participant ADC as AdminController
+    participant AS as AdminService
+    participant OR as OrderRepository
+    participant QR as QnaRepository
+    participant PR as ProductRepository
+    participant MR as MemberRepository
+    participant DB as PostgreSQL
+
+    Admin->>ADC: GET /admin
+    Note over ADC: JWT 인증 → MANAGER/ADMIN 권한 확인
+    ADC->>AS: getDashboard()
+
+    par 미승인 주문 집계
+        AS->>OR: findTopByStatus(PENDING, limit=10)
+        OR->>DB: SELECT * FROM order WHERE order_status = 'PENDING' ORDER BY ordered_at DESC LIMIT 10
+        DB-->>OR: List~Order~
+    and 미답변 QnA 집계
+        AS->>QR: findTopByStatus(WAITING, limit=10)
+        QR->>DB: SELECT * FROM qna WHERE qna_status = 'WAITING' AND depth = 0 ORDER BY created_at DESC LIMIT 10
+        DB-->>QR: List~Qna~
+    and 재고 부족 상품 집계
+        AS->>PR: findLowStock(threshold=10)
+        PR->>DB: SELECT * FROM product WHERE stock <= 10 AND product_status = 'ACTIVATE' ORDER BY stock ASC
+        DB-->>PR: List~Product~
+    and 오늘/이번 달 매출 집계
+        AS->>OR: sumFinalPriceByPeriod(TODAY, MONTH)
+        OR->>DB: SELECT SUM(final_price) FROM order WHERE order_status IN ('PAYED','APPROVAL') AND ordered_at >= ?
+        DB-->>OR: Long amount
+    and 신규 회원 집계
+        AS->>MR: countByCreatedAtPeriod(TODAY, MONTH)
+        MR->>DB: SELECT COUNT(*) FROM member WHERE created_at >= ?
+        DB-->>MR: Long count
+    end
+
+    AS-->>ADC: DashboardResponse { pendingOrders, waitingQnas, lowStockProducts, todaySales, monthSales, newMembersToday, newMembersMonth }
+    ADC-->>Admin: 200 OK DashboardResponse
+```
