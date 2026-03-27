@@ -2,11 +2,13 @@ package com.bookstore.shop.readme.controller;
 
 import com.bookstore.shop.readme.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class MemberController {
+@RequestMapping("/api/member")
+public class MemberApiController {
     private final MemberService memberService;
     private final OrderService orderService;
     private final PaymentService paymentService;
@@ -14,6 +16,7 @@ public class MemberController {
     private final ReviewService reviewService;
 
     // 로그인
+
     // 회원가입
     // 로그아웃
     // 마이페이지

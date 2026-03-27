@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class AdminController {
+public class AdminApiController {
     private final MemberRepository memberRepository;
     // 관리자 페이지
     // 회원 목록
