@@ -1,0 +1,30 @@
+package com.bookstore.shop.readme.controller;
+
+import com.bookstore.shop.readme.service.MemberService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+public class MemberController {
+    private final MemberService memberService;
+    private final OrderService orderService;
+    private final PaymentService paymentService;
+    private final QnaService qnaService;
+    private final ReviewService reviewService;
+
+    // 로그인
+    // 회원가입
+    // 로그아웃
+    // 마이페이지
+    // 회원 정보 수정
+    // 비밀번호 변경
+    // 회원 탈퇴
+
+    // 주문 배송 목록
+    // 주문 상세 페이지
+    // 결제 목록
+    // 결제 상세 페이지
+    // QnA 목록
+    // 리뷰 목록
+}

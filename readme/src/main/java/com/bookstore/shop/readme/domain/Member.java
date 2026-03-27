@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "member")
-public class member extends baseEntity {
+public class Member extends BaseEntity {
 
     @Column(length = 100, nullable = false, unique = true)
     private String email;
