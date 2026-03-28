@@ -11,6 +11,8 @@ import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     // 회원 관리
+    // 이메일 조회
+    String findByEmail(String email);
     // 이메일 중복 확인
     Boolean existByEmail(String keyword);
     // 이름 검색
