@@ -7,7 +7,7 @@
 | 프로젝트명 | 온라인 도서 판매 쇼핑몰 |
 | 데이터베이스 | PostgreSQL |
 | 작성일 | 2026.03.18 |
-| 버전 | v1.1 |
+| 버전 | v1.2 |
 | 작성자 |  |
 
 ---
@@ -18,6 +18,7 @@
 | --- | --- | --- | --- |
 | v1.0 | 2026.03.17 | 유환희 | 최초 작성 |
 | v1.1 | 2026.03.18 | 유환희 | 최종 완료 |
+| v1.2 | 2026.03.28 | - | 결제 시스템 추가 — payment 테이블 컬럼 4개 신규 추가 (provider, payment_key, installment_months, failure_reason) / PaymentProvider ENUM 추가 |
 
 ---
 
@@ -198,19 +199,34 @@
 
 ### 📌 `payment` 테이블
 
+> ⚠️ v1.2 변경: `provider`, `payment_key`, `installment_months`, `failure_reason` 4개 컬럼 신규 추가
+
 | 테이블명 | 컬럼명 | 자료형 | PK | FK | NULL 허용 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | payment | id | BIGSERIAL | ✅ |  | ❌ | auto | 결제 고유 ID |
 | payment | order_id | BIGINT |  | order.id | ❌ |  | 주문 ID |
+| payment | **provider** | **VARCHAR(20)** |  |  | **✅** | **null** | **PG사 식별자 (TOSS / KAKAO / NAVER) — v1.2 신규** |
 | payment | method | VARCHAR(30) |  |  | ❌ |  | 결제 수단 |
 | payment | payment_status | VARCHAR(20) |  |  | ❌ | 'READY' | READY / PAID / CANCELLED / FAILED |
 | payment | amount | INT |  |  | ❌ | 0 | 결제 금액 |
-| payment | pg_tid | VARCHAR(100) |  |  | ✅ | null | PG 트랜잭션 ID (Mock: UUID) |
+| payment | pg_tid | VARCHAR(100) |  |  | ✅ | null | PG 트랜잭션 ID (Kakao: tid / Naver: paymentId) |
+| payment | **payment_key** | **VARCHAR(200)** |  |  | **✅** | **null** | **토스 결제 고유 키 (paymentKey) — v1.2 신규** |
+| payment | **installment_months** | **SMALLINT** |  |  | **✅** | **null** | **할부 개월 수 (0 = 일시불) — v1.2 신규** |
 | payment | paid_at | TIMESTAMP |  |  | ✅ | null | 결제 완료 시각 |
 | payment | cancel_reason | VARCHAR(300) |  |  | ✅ | null | 취소 사유 |
+| payment | **failure_reason** | **VARCHAR(300)** |  |  | **✅** | **null** | **결제 실패 사유 (PG 오류 코드·메시지) — v1.2 신규** |
 | payment | created_at | TIMESTAMP |  |  | ❌ | now() | 생성 시간 |
 | payment | updated_at | TIMESTAMP |  |  | ✅ | null | 수정 시간 |
 | payment | cancelled_at | TIMESTAMP |  |  | ✅ | null | 취소 시각 |
+
+#### provider 컬럼 허용값
+
+| provider 값 | 설명 |
+| --- | --- |
+| TOSS | 토스페이먼츠 |
+| KAKAO | 카카오페이 |
+| NAVER | 네이버페이 |
+| null | Mock PG 또는 provider 미설정 건 |
 
 ---
 
@@ -315,6 +331,9 @@
 | CategorySubStatus | category_sub | category_sub_status | ACTIVATE, DEACTIVATE, DELETE | 소분류 상태 |
 | ProductStatus | product | product_status | ACTIVATE, DEACTIVATE, DELETE | 상품 상태 (ACTIVATE: 판매중, DEACTIVATE: 판매중지, DELETE: 삭제) |
 | OrderStatus | order | order_status | PENDING, PAYED, APPROVAL, CANCELED | 주문 상태 (PENDING: 결제대기, PAYED: 결제완료, APPROVAL: 승인완료, CANCELED: 취소) |
+| PaymentStatus | payment | payment_status | READY, PAID, CANCELLED, FAILED | 결제 상태 |
+| **PaymentProvider** | **payment** | **provider** | **TOSS, KAKAO, NAVER** | **PG사 식별자 — v1.2 신규** |
+| DeliveryStatus | delivery | delivery_status | READY, SHIPPED, IN_TRANSIT, DELIVERED, FAILED | 배송 상태 |
 | QnaStatus | qna | qna_status | WAITING, PROCESSING, COMPLETE | 문의 답변 상태 (WAITING: 대기, PROCESSING: 처리중, COMPLETE: 완료) |
 
 ---
