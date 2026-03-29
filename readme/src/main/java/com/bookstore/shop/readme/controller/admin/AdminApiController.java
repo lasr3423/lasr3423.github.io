@@ -1,4 +1,4 @@
-package com.bookstore.shop.readme.controller;
+package com.bookstore.shop.readme.controller.admin;
 
 import com.bookstore.shop.readme.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
