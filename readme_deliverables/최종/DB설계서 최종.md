@@ -7,7 +7,7 @@
 | 프로젝트명 | 온라인 도서 판매 쇼핑몰 |
 | 데이터베이스 | PostgreSQL |
 | 작성일 | 2026.03.18 |
-| 버전 | v1.1 |
+| 버전 | v1.3 |
 | 작성자 |  |
 
 ---
@@ -18,6 +18,8 @@
 | --- | --- | --- | --- |
 | v1.0 | 2026.03.17 | 유환희 | 최초 작성 |
 | v1.1 | 2026.03.18 | 유환희 | 최종 완료 |
+| v1.2 | 2026.03.28 | - | 결제 시스템 추가 — payment 테이블 컬럼 4개 신규 추가 (provider, payment_key, installment_months, failure_reason) / PaymentProvider ENUM 추가 |
+| v1.3 | 2026.03.29 | - | 로그인 시스템 추가 — member 테이블 컬럼 2개 신규 추가 (provider, provider_id) / password 컬럼 NULL 허용 변경 / refresh_token 테이블 신규 생성 / AuthProvider ENUM 추가 / ERD 업데이트 |
 
 ---
 
@@ -26,6 +28,7 @@
 | No | 테이블명 | 설명 | 도메인 |
 | --- | --- | --- | --- |
 | 1 | member | 회원 정보 | 회원 |
+| 1-1 | refresh_token | JWT 리프레시 토큰 | 회원/인증 |
 | 2 | category_top | 도서 대분류 (국내/해외/일본) | 상품 |
 | 3 | category_sub | 도서 소분류 (장르) | 상품 |
 | 4 | product | 도서 상품 정보 | 상품 |
@@ -50,19 +53,35 @@
 
 ### 📌 `member` 테이블
 
+> ⚠️ v1.3 변경: `provider`, `provider_id` 2개 컬럼 신규 추가 / `password` 컬럼 NULL 허용으로 변경 (OAuth 회원은 비밀번호 없음)
+
 | 테이블명 | 컬럼명 | 자료형 | PK | FK | UNIQUE | NULL 허용 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | member | id | BIGSERIAL | ✅ |  |  | ❌ | 자동 증가 | 회원 고유 식별자 |
 | member | email | VARCHAR(100) |  |  | ✅ | ❌ |  | 이메일 주소 |
-| member | password | VARCHAR(255) |  |  |  | ❌ |  | 비밀번호 (BCrypt 암호화) |
+| member | password | VARCHAR(255) |  |  |  | ✅ | NULL | 비밀번호 (BCrypt 암호화, OAuth 회원은 NULL) — v1.3 변경 |
 | member | name | VARCHAR(50) |  |  |  | ❌ |  | 이름 |
-| member | phone | VARCHAR(20) |  |  |  | ❌ |  | 전화번호 |
-| member | address | VARCHAR(100) |  |  |  | ❌ |  | 주소 |
+| member | phone | VARCHAR(20) |  |  |  | ✅ | NULL | 전화번호 |
+| member | address | VARCHAR(100) |  |  |  | ✅ | NULL | 주소 |
 | member | memberRole | MemberRole |  |  |  | ❌ | 'USER' | USER, MANAGER, ADMIN |
 | member | memberStatus | MemberStatus |  |  |  | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
+| member | **provider** | **AuthProvider** |  |  |  | **❌** | **'LOCAL'** | **인증 제공자 (LOCAL/GOOGLE/KAKAO) — v1.3 신규** |
+| member | **provider_id** | **VARCHAR(200)** |  |  |  | **✅** | **NULL** | **OAuth 제공자 고유 ID — v1.3 신규** |
 | member | created_at | TIMESTAMP |  |  |  | ❌ | now() | 가입일 |
 | member | updated_at | TIMESTAMP |  |  |  | ✅ | NULL | 수정일 |
 | member | deleted_at | TIMESTAMP |  |  |  | ✅ | NULL | 탈퇴 처리일 |
+
+---
+
+### 📌 `refresh_token` 테이블 — v1.3 신규
+
+| 테이블명 | 컬럼명 | 자료형 | PK | FK | UNIQUE | NULL 허용 | 기본값 | 설명 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| refresh_token | id | BIGSERIAL | ✅ |  |  | ❌ | 자동 증가 | 고유 식별자 |
+| refresh_token | member_id | BIGINT |  | member.id |  | ❌ |  | 토큰 소유 회원 ID |
+| refresh_token | token | VARCHAR(500) |  |  | ✅ | ❌ |  | RefreshToken 값 |
+| refresh_token | expires_at | TIMESTAMP |  |  |  | ❌ |  | 만료 시각 (발급일 + 7일) |
+| refresh_token | created_at | TIMESTAMP |  |  |  | ❌ | now() | 발급 시각 |
 
 ---
 
@@ -198,19 +217,34 @@
 
 ### 📌 `payment` 테이블
 
+> ⚠️ v1.2 변경: `provider`, `payment_key`, `installment_months`, `failure_reason` 4개 컬럼 신규 추가
+
 | 테이블명 | 컬럼명 | 자료형 | PK | FK | NULL 허용 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | payment | id | BIGSERIAL | ✅ |  | ❌ | auto | 결제 고유 ID |
 | payment | order_id | BIGINT |  | order.id | ❌ |  | 주문 ID |
+| payment | **provider** | **VARCHAR(20)** |  |  | **✅** | **null** | **PG사 식별자 (TOSS / KAKAO / NAVER) — v1.2 신규** |
 | payment | method | VARCHAR(30) |  |  | ❌ |  | 결제 수단 |
 | payment | payment_status | VARCHAR(20) |  |  | ❌ | 'READY' | READY / PAID / CANCELLED / FAILED |
 | payment | amount | INT |  |  | ❌ | 0 | 결제 금액 |
-| payment | pg_tid | VARCHAR(100) |  |  | ✅ | null | PG 트랜잭션 ID (Mock: UUID) |
+| payment | pg_tid | VARCHAR(100) |  |  | ✅ | null | PG 트랜잭션 ID (Kakao: tid / Naver: paymentId) |
+| payment | **payment_key** | **VARCHAR(200)** |  |  | **✅** | **null** | **토스 결제 고유 키 (paymentKey) — v1.2 신규** |
+| payment | **installment_months** | **SMALLINT** |  |  | **✅** | **null** | **할부 개월 수 (0 = 일시불) — v1.2 신규** |
 | payment | paid_at | TIMESTAMP |  |  | ✅ | null | 결제 완료 시각 |
 | payment | cancel_reason | VARCHAR(300) |  |  | ✅ | null | 취소 사유 |
+| payment | **failure_reason** | **VARCHAR(300)** |  |  | **✅** | **null** | **결제 실패 사유 (PG 오류 코드·메시지) — v1.2 신규** |
 | payment | created_at | TIMESTAMP |  |  | ❌ | now() | 생성 시간 |
 | payment | updated_at | TIMESTAMP |  |  | ✅ | null | 수정 시간 |
 | payment | cancelled_at | TIMESTAMP |  |  | ✅ | null | 취소 시각 |
+
+#### provider 컬럼 허용값
+
+| provider 값 | 설명 |
+| --- | --- |
+| TOSS | 토스페이먼츠 |
+| KAKAO | 카카오페이 |
+| NAVER | 네이버페이 |
+| null | Mock PG 또는 provider 미설정 건 |
 
 ---
 
@@ -311,10 +345,14 @@
 | --- | --- | --- | --- | --- |
 | MemberRole | member | memberRole | USER, MANAGER, ADMIN | 회원 권한 (USER: 일반회원, MANAGER: 운영자, ADMIN: 관리자) |
 | MemberStatus | member | memberStatus | ACTIVATE, DEACTIVATE, DELETE | 회원 상태 (ACTIVATE: 활성, DEACTIVATE: 강퇴, DELETE: 탈퇴) |
+| **AuthProvider** | **member** | **provider** | **LOCAL, GOOGLE, KAKAO** | **인증 제공자 (LOCAL: 일반로그인, GOOGLE: 구글 OAuth, KAKAO: 카카오 OAuth) — v1.3 신규** |
 | CategoryTopStatus | category_top | category_top_status | ACTIVATE, DEACTIVATE, DELETE | 대분류 상태 |
 | CategorySubStatus | category_sub | category_sub_status | ACTIVATE, DEACTIVATE, DELETE | 소분류 상태 |
 | ProductStatus | product | product_status | ACTIVATE, DEACTIVATE, DELETE | 상품 상태 (ACTIVATE: 판매중, DEACTIVATE: 판매중지, DELETE: 삭제) |
 | OrderStatus | order | order_status | PENDING, PAYED, APPROVAL, CANCELED | 주문 상태 (PENDING: 결제대기, PAYED: 결제완료, APPROVAL: 승인완료, CANCELED: 취소) |
+| PaymentStatus | payment | payment_status | READY, PAID, CANCELLED, FAILED | 결제 상태 |
+| **PaymentProvider** | **payment** | **provider** | **TOSS, KAKAO, NAVER** | **PG사 식별자 — v1.2 신규** |
+| DeliveryStatus | delivery | delivery_status | READY, SHIPPED, IN_TRANSIT, DELIVERED, FAILED | 배송 상태 |
 | QnaStatus | qna | qna_status | WAITING, PROCESSING, COMPLETE | 문의 답변 상태 (WAITING: 대기, PROCESSING: 처리중, COMPLETE: 완료) |
 
 ---
@@ -472,6 +510,7 @@ erDiagram
     REVIEW ||--o{ REVIEW_IMAGE : "has"
     REVIEW ||--o{ REVIEW_REACTION : "receives"
     MEMBER ||--o{ REVIEW_REACTION : "reacts"
+    MEMBER ||--o{ REFRESH_TOKEN : "issues"
 
     MEMBER {
         bigint id PK
@@ -482,9 +521,19 @@ erDiagram
         string address
         enum memberRole "USER | MANAGER | ADMIN"
         enum memberStatus "ACTIVATE | DEACTIVATE | DELETE"
+        enum provider "LOCAL | GOOGLE | KAKAO"
+        string provider_id
         datetime created_at
         datetime updated_at
         datetime deleted_at
+    }
+
+    REFRESH_TOKEN {
+        bigint id PK
+        bigint member_id FK
+        string token UK
+        datetime expires_at
+        datetime created_at
     }
 
     CATEGORY_TOP {
@@ -686,6 +735,9 @@ CREATE TYPE member_role AS ENUM ('USER', 'MANAGER', 'ADMIN');
 -- 회원 상태: ACTIVATE(활성) | DEACTIVATE(강퇴) | DELETE(탈퇴)
 CREATE TYPE member_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
 
+-- 인증 제공자: LOCAL(일반로그인) | GOOGLE(구글 OAuth) | KAKAO(카카오 OAuth) — v1.3 신규
+CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE', 'KAKAO');
+
 -- 대분류 카테고리 상태
 CREATE TYPE category_top_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
 
@@ -715,18 +767,30 @@ CREATE TYPE qna_status AS ENUM ('WAITING', 'PROCESSING', 'COMPLETE');
 #### 📌 회원 도메인
 
 ```sql
+-- v1.3: password NULL 허용 변경, provider/provider_id 컬럼 신규 추가
 CREATE TABLE IF NOT EXISTS member (
     id            BIGSERIAL      PRIMARY KEY,
     email         VARCHAR(100)   NOT NULL UNIQUE,
-    password      VARCHAR(255)   NOT NULL,
+    password      VARCHAR(255),
     name          VARCHAR(50)    NOT NULL,
-    phone         VARCHAR(20)    NOT NULL,
-    address       VARCHAR(100)   NOT NULL,
+    phone         VARCHAR(20),
+    address       VARCHAR(100),
     member_role   member_role    NOT NULL DEFAULT 'USER',
     member_status member_status  NOT NULL DEFAULT 'ACTIVATE',
+    provider      auth_provider  NOT NULL DEFAULT 'LOCAL',
+    provider_id   VARCHAR(200),
     created_at    TIMESTAMP      NOT NULL DEFAULT now(),
     updated_at    TIMESTAMP,
     deleted_at    TIMESTAMP
+);
+
+-- v1.3: refresh_token 테이블 신규 생성
+CREATE TABLE IF NOT EXISTS refresh_token (
+    id         BIGSERIAL      PRIMARY KEY,
+    member_id  BIGINT         NOT NULL REFERENCES member (id) ON DELETE CASCADE,
+    token      VARCHAR(500)   NOT NULL UNIQUE,
+    expires_at TIMESTAMP      NOT NULL,
+    created_at TIMESTAMP      NOT NULL DEFAULT now()
 );
 ```
 
