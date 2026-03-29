@@ -92,7 +92,7 @@
 | category_top | id | BIGSERIAL | ✅ | | ❌ | auto | 도서 종류 고유 ID |
 | category_top | name | VARCHAR(50) | | | ❌ | | 도서 종류명 (국내도서, 해외도서, 일본도서) |
 | category_top | sort_order | INT | | | ❌ | 0 | 화면 정렬 순서 |
-| category_top | category_top_status | ENUM | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
+| category_top | category_status | category_status (ENUM) | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
 | category_top | created_at | TIMESTAMP | | | ❌ | now() | 생성 시간 |
 | category_top | updated_at | TIMESTAMP | | | ✅ | null | 수정 시간 |
 
@@ -105,7 +105,7 @@
 | category_sub | id | BIGSERIAL | ✅ | | ❌ | auto | 장르 고유 ID |
 | category_sub | name | VARCHAR(50) | | | ❌ | | 장르명 (컴퓨터/IT, 외국어, 소설 등) |
 | category_sub | sort_order | INT | | | ❌ | 0 | 화면 정렬 순서 |
-| category_sub | category_sub_status | ENUM | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
+| category_sub | category_status | category_status (ENUM) | | | ❌ | 'ACTIVATE' | ACTIVATE, DEACTIVATE, DELETE |
 | category_sub | category_top_id | BIGINT | | category_top.id | ❌ | | 도서 종류 (국내/해외/일본) |
 | category_sub | created_at | TIMESTAMP | | | ❌ | now() | 생성 시간 |
 | category_sub | updated_at | TIMESTAMP | | | ✅ | null | 수정 시간 |
@@ -225,7 +225,7 @@
 | payment | order_id | BIGINT |  | order.id | ❌ |  | 주문 ID |
 | payment | **provider** | **VARCHAR(20)** |  |  | **✅** | **null** | **PG사 식별자 (TOSS / KAKAO / NAVER) — v1.2 신규** |
 | payment | method | VARCHAR(30) |  |  | ❌ |  | 결제 수단 |
-| payment | payment_status | VARCHAR(20) |  |  | ❌ | 'READY' | READY / PAID / CANCELLED / FAILED |
+| payment | payment_status | payment_status (ENUM) |  |  | ❌ | 'READY' | READY / PAID / CANCELLED / FAILED |
 | payment | amount | INT |  |  | ❌ | 0 | 결제 금액 |
 | payment | pg_tid | VARCHAR(100) |  |  | ✅ | null | PG 트랜잭션 ID (Kakao: tid / Naver: paymentId) |
 | payment | **payment_key** | **VARCHAR(200)** |  |  | **✅** | **null** | **토스 결제 고유 키 (paymentKey) — v1.2 신규** |
@@ -256,7 +256,7 @@
 | delivery | order_id | BIGINT |  | order.id | ❌ |  | 주문 ID (UNIQUE, 1:1) |
 | delivery | courier | VARCHAR(50) |  |  | ✅ | null | 택배사명 |
 | delivery | tracking_number | VARCHAR(100) |  |  | ✅ | null | 운송장 번호 |
-| delivery | delivery_status | VARCHAR(30) |  |  | ❌ | 'READY' | READY / SHIPPED / IN_TRANSIT / DELIVERED / FAILED |
+| delivery | delivery_status | delivery_status (ENUM) |  |  | ❌ | 'READY' | READY / SHIPPED / IN_TRANSIT / DELIVERED / FAILED |
 | delivery | created_at | TIMESTAMP |  |  | ❌ | now() | 생성 시간 |
 | delivery | updated_at | TIMESTAMP |  |  | ✅ | null | 수정 시간 |
 | delivery | shipped_at | TIMESTAMP |  |  | ✅ | null | 발송 시각 |
@@ -346,13 +346,12 @@
 | MemberRole | member | memberRole | USER, MANAGER, ADMIN | 회원 권한 (USER: 일반회원, MANAGER: 운영자, ADMIN: 관리자) |
 | MemberStatus | member | memberStatus | ACTIVATE, DEACTIVATE, DELETE | 회원 상태 (ACTIVATE: 활성, DEACTIVATE: 강퇴, DELETE: 탈퇴) |
 | **AuthProvider** | **member** | **provider** | **LOCAL, GOOGLE, KAKAO** | **인증 제공자 (LOCAL: 일반로그인, GOOGLE: 구글 OAuth, KAKAO: 카카오 OAuth) — v1.3 신규** |
-| CategoryTopStatus | category_top | category_top_status | ACTIVATE, DEACTIVATE, DELETE | 대분류 상태 |
-| CategorySubStatus | category_sub | category_sub_status | ACTIVATE, DEACTIVATE, DELETE | 소분류 상태 |
+| CategoryStatus | category_top, category_sub | category_status | ACTIVATE, DEACTIVATE, DELETE | 카테고리 상태 (ACTIVATE: 활성, DEACTIVATE: 비활성, DELETE: 삭제) — 대분류·소분류 공통 |
 | ProductStatus | product | product_status | ACTIVATE, DEACTIVATE, DELETE | 상품 상태 (ACTIVATE: 판매중, DEACTIVATE: 판매중지, DELETE: 삭제) |
 | OrderStatus | order | order_status | PENDING, PAYED, APPROVAL, CANCELED | 주문 상태 (PENDING: 결제대기, PAYED: 결제완료, APPROVAL: 승인완료, CANCELED: 취소) |
-| PaymentStatus | payment | payment_status | READY, PAID, CANCELLED, FAILED | 결제 상태 |
+| PaymentStatus | payment | payment_status | READY, PAID, CANCELLED, FAILED | 결제 상태 (READY: 결제대기, PAID: 결제완료, CANCELLED: 취소, FAILED: 실패) |
 | **PaymentProvider** | **payment** | **provider** | **TOSS, KAKAO, NAVER** | **PG사 식별자 — v1.2 신규** |
-| DeliveryStatus | delivery | delivery_status | READY, SHIPPED, IN_TRANSIT, DELIVERED, FAILED | 배송 상태 |
+| DeliveryStatus | delivery | delivery_status | READY, SHIPPED, IN_TRANSIT, DELIVERED, FAILED | 배송 상태 (READY: 배송준비, SHIPPED: 발송, IN_TRANSIT: 배송중, DELIVERED: 배송완료, FAILED: 실패) |
 | QnaStatus | qna | qna_status | WAITING, PROCESSING, COMPLETE | 문의 답변 상태 (WAITING: 대기, PROCESSING: 처리중, COMPLETE: 완료) |
 
 ---
@@ -396,12 +395,12 @@ erDiagram
     CATEGORY_TOP {
         bigint id PK
         varchar name
-        enum category_top_status
+        enum category_status
     }
     CATEGORY_SUB {
         bigint id PK
         varchar name
-        enum category_sub_status
+        enum category_status
     }
     PRODUCT {
         bigint id PK
@@ -540,7 +539,7 @@ erDiagram
         bigint id PK
         string name
         int sort_order
-        enum category_top_status "ACTIVATE | DEACTIVATE | DELETE"
+        enum category_status "ACTIVATE | DEACTIVATE | DELETE"
         datetime created_at
         datetime updated_at
     }
@@ -549,7 +548,7 @@ erDiagram
         bigint id PK
         string name
         int sort_order
-        enum category_sub_status "ACTIVATE | DEACTIVATE | DELETE"
+        enum category_status "ACTIVATE | DEACTIVATE | DELETE"
         datetime created_at
         datetime updated_at
     }
@@ -738,11 +737,8 @@ CREATE TYPE member_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
 -- 인증 제공자: LOCAL(일반로그인) | GOOGLE(구글 OAuth) | KAKAO(카카오 OAuth) — v1.3 신규
 CREATE TYPE auth_provider AS ENUM ('LOCAL', 'GOOGLE', 'KAKAO');
 
--- 대분류 카테고리 상태
-CREATE TYPE category_top_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
-
--- 소분류 카테고리 상태
-CREATE TYPE category_sub_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
+-- 카테고리 상태 (대분류·소분류 공통)
+CREATE TYPE category_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
 
 -- 상품 상태: ACTIVATE(판매중) | DEACTIVATE(판매중지) | DELETE(삭제)
 CREATE TYPE product_status AS ENUM ('ACTIVATE', 'DEACTIVATE', 'DELETE');
@@ -802,7 +798,7 @@ CREATE TABLE IF NOT EXISTS category_top (
     id                  BIGSERIAL           PRIMARY KEY,
     name                VARCHAR(50)         NOT NULL,
     sort_order          INT                 NOT NULL DEFAULT 0,
-    category_top_status category_top_status NOT NULL DEFAULT 'ACTIVATE',
+    category_status     category_status     NOT NULL DEFAULT 'ACTIVATE',
     created_at          TIMESTAMP           NOT NULL DEFAULT now(),
     updated_at          TIMESTAMP
 );
@@ -813,7 +809,7 @@ CREATE TABLE IF NOT EXISTS category_sub (
     category_top_id     BIGINT              NOT NULL REFERENCES category_top (id),
     name                VARCHAR(50)         NOT NULL,
     sort_order          INT                 NOT NULL DEFAULT 0,
-    category_sub_status category_sub_status NOT NULL DEFAULT 'ACTIVATE',
+    category_status     category_status     NOT NULL DEFAULT 'ACTIVATE',
     created_at          TIMESTAMP           NOT NULL DEFAULT now(),
     updated_at          TIMESTAMP
 );
@@ -918,17 +914,21 @@ CREATE TABLE IF NOT EXISTS order_item (
 
 ```sql
 CREATE TABLE IF NOT EXISTS payment (
-    id              BIGSERIAL        PRIMARY KEY,
-    order_id        BIGINT           NOT NULL REFERENCES "order" (id),
-    method          VARCHAR(30)      NOT NULL,
-    payment_status  payment_status   NOT NULL DEFAULT 'READY',
-    amount          INT              NOT NULL DEFAULT 0,
-    pg_tid          VARCHAR(100),
-    paid_at         TIMESTAMP,
-    cancel_reason   VARCHAR(300),
-    created_at      TIMESTAMP        NOT NULL DEFAULT now(),
-    updated_at      TIMESTAMP,
-    cancelled_at    TIMESTAMP
+    id                  BIGSERIAL        PRIMARY KEY,
+    order_id            BIGINT           NOT NULL REFERENCES "order" (id),
+    provider            VARCHAR(20),                          -- TOSS / KAKAO / NAVER / null(Mock)
+    method              VARCHAR(30)      NOT NULL,
+    payment_status      payment_status   NOT NULL DEFAULT 'READY',
+    amount              INT              NOT NULL DEFAULT 0,
+    pg_tid              VARCHAR(100),
+    payment_key         VARCHAR(200),                         -- 토스 결제 고유 키 (v1.2)
+    installment_months  SMALLINT,                             -- 할부 개월 수, 0 = 일시불 (v1.2)
+    paid_at             TIMESTAMP,
+    cancel_reason       VARCHAR(300),
+    failure_reason      VARCHAR(300),                         -- 결제 실패 사유 (v1.2)
+    created_at          TIMESTAMP        NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMP,
+    cancelled_at        TIMESTAMP
 );
 ```
 
@@ -1024,87 +1024,3 @@ CREATE TABLE IF NOT EXISTS review_reaction (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_member_email       ON member (email);
 CREATE INDEX        IF NOT EXISTS idx_member_created_at  ON member (created_at DESC);
 CREATE INDEX        IF NOT EXISTS idx_member_status      ON member (member_status);
-```
-
-#### 📌 카테고리 (category_top / category_sub)
-
-```sql
-CREATE INDEX IF NOT EXISTS idx_category_top_status_sort  ON category_top (category_top_status, sort_order);
-CREATE INDEX IF NOT EXISTS idx_category_sub_top_id       ON category_sub (category_top_id);
-CREATE INDEX IF NOT EXISTS idx_category_sub_status_sort  ON category_sub (category_sub_status, sort_order);
-```
-
-#### 📌 상품 (product / product_image)
-
-```sql
-CREATE INDEX IF NOT EXISTS idx_product_category_top_id   ON product (category_top_id);
-CREATE INDEX IF NOT EXISTS idx_product_category_sub_id   ON product (category_sub_id);
-CREATE INDEX IF NOT EXISTS idx_product_status            ON product (product_status);
-CREATE INDEX IF NOT EXISTS idx_product_sales_count       ON product (sales_count DESC);
-CREATE INDEX IF NOT EXISTS idx_product_created_at        ON product (created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_product_title             ON product (title);
-CREATE INDEX IF NOT EXISTS idx_product_author            ON product (author);
-CREATE INDEX IF NOT EXISTS idx_product_image_product_id  ON product_image (product_id, sort_order);
-```
-
-#### 📌 장바구니 (cart / cart_item)
-
-```sql
-CREATE UNIQUE INDEX IF NOT EXISTS idx_cart_member_id      ON cart (member_id);
-CREATE INDEX        IF NOT EXISTS idx_cart_item_cart_id   ON cart_item (cart_id);
-CREATE INDEX        IF NOT EXISTS idx_cart_item_product_id ON cart_item (product_id);
-```
-
-#### 📌 주문 (order / order_item)
-
-```sql
-CREATE INDEX IF NOT EXISTS idx_order_member_id          ON "order" (member_id);
-CREATE INDEX IF NOT EXISTS idx_order_status             ON "order" (order_status);
-CREATE INDEX IF NOT EXISTS idx_order_ordered_at         ON "order" (ordered_at DESC);
-CREATE INDEX IF NOT EXISTS idx_order_item_order_id      ON order_item (order_id);
-CREATE INDEX IF NOT EXISTS idx_order_item_product_id    ON order_item (product_id);
--- 미작성 리뷰 목록 (Partial Index)
-CREATE INDEX IF NOT EXISTS idx_order_item_is_reviewed   ON order_item (is_reviewed)
-    WHERE is_reviewed = false;
-```
-
-#### 📌 결제 (payment)
-
-```sql
-CREATE INDEX IF NOT EXISTS idx_payment_order_id  ON payment (order_id);
-CREATE INDEX IF NOT EXISTS idx_payment_status    ON payment (payment_status);
-```
-
-#### 📌 배송 (delivery)
-
-```sql
-CREATE UNIQUE INDEX IF NOT EXISTS idx_delivery_order_id  ON delivery (order_id);
-CREATE INDEX        IF NOT EXISTS idx_delivery_status    ON delivery (delivery_status);
-```
-
-#### 📌 게시판 (notice / qna / review)
-
-```sql
--- notice: 고정공지 우선 정렬 + Soft Delete 제외
-CREATE INDEX IF NOT EXISTS idx_notice_is_fixed_created_at  ON notice (is_fixed DESC, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_notice_deleted_at           ON notice (deleted_at) WHERE deleted_at IS NULL;
-
--- qna: 회원 목록 / 계층 스레드 / 상태 필터 / Soft Delete 제외
-CREATE INDEX IF NOT EXISTS idx_qna_member_id   ON qna (member_id);
-CREATE INDEX IF NOT EXISTS idx_qna_parent_id   ON qna (parent_id);
-CREATE INDEX IF NOT EXISTS idx_qna_status      ON qna (qna_status);
-CREATE INDEX IF NOT EXISTS idx_qna_deleted_at  ON qna (deleted_at) WHERE deleted_at IS NULL;
-
--- review: 상품별 / 회원별 / 최신순 / Soft Delete 제외
-CREATE INDEX IF NOT EXISTS idx_review_product_id   ON review (product_id);
-CREATE INDEX IF NOT EXISTS idx_review_member_id    ON review (member_id);
-CREATE INDEX IF NOT EXISTS idx_review_created_at   ON review (created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_review_deleted_at   ON review (deleted_at) WHERE deleted_at IS NULL;
-
--- review_image: 리뷰별 이미지 조회
-CREATE INDEX IF NOT EXISTS idx_review_image_review_id  ON review_image (review_id);
-
--- review_reaction: 리뷰별 집계 + 중복 방지 UNIQUE
-CREATE INDEX        IF NOT EXISTS idx_review_reaction_review_id      ON review_reaction (review_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_review_reaction_review_member  ON review_reaction (review_id, member_id);
-```
