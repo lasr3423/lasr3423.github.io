@@ -38,7 +38,6 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MemberStatus MemberStatus;
 
-    @LastModifiedDate
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
