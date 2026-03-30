@@ -15,6 +15,14 @@ export const useAuthStore = defineStore('auth',() => {
     setTokens(data.accessToken, data.refreshToken);
   }
 
+  async function signout() {
+    try {
+      await authApi.signout()
+    } finally {
+      clearTokens()
+    }
+  }
+
   async function refreshAccessToken() {
     const stored = localStorage.getItem('refreshToken');
     if (!stored) throw new Error('RefreshToken 없음');
