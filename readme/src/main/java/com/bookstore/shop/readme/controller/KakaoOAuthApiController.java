@@ -10,7 +10,7 @@ import com.bookstore.shop.readme.service.OAuthMemberService;
 import com.bookstore.shop.readme.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/oauth/kakao")
+@RequestMapping("/api/oauth/kakao")
 @RequiredArgsConstructor
 public class KakaoOAuthApiController {
 
@@ -42,7 +42,7 @@ public class KakaoOAuthApiController {
                 + "?client_id=" + clientId
                 + "&redirect_uri=" + redirectUri
                 + "&response_type=code"
-                + "&scope=profile_nickname,account_email";
+                + "&scope=profile_nickname";
 
         return ResponseEntity.ok(Map.of("authUrl", kakaoAuthUrl));
     }
