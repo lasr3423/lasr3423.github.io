@@ -14,7 +14,7 @@
     <div class="divider">또는</div>
 
     <!-- 구글 로그인: Spring Security OAuth2 자동 처리 URL -->
-    <a href="/oauth2/authorization/google" class="btn-social btn-google">
+    <a href="http://localhost:8202/oauth2/authorization/google" class="btn-social btn-google">
       구글로 로그인
     </a>
 
@@ -61,7 +61,3 @@ async function handleKakaoLogin() {
 }
 
 </script>
-
-<style lang="scss" scoped>
-
-</style>
