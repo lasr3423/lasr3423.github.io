@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/auth';
 import router from '@/router';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost8280',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8202',
     timeout: 10000,
 })
 

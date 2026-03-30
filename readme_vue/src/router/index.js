@@ -9,19 +9,19 @@ const router = createRouter({
     { path: '/signup', component: () => import('@/views/member/SignupView.vue') },
     { path: '/oauth/callback', component: () => import('@/views/member/OAuthCallbackView.vue') },
     {
-      path: '/mypage', component: () => import('@/views/member/MyPageView.vue'),
+       path: '/mypage', component: () => import('@/views/member/MyPageView.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: '/admin', component: () => import('@/views/admin/DashboardView.vue'),
       meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] }
-    },
+    }
   ]
 });
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  if (authStore.accessToken) {
+  if (!authStore.accessToken) {
     await authStore.initialize();   // RefreshToken으로 상태 복구 시도
   }
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {

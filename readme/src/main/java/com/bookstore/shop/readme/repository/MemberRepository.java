@@ -24,7 +24,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // 이메일 검색
     Page<Member> findByEmailContainingIgnoreCase(String keyword, Pageable pageable);
     // 이름 또는 이메일로 검색
-    Page<Member> findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(String keyword, Pageable pageable);
+    // Page<Member> findByNameOrEmail(String keyword, Pageable pageable);
     // 상태 별 검색
     Page<Member> findByMemberStatus(MemberStatus status, Pageable pageable);
     // 등급 별 검색
