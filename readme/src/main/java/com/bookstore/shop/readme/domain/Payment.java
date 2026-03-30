@@ -1,10 +1,7 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
@@ -14,10 +11,11 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "payment")
 public class Payment extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
@@ -28,7 +26,7 @@ public class Payment extends BaseEntity {
     private String method;
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("'READY'")
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.READY;
 
     @Column(nullable = false)
@@ -40,6 +38,7 @@ public class Payment extends BaseEntity {
     @Column(length = 200)
     private String paymentKey;
 
+    @Builder.Default
     private Integer installmentMonths;
 
     @Column(name = "paid_at")

@@ -1,10 +1,7 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
@@ -12,23 +9,24 @@ import org.hibernate.annotations.ColumnDefault;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "cart_item")
 public class CartItem extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
+    @Builder.Default
     private int quantity = 1;
 
     @Column(nullable = false)
-    @ColumnDefault("true")
+    @Builder.Default
     private boolean isChecked = true;
 
 }
