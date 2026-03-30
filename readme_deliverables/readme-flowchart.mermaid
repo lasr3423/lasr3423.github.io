@@ -1,0 +1,185 @@
+flowchart TD
+
+  %% ══════════════════════════════════════
+  %% 진입
+  %% ══════════════════════════════════════
+  START([서비스 진입])
+  START --> MAIN
+
+  %% ══════════════════════════════════════
+  %% 비회원 접근 가능 영역
+  %% ══════════════════════════════════════
+  subgraph PUBLIC["🌐 비회원 접근 가능"]
+    direction TB
+
+    MAIN["메인 화면"]
+
+    subgraph PUB_PRODUCT["📚 상품"]
+      direction LR
+      PRODUCT_LIST["상품 목록"]
+      PRODUCT_DETAIL["상품 상세"]
+      PRODUCT_LIST --> PRODUCT_DETAIL
+    end
+
+    subgraph PUB_NOTICE["📢 공지사항"]
+      direction LR
+      NOTICE_LIST["공지사항 목록"]
+      NOTICE_DETAIL["공지사항 상세"]
+      NOTICE_LIST --> NOTICE_DETAIL
+    end
+
+    subgraph PUB_QNA["💬 QnA"]
+      direction LR
+      QNA_LIST["QnA 목록"]
+      QNA_DETAIL["QnA 상세"]
+      QNA_LIST --> QNA_DETAIL
+    end
+
+    subgraph PUB_REVIEW["⭐ 리뷰"]
+      direction LR
+      REVIEW_LIST["리뷰 목록\n(특정 상품)"]
+      REVIEW_DETAIL["리뷰 상세"]
+      REVIEW_LIST --> REVIEW_DETAIL
+    end
+
+    MAIN --> PUB_PRODUCT
+    MAIN --> PUB_NOTICE
+    MAIN --> PUB_QNA
+    PRODUCT_DETAIL --> REVIEW_LIST
+  end
+
+  %% ══════════════════════════════════════
+  %% 인증
+  %% ══════════════════════════════════════
+  MAIN -- "로그인" --> AUTH
+
+  subgraph AUTH["🔐 인증"]
+    direction LR
+    LOGIN["로그인"]
+    REGISTER["회원가입"]
+    LOGIN -- "회원가입" --> REGISTER
+    REGISTER -- "가입 완료" --> LOGIN
+  end
+
+  LOGIN -- "로그인 성공" --> ROLE
+
+  %% ══════════════════════════════════════
+  %% 역할 분기
+  %% ══════════════════════════════════════
+  ROLE{역할 확인}
+  ROLE -- "USER" --> USER_ZONE
+  ROLE -- "ADMIN / MANAGER" --> ADMIN_ZONE
+
+  %% ══════════════════════════════════════
+  %% 회원 전용 영역
+  %% (비회원 페이지 모두 포함 + 추가)
+  %% ══════════════════════════════════════
+  subgraph USER_ZONE["👤 회원 전용 (비회원 페이지 + 추가)"]
+    direction TB
+
+    subgraph USER_ORDER["📦 주문 / 배송"]
+      direction TB
+      MY_ORDERS["주문 목록"]
+      MY_ORDER_DETAIL["주문 상세"]
+      MY_CART["장바구니"]
+      MY_PAYMENT["결제 내역"]
+      MY_ORDERS --> MY_ORDER_DETAIL
+      MY_ORDER_DETAIL -- "취소 / 교환·반품" --> MY_ORDER_DETAIL
+      MY_ORDER_DETAIL -- "배송완료\n→ 리뷰 작성" --> MY_REVIEW_WRITE
+    end
+
+    subgraph USER_POST["✏️ 내 게시글"]
+      direction TB
+      MY_QNA["내가 쓴 QnA 목록"]
+      MY_REVIEW_LIST["내가 쓴 리뷰 목록"]
+      MY_REVIEW_WRITE["리뷰 작성"]
+    end
+
+    subgraph USER_PROFILE["🪪 회원 정보"]
+      direction LR
+      EDIT_INFO["회원정보 수정"]
+      EDIT_PW["비밀번호 변경"]
+      WITHDRAW["회원 탈퇴"]
+    end
+  end
+
+  %% ══════════════════════════════════════
+  %% 관리자 전용 영역
+  %% (회원 + 비회원 페이지 모두 포함 + 추가)
+  %% ══════════════════════════════════════
+  subgraph ADMIN_ZONE["🛠 관리자 전용 (모든 페이지 + 추가)"]
+    direction TB
+
+    ADM_DASHBOARD["대시보드"]
+
+    subgraph ADM_ORDER["📦 주문 관리"]
+      direction TB
+      ADM_ORDER_LIST["주문 목록"]
+      ADM_ORDER_DETAIL["주문 상세"]
+      ADM_DELIVERY_LIST["배송 목록"]
+      ADM_DELIVERY_DETAIL["배송 상세"]
+      ADM_CATEGORY["카테고리 목록"]
+      ADM_PAYMENT_LIST["결제 목록"]
+      ADM_PAYMENT_DETAIL["결제 상세"]
+      ADM_ORDER_LIST --> ADM_ORDER_DETAIL
+      ADM_DELIVERY_LIST --> ADM_DELIVERY_DETAIL
+      ADM_PAYMENT_LIST --> ADM_PAYMENT_DETAIL
+    end
+
+    subgraph ADM_PRODUCT["📚 상품 관리"]
+      direction LR
+      ADM_PRODUCT_LIST["상품 목록"]
+      ADM_PRODUCT_ADD["상품 추가"]
+    end
+
+    subgraph ADM_POST["✏️ 게시글 관리"]
+      direction LR
+      ADM_NOTICE["공지사항 관리"]
+      ADM_QNA["QnA 목록"]
+      ADM_REVIEW["리뷰 목록"]
+    end
+
+    subgraph ADM_MEMBER["👥 회원 관리"]
+      direction TB
+      ADM_MEMBER_LIST["회원 목록"]
+      ADM_MEMBER_DETAIL["회원 상세"]
+      ADM_ADMIN_MANAGE["관리자 관리"]
+      ADM_MEMBER_LIST --> ADM_MEMBER_DETAIL
+      ADM_MEMBER_DETAIL -- "등급 변경\n휴면·복구·삭제" --> ADM_MEMBER_DETAIL
+    end
+
+    ADM_DASHBOARD --> ADM_ORDER
+    ADM_DASHBOARD --> ADM_PRODUCT
+    ADM_DASHBOARD --> ADM_POST
+    ADM_DASHBOARD --> ADM_MEMBER
+  end
+
+  %% ══════════════════════════════════════
+  %% 공통 흐름
+  %% ══════════════════════════════════════
+  WITHDRAW      -- "탈퇴 완료" --> LOGIN
+  USER_ZONE     -- "로그아웃"  --> LOGIN
+  ADMIN_ZONE    -- "로그아웃"  --> LOGIN
+
+  %% ══════════════════════════════════════
+  %% 권한 포함 관계 (점선)
+  %% ══════════════════════════════════════
+  PUBLIC    -. "회원은 이 페이지도 접근 가능" .-> USER_ZONE
+  USER_ZONE -. "관리자는 이 페이지도 접근 가능" .-> ADMIN_ZONE
+
+  %% ══════════════════════════════════════
+  %% 스타일
+  %% ══════════════════════════════════════
+  classDef startNode  fill:#1e2d4a,stroke:#1e2d4a,color:#fff
+  classDef authNode   fill:#1e2d4a,stroke:#1e2d4a,color:#fff
+  classDef roleNode   fill:#e8432d,stroke:#e8432d,color:#fff
+  classDef publicNode fill:#f8fafc,stroke:#94a3b8,color:#334155
+  classDef userNode   fill:#eff6ff,stroke:#2563eb,color:#1e3a5f
+  classDef adminNode  fill:#f3e8ff,stroke:#7c3aed,color:#3b0764
+
+  class START startNode
+  class LOGIN,REGISTER authNode
+  class ROLE roleNode
+  class MAIN,PRODUCT_LIST,PRODUCT_DETAIL,NOTICE_LIST,NOTICE_DETAIL,QNA_LIST,QNA_DETAIL,REVIEW_LIST,REVIEW_DETAIL publicNode
+  class MY_ORDERS,MY_ORDER_DETAIL,MY_CART,MY_PAYMENT,MY_QNA,MY_REVIEW_LIST,MY_REVIEW_WRITE,EDIT_INFO,EDIT_PW,WITHDRAW userNode
+  class ADM_DASHBOARD,ADM_ORDER_LIST,ADM_ORDER_DETAIL,ADM_DELIVERY_LIST,ADM_DELIVERY_DETAIL,ADM_CATEGORY,ADM_PAYMENT_LIST,ADM_PAYMENT_DETAIL,ADM_PRODUCT_LIST,ADM_PRODUCT_ADD,ADM_NOTICE,ADM_QNA,ADM_REVIEW,ADM_MEMBER_LIST,ADM_MEMBER_DETAIL,ADM_ADMIN_MANAGE adminNode
