@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 public class Payment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Enumerated(EnumType.STRING)
     private PaymentProvider paymentProvider;
 
-    @Column(nullable = false, length = 30)
+    @Column(length = 30)
     private String method;
 
     @Enumerated(EnumType.STRING)
