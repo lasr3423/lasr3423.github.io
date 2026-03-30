@@ -1,12 +1,7 @@
 <template>
-    <div>
-        <h1>메인</h1>
-
-    </div>
+  <div>
+    <h1>메인</h1>
+  </div>
 </template>
 
-<script setup>
-
-</script>
-
-<style lang="scss" scoped></style>
+<script setup></script>
