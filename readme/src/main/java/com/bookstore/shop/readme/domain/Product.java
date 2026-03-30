@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 @Table(name = "product")
 public class Product extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_top_id", nullable = false)
     private CategoryTop categoryTop;    // 카테고리 대분류
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_sub_id", nullable = false)
     private CategorySub categorySub;    // 카테고리 소분류
 
@@ -33,22 +33,18 @@ public class Product extends BaseEntity {
     private String description; // 도서 설명
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     @Builder.Default
     private int price = 0;  // 가격(정가)
 
     @Column(nullable = false, precision = 5, scale = 2)
-    @ColumnDefault("0.00")
     @Builder.Default
     private BigDecimal discountRate = BigDecimal.ZERO;  // 할인율(%)
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     @Builder.Default
     private int salePrice = 0;  // 판매가
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     @Builder.Default
     private int stock = 0;  // 재고 수량
 
@@ -56,18 +52,15 @@ public class Product extends BaseEntity {
     private String thumbnail;   // 대표 이미지 경로
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     @Builder.Default
     private int viewCount = 0;  // 조회수
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     @Builder.Default
     private int salesCount = 0; // 판매량
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @ColumnDefault("'ACTIVATE'")
     @Builder.Default
     private ProductStatus productStatus = ProductStatus.ACTIVATE;   // 책 상태?
 

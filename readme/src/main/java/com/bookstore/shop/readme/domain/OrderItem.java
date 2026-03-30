@@ -1,10 +1,7 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 @Entity
@@ -12,14 +9,15 @@ import org.hibernate.annotations.ColumnDefault;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "order_item")
 public class OrderItem extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
@@ -30,19 +28,19 @@ public class OrderItem extends BaseEntity {
     private String productAuthor;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @Builder.Default
     private int salePrice = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("1")
+    @Builder.Default
     private int quantity = 1;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @Builder.Default
     private int itemTotal = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("false")
+    @Builder.Default
     private boolean isReviewed = false;
 
 

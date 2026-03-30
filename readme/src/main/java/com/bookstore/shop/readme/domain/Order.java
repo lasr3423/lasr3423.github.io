@@ -1,10 +1,7 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -15,10 +12,11 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "\"order\"")
 public class Order extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -30,15 +28,15 @@ public class Order extends BaseEntity {
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @Builder.Default
     private int totalPrice = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @Builder.Default
     private int discountAmount = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @Builder.Default
     private int finalPrice = 0;
 
     @Column(nullable = false, length = 50)
@@ -51,14 +49,14 @@ public class Order extends BaseEntity {
     private String deliveryAddress;
 
     @Column(length = 255)
-    @ColumnDefault("null")
+    @Builder.Default
     private String deliveryAddressDetail;
 
     @Column(nullable = false, length = 10)
     private String deliveryZipCode;
 
     @Column(length = 300)
-    @ColumnDefault("null")
+    @Builder.Default
     private String deliveryMemo;
 
     @CreatedDate
