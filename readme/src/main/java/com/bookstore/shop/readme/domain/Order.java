@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "Order")
+@Table(name = "\"order\"")
 public class Order extends BaseEntity {
 
     @ManyToOne
@@ -35,7 +35,7 @@ public class Order extends BaseEntity {
 
     @Column(nullable = false)
     @ColumnDefault("0")
-    private int discount_amount = 0;
+    private int discountAmount = 0;
 
     @Column(nullable = false)
     @ColumnDefault("0")
@@ -57,7 +57,7 @@ public class Order extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String deliveryZipCode;
 
-    @Column(nullable = false, length = 300)
+    @Column(length = 300)
     @ColumnDefault("null")
     private String deliveryMemo;
 

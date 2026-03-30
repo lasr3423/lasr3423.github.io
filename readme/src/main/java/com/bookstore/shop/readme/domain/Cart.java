@@ -14,7 +14,7 @@ import lombok.Setter;
 @Table(name = "cart")
 public class Cart extends BaseEntity {
 
-    @ManyToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 }
