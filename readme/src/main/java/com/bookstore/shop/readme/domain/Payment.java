@@ -38,7 +38,6 @@ public class Payment extends BaseEntity {
     @Column(length = 200)
     private String paymentKey;
 
-    @Builder.Default
     private Integer installmentMonths;
 
     @Column(name = "paid_at")
