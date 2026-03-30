@@ -1,14 +1,12 @@
 package com.bookstore.shop.readme.controller;
 
-import com.bookstore.shop.readme.dto.RefreshRequest;
-import com.bookstore.shop.readme.dto.SigninRequest;
-import com.bookstore.shop.readme.dto.SignupRequest;
-import com.bookstore.shop.readme.dto.TokenResponse;
+import com.bookstore.shop.readme.dto.*;
 import com.bookstore.shop.readme.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +37,12 @@ public class AuthApiController {
     // 갱신
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@RequestBody RefreshRequest req) {
-        return memberService.refresh(req.getRefreshToken());
+        return memberService.refresh(req.refreshToken());
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody @Valid ResetPasswordRequest req) {
+        return memberService.resetPassword(req);
     }
 
     private String extractToken(HttpServletRequest request) {

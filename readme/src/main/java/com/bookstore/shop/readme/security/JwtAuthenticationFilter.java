@@ -16,35 +16,33 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistStore blacklistStore;
     // 로그아웃된 AccessToken 블랙리스트 (운영에서는 Redis 사용 권장)
-    private final Set<String> blacklist = Collections.synchronizedSet(new HashSet<>());
 
     @Override
-    protected void doFilterInternal(HttpServletRequest  request,
+    protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain         filterChain)
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         String token = extractToken(request);
 
         if (token != null) {
-            if (blacklist.contains(token)) {
+            if (blacklistStore.contains(token)) {
                 sendError(response, "로그아웃된 토큰입니다.");
                 return;
             }
             try {
                 if (jwtUtil.validateToken(token)) {
-                    Long   memberId = jwtUtil.getMemberId(token);
-                    String role     = jwtUtil.getRole(token);
+                    Long memberId = jwtUtil.getMemberId(token);
+                    String role = jwtUtil.getRole(token);
 
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
@@ -76,6 +74,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write("{\"message\":\"" + message + "\"}");
     }
-
-    public void addToBlacklist(String token) { blacklist.add(token); }
 }
