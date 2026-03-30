@@ -10,12 +10,16 @@ const logout = async () => {
   alert("로그아웃 되었습니다.");
   router.push("/");
 }
-onMounted(async () => {
-  try {
-    if(store.)
-  }
-})
+
 </script>
 
 <template>
+  <div>
+    <h1>쇼핑몰</h1>
+    <nav>
+      <router-link to="/">Home</router-link>
+      <div v-if="!store.">
+      </div>
+    </nav>
+  </div>
 </template>
