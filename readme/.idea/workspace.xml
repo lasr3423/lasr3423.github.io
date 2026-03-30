@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c61f4d5e-f1ff-4723-822e-b91b279a6a39" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/../JWT_로그인_상세설명.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SpringSecurity_로그인_상세설명.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/ReadmeApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/config/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/config/WebMvcConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/controller/AuthApiController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/controller/HomeApiController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/controller/KakaoOAuthApiController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/controller/MyPageApiController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/controller/admin/AdminApiController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/AuthProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/BaseEntity.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/Cart.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/CartItem.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/CategoryStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/CategorySub.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/CategoryTop.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/Member.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/MemberRole.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/MemberStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/Order.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/OrderItem.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/OrderStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/Payment.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/PaymentProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/PaymentStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/ProductImage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/ProductStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/domain/RefreshToken.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/dto/KakaoUserInfo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/dto/RefreshRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/dto/SigninRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/dto/SignupRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/dto/TokenResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/repository/MemberRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/repository/RefreshTokenRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/CustomUserDetails.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/CustomUserDetailsService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/JwtAuthenticationFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/oauth2/CustomOAuth2UserService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/oauth2/GoogleOAuth2UserInfo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/oauth2/OAuth2AuthenticationFailureHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/oauth2/OAuth2AuthenticationSuccessHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/security/oauth2/OAuthUserInfo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/service/KakaoOAuthService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/service/MemberService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/service/OAuthMemberService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bookstore/shop/readme/util/JwtUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/bookstore/shop/readme/ReadmeApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/DB 설계서 양식.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/ReadmeMember_기능명세서.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/ReadmeMember_기능명세서총괄표.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/Readme_다이어그램.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/Readme_다이어그램_1.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/readme-flowchart.mermaid" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/결제시스템_추가_산출물/DB설계서_결제시스템추가.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/결제시스템_추가_산출물/기능명세서_결제시스템추가.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/결제시스템_추가_산출물/시스템아키텍처흐름도_결제시스템추가.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/결제시스템_추가_산출물/요구사항정의서_결제시스템추가.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/결제시스템_추가_산출물/유스케이스명세서_결제시스템추가.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/결제시스템_추가_산출물/클래스_시퀀스_다이어그램_결제시스템추가.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/기능 명세서 양식/기능 명세서 양식.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/기능 명세서 양식/기능 명세서 테이블 양식.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/시퀀스 클래스 다이어그램 양식.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/요구사항 정의서 양식.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/유스케이스 명세서 양식/Use Case 총괄표 양식.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/유스케이스 명세서 양식/유스케이스 명세서 양식.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/DB설계서 최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/WBS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/기능명세서 총괄표 최종.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/기능명세서 최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/시스템_아키텍처_흐름도.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/요구사항 정의서 최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/유스케이스 명세서 최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/유스케이스 총괄표 최종.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/일정표 및 마일스톤.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/코딩 컨벤션 가이드.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/클래스 &amp; 시퀀스 다이어그램 최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/클래스___시퀀스_다이어그램_최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/프로젝트 개요서.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/프로젝트 구조도 최종.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/회의록/1차 회의.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/회의록/2차 회의.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/최종/회의록/3차 회의.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/QnA 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/q/A  답변/수정.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/q/A 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/q/A 삭제.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/q/A 상세보기.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/q/A 작성.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/q/a상세보기.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/결제 내역 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/결제 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항  삭제.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항  수정.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항  추가.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항 관리/목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항 상세보기-1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항 상세보기.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/공지사항.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 결제 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 결졔 상세 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 배송 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 배송관리 상세.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 상품 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 상품 상세.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 상품 수정.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 상품 추가.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 주문 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 주문 상세.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 카테고리 등록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 카테고리 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 카테고리 상세.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 카테고리 수정.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 페이지 템플릿.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 회원 목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/관리자 회원 상세 정보.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/로그인 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰  수정.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰 관리/목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰 삭제.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰 상세보기-1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰 상세보기.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰 수정하기.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰 작성.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/리뷰.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/마이 페이지 템플릿.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/마이 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/메인 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/배송 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/비밀번호 변경.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/상품 상세 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/상품전체목록.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/유저 페이지 메인.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/장바구니.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/주문 배송 조회.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/주문 완료 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/회원 정보 변경.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/회원 탈퇴.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_deliverables/화면 설계도/회원가입 페이지.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/.vite/deps/_metadata.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/.vite/deps/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/.vscode/extensions.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/public/favicon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/public/icons.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/App.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/api/auth.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/api/axios.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/assets/fonts/Inter-Italic-VariableFont_opsz,wght.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/assets/fonts/Inter-VariableFont_opsz,wght.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/assets/hero.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/assets/vite.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/assets/vue.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/components/HelloWorld.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/main.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/router/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/store/auth.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/style.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/views/member/OAuthCallbackView.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/src/views/member/SigninView.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../readme_vue/vite.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../구글_OAuth_로그인_상세설명.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../로그인_통합_구현_매뉴얼.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../카카오_OAuth_로그인_상세설명.md" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 4
+}]]></component>
+  <component name="ProjectId" id="3BeDK5lc7qpDehpDJYNHfOXkFFQ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "None",
+    "kotlin-language-version-configured": "true"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="c61f4d5e-f1ff-4723-822e-b91b279a6a39" name="변경" comment="" />
+      <created>1774840574389</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774840574389</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

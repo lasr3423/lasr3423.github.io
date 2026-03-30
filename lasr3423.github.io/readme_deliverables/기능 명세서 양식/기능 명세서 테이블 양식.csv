@@ -1,0 +1,5 @@
+﻿기능 ID,기능명,설명,연관 UC,HTTP 메서드,요청 URL,입력값,출력값,처리 흐름
+F-001,회원가입 (User Register),"사용자가 이름, 아이디, 비밀번호, 이메일을 입력하여 회원으로 등록한다.",UC-001 (회원가입),POST,/member/register,"JSON 또는 FormData: { id, pw, name, email }",성공 메시지 / 실패 시 에러 메시지,1. 클라이언트에서 가입 폼 작성
+F-002,로그인 (User Login),사용자가 아이디와 비밀번호를 입력하여 인증을 진행하고 세션을 생성한다.,UC-002 (로그인),POST,/member/login,"{ id, pw }",로그인 성공 여부 및 리다이렉션 URL,1. 사용자가 로그인 페이지에서 입력
+F-003,상품 상세 조회,특정 상품의 상세 정보를 보여준다.,UC-003 (상품 상세보기),GET,/product/detail/{no},상품 번호 (PathVariable),상품 객체(JSON 또는 Model 데이터),1. 사용자가 목록에서 상품 클릭
+F-004,게시글 작성,사용자가 자유게시판에 게시글을 등록할 수 있다.,UC-005 (게시글 작성),POST,/board/insert,"{ title, content, author }",작성 완료 메시지 / 오류 메시지,1. 사용자 입력값 검증
