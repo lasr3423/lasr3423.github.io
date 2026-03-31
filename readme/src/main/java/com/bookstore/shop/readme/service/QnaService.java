@@ -18,7 +18,6 @@ public class QnaService {
     private final QnaRepository qnaRepository;
     private final MemberRepository memberRepository;
 
-    // [설계서 2-7 1단계] 문의 등록
     @Transactional
     public void writeQuestion(Long memberId, String title, String content, String category, Boolean isSecret) {
         Member member = memberRepository.findById(memberId).orElseThrow();
@@ -31,11 +30,11 @@ public class QnaService {
         qna.setIsSecret(isSecret != null && isSecret);
         qna.setDepth(0);
         qna.setQnaStatus(QnaStatus.WAITING);
+        qna.setViewCount(0);
 
         qnaRepository.save(qna);
     }
 
-    // [설계서 2-7 2단계] 관리자 답변 등록
     @Transactional
     public void answerQuestion(Long parentId, Long adminId, String content) {
         Qna parent = qnaRepository.findById(parentId).orElseThrow();
@@ -44,41 +43,46 @@ public class QnaService {
         Qna answer = new Qna();
         answer.setParentId(parentId);
         answer.setMember(admin);
+        answer.setDepth(1);
         answer.setTitle("RE: " + parent.getTitle());
         answer.setContent(content);
-        answer.setDepth(1);
+        answer.setCategory(parent.getCategory());
         answer.setQnaStatus(QnaStatus.COMPLETE);
-        answer.setAnsweredAt(LocalDateTime.now());
+        answer.setViewCount(0);
 
         qnaRepository.save(answer);
 
-        // 부모 질문 상태 업데이트
         parent.setQnaStatus(QnaStatus.COMPLETE);
         parent.setAnsweredAt(LocalDateTime.now());
     }
 
-    // [설계서 2-7 3단계] 상세 조회 (비밀글 제약조건 반영)
+    @Transactional
     public Qna getQnaDetail(Long id, Long memberId) {
-        Qna qna = qnaRepository.findById(id).orElseThrow();
+        Qna qna = qnaRepository.findByIdAndDeletedAtIsNull(id).orElseThrow();
 
-        // 제약조건: 비밀글일 경우 작성자 본인 혹은 관리자(임시 로직)만 열람 가능
         if (qna.getIsSecret() && !qna.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("비밀글은 작성자만 조회할 수 있습니다.");
+            throw new RuntimeException("비밀글 권한이 없습니다.");
         }
 
+        qna.setViewCount(qna.getViewCount() + 1);
         return qna;
     }
 
-    // [설계서 1-2] 문의 삭제 (Soft Delete)
+    /** * [추가된 부분] 컨트롤러의 에러를 해결하는 메서드입니다.
+     * 설계서 v1.3 Soft Delete 반영
+     */
     @Transactional
     public void deleteQuestion(Long id, Long memberId) {
-        Qna qna = qnaRepository.findById(id).orElseThrow();
+        // 1. 존재하는 질문인지 확인
+        Qna qna = qnaRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("존재하지 않거나 이미 삭제된 문의입니다."));
 
-        // 작성자 본인 확인
+        // 2. [설계서 제약조건] 작성자 본인인지 확인
         if (!qna.getMember().getId().equals(memberId)) {
-            throw new RuntimeException("삭제 권한이 없습니다.");
+            throw new RuntimeException("본인의 문의글만 삭제할 수 있습니다.");
         }
 
+        // 3. [설계서 v1.3 물리 삭제 대신 Soft Delete 처리]
         qna.setDeletedAt(LocalDateTime.now());
     }
 }

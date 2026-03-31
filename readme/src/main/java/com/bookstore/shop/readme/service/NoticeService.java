@@ -15,17 +15,17 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 기본적으로 읽기 전용 설정
+@Transactional(readOnly = true)
 public class NoticeService {
     private final NoticeRepository noticeRepository;
     private final MemberRepository memberRepository;
 
-    // [설계서 1-2] 공지사항 목록 조회 (삭제되지 않은 것 + 고정글 우선)
+    // [설계서 인덱스 준수] idx_notice_is_fixed_created_at 활용 조회
     public Page<Notice> getNoticeList(Pageable pageable) {
         return noticeRepository.findAllByDeletedAtIsNullOrderByIsFixedDescCreatedAtDesc(pageable);
     }
 
-    // [설계서 1-2] 공지사항 등록
+    // [설계서 테이블 정의서 준수] member_id(FK), view_count(0) 초기값 반영
     @Transactional
     public void createNotice(Long adminId, NoticeRequest request) {
         Member admin = memberRepository.findById(adminId)
@@ -33,25 +33,28 @@ public class NoticeService {
 
         Notice notice = new Notice();
         notice.setMember(admin);
-        notice.setTitle(request.getTitle());
-        notice.setContent(request.getContent());
+        notice.setTitle(request.getTitle());     // VARCHAR(255) NOT NULL
+        notice.setContent(request.getContent()); // TEXT NOT NULL
+
+        // NULL 체크 후 설계서 기본값 반영
         notice.setIsFixed(request.getIsFixed() != null && request.getIsFixed());
+        notice.setViewCount(0); // INTEGER NOT NULL 기본값 0
 
         noticeRepository.save(notice);
     }
 
-    // [설계서 1-2] 공지사항 상세 조회 (조회수 증가 + Soft Delete 체크)
+    // [설계서 제약조건 준수] view_count 증가 및 Soft Delete 체크
     @Transactional
     public Notice getNoticeDetail(Long id) {
-        // 제약조건: 삭제되지 않은 공지사항만 상세 조회 가능
         Notice notice = noticeRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RuntimeException("존재하지 않거나 삭제된 공지사항입니다."));
 
+        // 설계서 INTEGER view_count 증가
         notice.setViewCount(notice.getViewCount() + 1);
         return notice;
     }
 
-    // [설계서 1-2] 공지사항 수정
+    // [설계서 수정일 준수]
     @Transactional
     public void updateNotice(Long id, NoticeRequest request) {
         Notice notice = noticeRepository.findByIdAndDeletedAtIsNull(id)
@@ -59,17 +62,15 @@ public class NoticeService {
 
         notice.setTitle(request.getTitle());
         notice.setContent(request.getContent());
-        notice.setIsFixed(request.getIsFixed());
-        // BaseEntity에 의해 updatedAt은 자동 처리되거나 명시적으로 처리
+        notice.setIsFixed(request.getIsFixed() != null && request.getIsFixed());
     }
 
-    // [설계서 1-2] 공지사항 삭제 (Soft Delete)
+    // [설계서 Soft Delete 준수] deleted_at 컬럼 업데이트
     @Transactional
     public void deleteNotice(Long id) {
         Notice notice = noticeRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RuntimeException("이미 삭제되었거나 존재하지 않는 공지사항입니다."));
 
-        // 제약조건: 실제 DELETE가 아닌 deletedAt 업데이트
         notice.setDeletedAt(LocalDateTime.now());
     }
 }

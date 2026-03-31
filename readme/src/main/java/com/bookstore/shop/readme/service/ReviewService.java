@@ -20,22 +20,27 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReviewService {
+
     private final ReviewRepository reviewRepository;
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
 
     /**
-     * [설계서 2-6] 리뷰 작성 로직
-     * 제약조건: 중복 작성 방지, 이미지 최대 5장, Soft Delete 고려
+     * [설계서 14, 15번 테이블 준수] 리뷰 등록
      */
     @Transactional
     public void writeReview(Long memberId, Long productId, String content, Integer rating, List<String> imageUrls) {
         Member member = memberRepository.findById(memberId).orElseThrow();
         Product product = productRepository.findById(productId).orElseThrow();
 
-        // 중복 체크 (Soft Delete된 리뷰 제외)
+        // 설계서 v1.3 중복 체크 (Soft Delete 제외)
         if (reviewRepository.existsByMemberIdAndProductIdAndDeletedAtIsNull(memberId, productId)) {
-            throw new RuntimeException("이미 리뷰를 작성하셨습니다.");
+            throw new RuntimeException("이미 리뷰를 작성한 상품입니다.");
+        }
+
+        // 설계서 14번 CHECK (1~5) 제약 준수
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("평점은 1~5점 사이여야 합니다.");
         }
 
         Review review = new Review();
@@ -43,44 +48,63 @@ public class ReviewService {
         review.setProduct(product);
         review.setContent(content);
         review.setRating(rating);
+        review.setHits(0); // 설계서 기본값 0
 
-        // 이미지 첨부 (최대 5장 제한)
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            imageUrls.stream()
-                    .limit(5)
-                    .forEach(url -> {
-                        ReviewImage img = new ReviewImage();
-                        img.setReview(review);
-                        img.setImageUrl(url);
-                        review.getImages().add(img);
-                    });
+        if (imageUrls != null) {
+            imageUrls.stream().limit(5).forEach(url -> {
+                ReviewImage img = new ReviewImage();
+                img.setReview(review);
+                img.setImageUrl(url);
+                review.getImages().add(img);
+            });
         }
         reviewRepository.save(review);
     }
 
-    // [관리자] 전체 리뷰 목록 조회
+    /**
+     * [설계서 v1.3 제약준수] 리뷰 상세 조회 (Soft Delete 체크 + hits 증가)
+     */
+    @Transactional
+    public Review getReviewDetail(Long id) {
+        Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+
+        review.setHits(review.getHits() + 1); // 설계서 hits(조회수) 증가
+        return review;
+    }
+
+    /**
+     * [에러 해결] AdminReviewController에서 호출하는 관리자용 목록 조회 메서드
+     * 설계서 v1.3 인덱스 전략에 맞춰 페이징 반환
+     */
     public Page<Review> getAllReviewsForAdmin(Pageable pageable) {
         return reviewRepository.findAll(pageable);
     }
 
-    // [관리자/사용자] 특정 리뷰 상세 조회
-    public Review getReviewDetail(Long id) {
-        return reviewRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-    }
-
-    // [관리자] 리뷰 수정
+    /**
+     * [설계서 14번 테이블 명세 준수] 관리자 리뷰 수정
+     */
     @Transactional
     public void updateReviewByAdmin(Long id, String content, Integer rating) {
-        Review review = getReviewDetail(id);
+        Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+
+        if (rating != null && (rating < 1 || rating > 5)) {
+            throw new IllegalArgumentException("평점은 1에서 5 사이여야 합니다.");
+        }
+
         review.setContent(content);
         review.setRating(rating);
     }
 
-    // [관리자] 리뷰 삭제 (Soft Delete 제약조건)
+    /**
+     * [설계서 Soft Delete 준수] 관리자 리뷰 삭제
+     */
     @Transactional
     public void deleteReviewByAdmin(Long id) {
-        Review review = getReviewDetail(id);
+        Review review = reviewRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new RuntimeException("이미 삭제되었거나 존재하지 않는 리뷰입니다."));
+
         review.setDeletedAt(LocalDateTime.now());
     }
 }
