@@ -1,9 +1,0 @@
-# IntelliJ
-.idea/
-*.iml
-
-# IntelliJ workspace (이미 위에 포함되지만 명시 가능)
-workspace.xml
-
-# 기타
-/shelf/
