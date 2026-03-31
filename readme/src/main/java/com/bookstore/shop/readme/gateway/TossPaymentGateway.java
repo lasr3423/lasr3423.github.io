@@ -26,7 +26,7 @@ public class TossPaymentGateway implements PaymentGateway {
 
     // @Value : application.yaml의 toss.secret-key 값을 주입받음
     // ⚠️ application.yaml에 값이 없으면 애플리케이션 시작 시 오류 발생
-    @Value("${toss.secret-key}")
+    @Value("${payment.toss.secret-key}")
     private String secretKey;
 
     // RestTemplateConfig에서 @Bean으로 등록한 RestTemplate 주입

@@ -19,14 +19,14 @@ public class NaverPaymentGateway implements PaymentGateway {
 
     // 네이버페이 인증 헤더에 사용
     // 헤더 형식: X-Naver-Client-Id: {clientId} / X-Naver-Client-Secret: {clientSecret}
-    @Value("${naver.client-id}")
+    @Value("${payment.naver.client-id}")
     private String clientId;
 
-    @Value("${naver.client-secret}")
+    @Value("${payment.naver.client-secret}")
     private String clientSecret;
 
     // 결제 수단 식별자 (카카오의 cid에 해당)
-    @Value("${naver.chain-id}")
+    @Value("${payment.naver.chain-id}")
     private String chainId;
 
     private final RestTemplate restTemplate;

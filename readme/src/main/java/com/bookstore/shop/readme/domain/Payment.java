@@ -26,7 +26,6 @@ public class Payment extends BaseEntity {
     private String method;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.READY;
 
     @Column(nullable = false)
