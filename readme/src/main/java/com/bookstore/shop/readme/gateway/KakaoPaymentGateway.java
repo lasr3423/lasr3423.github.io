@@ -19,11 +19,11 @@ public class KakaoPaymentGateway implements PaymentGateway {
 
     // 카카오 Admin 키 — Authorization 헤더: "KakaoAK {adminKey}"
     // ⚠️ REST API 키가 아닌 Admin 키임에 주의
-    @Value("${kakao.admin-key}")
+    @Value("${payment.kakao.admin-key}")
     private String adminKey;
 
     // 결제 수단 식별자 — 테스트: TC0ONETIME, 실서비스: 카카오 심사 후 발급
-    @Value("${kakao.cid}")
+    @Value("${payment.kakao.cid}")
     private String cid;
 
     private final RestTemplate restTemplate;

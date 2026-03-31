@@ -3,6 +3,7 @@ package com.bookstore.shop.readme.controller;
 import com.bookstore.shop.readme.domain.Member;
 import com.bookstore.shop.readme.dto.request.*;
 import com.bookstore.shop.readme.dto.response.*;
+import com.bookstore.shop.readme.security.CustomUserDetails;
 import com.bookstore.shop.readme.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +28,9 @@ public class MyPaymentApiController {
             @RequestBody PaymentReadyRequest request,
             // @AuthenticationPrincipal : Spring Security가 JWT 토큰을 파싱해서
             //                            SecurityContext에 저장한 Member 객체를 자동 주입
-            @AuthenticationPrincipal Member member) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        PaymentReadyResponse response = paymentService.requestReady(request, member.getId());
+        PaymentReadyResponse response = paymentService.requestReady(request, userDetails.getMemberId());
         return ResponseEntity.ok(response); // HTTP 200 + JSON 응답
     }
 
@@ -39,9 +40,9 @@ public class MyPaymentApiController {
     @PostMapping("/confirm")
     public ResponseEntity<String> confirmPayment(
             @RequestBody PaymentConfirmRequest request,
-            @AuthenticationPrincipal Member member) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        paymentService.confirmToss(request, member.getId());
+        paymentService.confirmToss(request, userDetails.getMemberId());
         return ResponseEntity.ok("결제가 완료되었습니다.");
     }
 
@@ -51,9 +52,9 @@ public class MyPaymentApiController {
     @PostMapping("/approve")
     public ResponseEntity<String> approvePayment(
             @RequestBody PaymentApproveRequest request,
-            @AuthenticationPrincipal Member member) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        paymentService.approvePayment(request, member.getId());
+        paymentService.approvePayment(request, userDetails.getMemberId());
         return ResponseEntity.ok("결제가 완료되었습니다.");
     }
 
