@@ -7,12 +7,12 @@ import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Table(name = "\"order\"")
 public class Order extends BaseEntity {
 
@@ -37,7 +37,7 @@ public class Order extends BaseEntity {
 
     @Column(nullable = false)
     @Builder.Default
-    private int finalPrice = 0;
+    private Integer finalPrice = 0;
 
     @Column(nullable = false, length = 50)
     private String receiverName;
@@ -49,14 +49,12 @@ public class Order extends BaseEntity {
     private String deliveryAddress;
 
     @Column(length = 255)
-    @Builder.Default
     private String deliveryAddressDetail;
 
     @Column(nullable = false, length = 10)
     private String deliveryZipCode;
 
     @Column(length = 300)
-    @Builder.Default
     private String deliveryMemo;
 
     @CreatedDate

@@ -15,4 +15,5 @@ public class PaymentCancelRequest {
     private Integer cancelAmount; // 부분취소 금액 (null이면 전액 취소)
     private String cancelReason;  // 취소 사유 (필수) — 사용자 입력값
     private String provider;      // "TOSS" / "KAKAO" / "NAVER" — resolveGateway() 분기에 사용
+
 }
