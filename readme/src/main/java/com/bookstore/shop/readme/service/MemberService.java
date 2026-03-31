@@ -118,4 +118,7 @@ public class MemberService {
         return new TokenResponse(accessToken, refreshToken);
     }
 
+    //
+    public MyPageResponse getMyPage
+
 }
