@@ -223,7 +223,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | payment | id | BIGSERIAL | ✅ |  | ❌ | auto | 결제 고유 ID |
 | payment | order_id | BIGINT |  | order.id | ❌ |  | 주문 ID |
-| payment | **provider** | **VARCHAR(20)** |  |  | **✅** | **null** | **PG사 식별자 (TOSS / KAKAO / NAVER) — v1.2 신규** |
+| payment | **payment_provider** | **payment_provider** |  |  | **✅** | **null** | **PG사 식별자 (TOSS / KAKAO / NAVER) — v1.2 신규** |
 | payment | method | VARCHAR(30) |  |  | ❌ |  | 결제 수단 |
 | payment | payment_status | payment_status (ENUM) |  |  | ❌ | 'READY' | READY / PAID / CANCELLED / FAILED |
 | payment | amount | INT |  |  | ❌ | 0 | 결제 금액 |

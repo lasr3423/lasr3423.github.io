@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 // "/order/payment" prefix를 이 컨트롤러의 모든 엔드포인트에 적용
-@RequestMapping("/order/payment")
+@RequestMapping("/api/order/payment")
 public class MyPaymentApiController {
 
     private final PaymentService paymentService;
