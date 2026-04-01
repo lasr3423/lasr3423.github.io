@@ -51,5 +51,4 @@ public class Payment extends BaseEntity {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
-
 }
