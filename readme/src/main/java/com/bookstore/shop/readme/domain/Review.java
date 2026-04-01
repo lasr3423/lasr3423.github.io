@@ -8,33 +8,30 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity // [수정] 추가
-@Getter
-@Setter
-@NoArgsConstructor // [보완] JPA 필수
+@Entity
 @Table(name = "review")
-public class Review extends BaseEntity {
-
+@Getter @Setter
+@NoArgsConstructor
+public class Review extends BaseEntity { // BaseEntity 상속 [cite: 1287]
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false) // [보완] 설계서 필수값
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false) // [보완] 설계서 필수값
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(nullable = false) // [보완] 설계서 필수값
-    private Integer rating;
+    @Column(nullable = false)
+    private Integer rating; // 평점 1~5 [cite: 711]
 
-    @Column(columnDefinition = "TEXT", nullable = false) // [보완] 설계서 TEXT 타입
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    @Column(nullable = false) // [보완] 설계서 기본값 0
-    private Integer hits = 0;
+    @Column(nullable = false)
+    private Integer hits = 0; // 조회수 [cite: 713]
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    private LocalDateTime deletedAt; // Soft Delete용 [cite: 715]
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     private List<ReviewImage> images = new ArrayList<>();
 }

@@ -1,6 +1,6 @@
 package com.bookstore.shop.readme.controller;
 
-import com.bookstore.shop.readme.dto.ReviewRequest;
+import com.bookstore.shop.readme.dto.ReviewRequestDto;
 import com.bookstore.shop.readme.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +25,7 @@ public class AdminReviewController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> updateReview(@PathVariable Long id, @RequestBody ReviewRequest request) {
+    public ResponseEntity<String> updateReview(@PathVariable Long id, @RequestBody ReviewRequestDto request) {
         reviewService.updateReviewByAdmin(id, request.getContent(), request.getRating());
         return ResponseEntity.ok("관리자 권한으로 리뷰가 수정되었습니다.");
     }

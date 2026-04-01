@@ -5,17 +5,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity // [수정] 추가
-@Getter
-@Setter
-@NoArgsConstructor // [보완] JPA 필수
+@Entity
 @Table(name = "review_image")
-public class ReviewImage extends BaseEntity {
+@Getter @Setter
+@NoArgsConstructor
+public class ReviewImage {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id", nullable = false) // [보완] 필수값
+    @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
-    @Column(name = "image_url", length = 512, nullable = false) // [보완] 설계서 길이 512 및 필수값
-    private String imageUrl;
+    @Column(length = 512, nullable = false)
+    private String imageUrl; // 이미지 경로 [cite: 720]
+
+    public ReviewImage(Review review, String imageUrl) {
+        this.review = review;
+        this.imageUrl = imageUrl;
+    }
 }

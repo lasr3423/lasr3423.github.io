@@ -1,50 +1,81 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Entity // [수정] 필수 어노테이션 추가
-@Getter
-@Setter
-@NoArgsConstructor // [보완] JPA 필수 기본 생성자
+@Entity
 @Table(name = "qna")
-public class Qna extends BaseEntity {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class Qna {
 
-    @Column(name = "parent_id")
-    private Long parentId;
-
-    @Column(nullable = false) // [보완] 설계서 ❌ NULL 허용 반영
-    private Integer depth = 0;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false) // [보완] 설계서 FK 제약조건 반영
+    @JoinColumn(name = "parent_id")
+    private Qna parent;
+
+    @Column(nullable = false)
+    private int depth;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Column(length = 50, nullable = false)
+    @Column(nullable = false, length = 50)
     private String category;
 
-    @Column(length = 255, nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "view_count", nullable = false)
-    private Integer viewCount = 0;
+    @Column(nullable = false)
+    private int viewCount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "qna_status", nullable = false)
-    private QnaStatus qnaStatus = QnaStatus.WAITING;
+    @Column(nullable = false)
+    private QnaStatus qnaStatus;
 
-    @Column(name = "is_secret", nullable = false)
-    private Boolean isSecret = false;
+    @Column(nullable = false)
+    private boolean isSecret;
 
-    @Column(name = "answered_at")
     private LocalDateTime answeredAt;
 
-    @Column(name = "deleted_at")
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     private LocalDateTime deletedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        if (this.qnaStatus == null) this.qnaStatus = QnaStatus.WAITING;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void updateStatus(QnaStatus qnaStatus) {
+        this.qnaStatus = qnaStatus;
+        if (qnaStatus == QnaStatus.COMPLETE) {
+            this.answeredAt = LocalDateTime.now();
+        }
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
 }

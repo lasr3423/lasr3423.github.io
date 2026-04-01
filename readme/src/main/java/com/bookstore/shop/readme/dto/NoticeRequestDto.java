@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NoticeRequest {
+public class NoticeRequestDto {
     // 설계서 1-1 필드 반영
     private String title;
     private String content;
