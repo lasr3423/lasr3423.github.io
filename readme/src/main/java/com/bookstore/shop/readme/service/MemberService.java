@@ -60,6 +60,8 @@ public class MemberService {
         return ResponseEntity.ok(issueTokens(member));
     }
 
+    // 회원 정보 재설정
+
     // 비밀번호 재설정
     public ResponseEntity<String> resetPassword(ResetPasswordRequest req) {
         Member member = memberRepository.findByEmail(req.email())
@@ -72,6 +74,8 @@ public class MemberService {
         member.updatePassword(passwordEncoder.encode((req.newPassword())));
         return ResponseEntity.ok("비밀번호가 변경되었습니다.");
     }
+
+    // 비밀번호 초기화
 
     // 로그아웃
     public ResponseEntity<String> signout(String accessToken) {
@@ -118,7 +122,8 @@ public class MemberService {
         return new TokenResponse(accessToken, refreshToken);
     }
 
+    // 회원 탈퇴
+
     //
-    public MyPageResponse getMyPage
 
 }

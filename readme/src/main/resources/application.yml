@@ -1,0 +1,74 @@
+server:
+  port: 8202
+
+spring:
+  application:
+    name: readme
+
+  datasource:
+    url: jdbc:postgresql://localhost:5420/readme
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - email
+              - profile
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:uploads}
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 1800000      # 30분 (ms)
+  refresh-token-expiration: 604800000   # 7일 (ms)
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  client-secret: ${KAKAO_CLIENT_SECRET}
+  redirect-uri: http://localhost:8202/api/oauth/kakao/callback
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8202}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  oauth2:
+    redirect-uri: ${FRONT_OAUTH_REDIRECT_URI:http://localhost:5173/oauth/callback}
+payment:
+  callback:
+    success-path: /api/payments/success
+    fail-path: /api/payments/fail
+  toss:
+    enabled: true
+    client-key: ${TOSS_CLIENT_KEY:}
+    secret-key: ${TOSS_SECRET_KEY:}
+    success-url: ${APP_BASE_URL:http://localhost:8202}/payments/toss/success
+    fail-url: ${APP_BASE_URL:http://localhost:8202}/payments/toss/fail
+  kakao:
+    enabled: true
+    cid: ${KAKAO_CID:}
+    admin-key: ${KAKAO_ADMIN_KEY:}
+    approval-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/approve
+    cancel-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/cancel
+    fail-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/fail
+  naver:
+    enabled: true
+    client-id: ${NAVER_PAY_CLIENT_ID:}
+    client-secret: ${NAVER_PAY_CLIENT_SECRET:}
+    chain-id: ${NAVER_PAY_CHAIN_ID:}
+    merchant-id: ${NAVER_PAY_MERCHANT_ID:}
+    return-url: ${APP_BASE_URL:http://localhost:8202}/payments/naver/return
+logging:
+  level:
+    root: info
+    com.bookstore.shop.readme: debug

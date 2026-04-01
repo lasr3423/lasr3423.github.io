@@ -18,25 +18,25 @@ public class MyPageApiController {
 //    private final ReviewService reviewService;
 
     // 마이페이지
-    @PostMapping("/mypage")
-    public ResponseEntity<String> getMyPage(Member member) {
-    }
-
-    // 회원 정보 수정
-    @PutMapping("/mypage/{id}")
-    public ResponseEntity<Member> updateInfo(UpdateRequest, Member) {
-
-    }
-
-    // 비밀번호 변경
-    @PutMapping("/mypage/{id}")
-    public ResponseEntity<Member> updatePassword(UpdateRequest, Member) {
-
-    }
-
-    // 회원 탈퇴
-    @PatchMapping("/mypage/{id}")
-    public ResponseEntity<String> withdraw(Long) {
-
-    }
+//    @PostMapping("/mypage")
+//    public ResponseEntity<String> getMyPage(Member member) {
+//    }
+//
+//    // 회원 정보 수정
+//    @PutMapping("/mypage/{id}")
+//    public ResponseEntity<Member> updateInfo(UpdateRequest, Member) {
+//
+//    }
+//
+//    // 비밀번호 변경
+//    @PutMapping("/mypage/{id}")
+//    public ResponseEntity<Member> updatePassword(PasswordRequest, Member) {
+//
+//    }
+//
+//    // 회원 탈퇴
+//    @PatchMapping("/mypage/{id}")
+//    public ResponseEntity<String> withdraw(Long) {
+//
+//    }
 }

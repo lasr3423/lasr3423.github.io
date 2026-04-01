@@ -8,8 +8,8 @@ public record SignupRequest(
         @NotBlank @Email String email,
         @NotBlank @Size(min = 8) String password,
         @NotBlank String name,
-        String phone,
-        String address,
+        @NotBlank String phone,
+        @NotBlank String address,
         Boolean marketingAgreed
 ) {
 }
