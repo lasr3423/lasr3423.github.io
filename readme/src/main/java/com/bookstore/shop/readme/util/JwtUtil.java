@@ -16,16 +16,16 @@ import java.util.Date;
 public class JwtUtil {
 
     private final SecretKey secretKey;
-    private final long      accessTokenExpiration;
-    private final long      refreshTokenExpiration;
+    private final long accessTokenExpiration;
+    private final long refreshTokenExpiration;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.access-token-expiration}") long accessExp,
             @Value("${jwt.refresh-token-expiration}") long refreshExp
     ) {
-        this.secretKey              = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenExpiration  = accessExp;
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.accessTokenExpiration = accessExp;
         this.refreshTokenExpiration = refreshExp;
     }
 
@@ -59,8 +59,13 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public Long   getMemberId(String token) { return Long.parseLong(parseClaims(token).getSubject()); }
-    public String getRole(String token)     { return parseClaims(token).get("role", String.class); }
+    public Long getMemberId(String token) {
+        return Long.parseLong(parseClaims(token).getSubject());
+    }
+
+    public String getRole(String token) {
+        return parseClaims(token).get("role", String.class);
+    }
 
     /* 토큰 유효성 검증 */
     public boolean validateToken(String token) {
@@ -74,5 +79,7 @@ public class JwtUtil {
         }
     }
 
-    public long getRefreshTokenExpiration() { return refreshTokenExpiration; }
+    public long getRefreshTokenExpiration() {
+        return refreshTokenExpiration;
+    }
 }

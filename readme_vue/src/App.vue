@@ -17,9 +17,16 @@ const logout = async () => {
   <div>
     <h1>쇼핑몰</h1>
     <nav>
-      <router-link to="/">Home</router-link>
-      <div v-if="!store.">
-      </div>
+      <router-link to="/">Home</router-link><br>
+      <router-link to="/signin">로그인</router-link><br>
+      <router-link to="/signup">회원가입</router-link><br>
     </nav>
+    <div>
+      <router-link to="/payment">Toss</router-link>
+    </div>
   </div>
+  <router-view />
+  <footer>
+  푸터
+  </footer>
 </template>

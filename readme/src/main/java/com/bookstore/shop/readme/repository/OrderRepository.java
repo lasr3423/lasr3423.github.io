@@ -1,7 +1,20 @@
 package com.bookstore.shop.readme.repository;
 
 import com.bookstore.shop.readme.domain.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderRepository extends JpaRepository<Long, Order> {
+import java.util.List;
+import java.util.Optional;
+
+public interface OrderRepository extends JpaRepository<Order, Long> {
+    // 회원 주문 내역 최신순 조회
+    List<Order> findByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    // 주문번호로 특정 주문 조회
+    Optional<Order> findByNumber(String number);
+
+    Optional<Order> findByIdAndMemberId(Long id, Long memberId);
+    Page<Order> findByMemberId(Long memberId, Pageable pageable);
 }

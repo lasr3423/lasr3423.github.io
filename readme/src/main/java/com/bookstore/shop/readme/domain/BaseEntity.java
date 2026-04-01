@@ -8,12 +8,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-// 수정된 전체 코드
+@EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
 @Getter
-@EntityListeners(AuditingEntityListener.class)  // ← 추가 필수
 public abstract class BaseEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,6 +21,6 @@ public abstract class BaseEntity {
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Column(name = "updated_at")  // updatable = false 제거
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }

@@ -1,15 +1,13 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Entity
 @Getter
 @Setter
@@ -18,7 +16,7 @@ import java.time.LocalDateTime;
 @Table(name = "\"order\"")
 public class Order extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -26,20 +24,16 @@ public class Order extends BaseEntity {
     private String number;
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("'PENDING'")
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     private int totalPrice = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
     private int discountAmount = 0;
 
     @Column(nullable = false)
-    @ColumnDefault("0")
-    private int finalPrice = 0;
+    private Integer finalPrice = 0;
 
     @Column(nullable = false, length = 50)
     private String receiverName;
@@ -51,14 +45,12 @@ public class Order extends BaseEntity {
     private String deliveryAddress;
 
     @Column(length = 255)
-    @ColumnDefault("null")
     private String deliveryAddressDetail;
 
     @Column(nullable = false, length = 10)
     private String deliveryZipCode;
 
     @Column(length = 300)
-    @ColumnDefault("null")
     private String deliveryMemo;
 
     @CreatedDate

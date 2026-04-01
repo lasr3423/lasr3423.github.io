@@ -9,10 +9,11 @@ import org.hibernate.annotations.ColumnDefault;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "product_image")
 public class ProductImage extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
@@ -20,10 +21,10 @@ public class ProductImage extends BaseEntity {
     private String imageUrl;
 
     @Column(nullable = false)
-    @ColumnDefault("'SUB'")
+    @Builder.Default
     private String type = "SUB";
 
     @Column(nullable = false)
-    @ColumnDefault("0")
+    @Builder.Default
     private int sortOrder = 0;
 }

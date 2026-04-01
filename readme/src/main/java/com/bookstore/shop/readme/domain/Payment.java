@@ -1,10 +1,7 @@
 package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
@@ -14,21 +11,21 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "payment")
 public class Payment extends BaseEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Enumerated(EnumType.STRING)
     private PaymentProvider paymentProvider;
 
-    @Column(nullable = false, length = 30)
+    @Column(length = 30)
     private String method;
 
     @Enumerated(EnumType.STRING)
-    @ColumnDefault("'READY'")
     private PaymentStatus paymentStatus = PaymentStatus.READY;
 
     @Column(nullable = false)
@@ -53,6 +50,5 @@ public class Payment extends BaseEntity {
 
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
-
 
 }
