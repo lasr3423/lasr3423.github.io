@@ -1,5 +1,6 @@
 package com.bookstore.shop.readme.controller.admin;
 
+import org.springframework.data.domain.Pageable;
 import com.bookstore.shop.readme.domain.QnaStatus;
 import com.bookstore.shop.readme.dto.QnaRequestDto;
 import com.bookstore.shop.readme.dto.QnaResponseDto;
@@ -13,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/admin/qna")
