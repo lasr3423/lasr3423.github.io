@@ -16,6 +16,7 @@ public class CartItemResponse {
     private final boolean isChecked;
     private final int itemTotal;
 
+    // entity -> dto 변환 생성자
     public CartItemResponse(CartItem item) {
         this.cartItemId = item.getId();
         this.productId = item.getProduct().getId();

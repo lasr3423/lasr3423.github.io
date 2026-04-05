@@ -6,5 +6,5 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class CartUpdateRequest {
-    private int quantity;
+    private int quantity;   // 변경할 수량 (0 이하일 땐 삭제 처리 하기)
 }

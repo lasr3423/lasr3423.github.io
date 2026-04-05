@@ -17,7 +17,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    // 상품 전체 조회
+    // 상품 전체 목록 조회
     @Transactional(readOnly = true)
     public Page<ProductListResponse> getProductList(Pageable pageable) {
         return productRepository
@@ -29,6 +29,7 @@ public class ProductService {
     // 상품 상세 조회
     @Transactional(readOnly = true)
     public ProductDetailResponse getProductDetail(Long productId) {
+        // ACTIVATE 상태인 상품만 허용 - 삭제된 상품은 직접 URL 접근 방지!!
         Product product = productRepository
                 .findByIdAndProductStatus(productId, ProductStatus.ACTIVATE)
                 .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
