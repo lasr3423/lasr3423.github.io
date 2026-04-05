@@ -14,7 +14,7 @@ const logout = async () => {
 </script>
 
 <template>
-  <div>
+  <!-- <div>
     <h1>쇼핑몰</h1>
     <nav>
       <router-link to="/">Home</router-link><br>
@@ -24,9 +24,9 @@ const logout = async () => {
     <div>
       <router-link to="/payment">Toss</router-link>
     </div>
-  </div>
-  <router-view />
-  <footer>
+  </div> -->
+    <router-view />
+  <!-- <footer>
   푸터
-  </footer>
+  </footer> -->
 </template>

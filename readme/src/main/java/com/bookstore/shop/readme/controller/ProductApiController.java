@@ -32,7 +32,7 @@ public class ProductApiController {
         return ResponseEntity.ok(result);   // HTTP 200 + JSON
     }
 
-    @GetMapping("/datail/{productId}")
+    @GetMapping("/detail/{productId}")
     public ResponseEntity<ProductDetailResponse> getProductDetail(
             @PathVariable Long productId) {
 
