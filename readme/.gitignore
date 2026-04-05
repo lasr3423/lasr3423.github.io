@@ -27,9 +27,9 @@ ehthumbs.db
 Thumbs.db
 
 ### 환경 설정 (민감 정보 포함) ###
-#src/main/resources/application.yml
-#src/main/resources/application-*.yml
-#!src/main/resources/application.yml.example
+# src/main/resources/application.yml
+# src/main/resources/application-*.yml
+# !src/main/resources/application.yml.example
 
 ### STS ###
 .apt_generated

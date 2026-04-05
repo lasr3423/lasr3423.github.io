@@ -4,24 +4,26 @@
 
     <!-- 일반 로그인 -->
     <form @submit.prevent="handleSignin">
-      <input v-model="email"    type="email"    placeholder="이메일" required />
-      <input v-model="password" type="password" placeholder="비밀번호" required />
-      <button type="submit" :disabled="loading">로그인</button>
+      <input v-model="email" type="email" placeholder="이메일" required /><br>
+      <input v-model="password" type="password" placeholder="비밀번호" required /><br>
+      <button type="submit" :disabled="loading">로그인</button><br>
     </form>
 
-    <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
+    <p v-if="errorMsg" class="error">{{ errorMsg }}</p><br>
 
-    <div class="divider">또는</div>
+    <div class="divider">또는</div><br>
 
     <!-- 구글 로그인: Spring Security OAuth2 자동 처리 URL -->
     <a href="http://localhost:8202/oauth2/authorization/google" class="btn-social btn-google">
       구글로 로그인
     </a>
-
     <!-- 카카오 로그인: 서버에서 URL 받아서 이동 -->
     <button @click="handleKakaoLogin" class="btn-social btn-kakao">
       카카오로 로그인
     </button>
+    <br>
+    <p>아직 회원이 아니신가요? <router-link to="/signup">회원가입</router-link></p><br>
+
   </div>
 </template>
 
@@ -31,16 +33,16 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { authApi } from '@/api/auth';
 
-const router    = useRouter()
+const router = useRouter()
 const authStore = useAuthStore()
-const email     = ref('')
-const password  = ref('')
-const loading   = ref(false)
-const errorMsg  = ref('')
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const errorMsg = ref('')
 
 async function handleSignin() {
   try {
-    loading.value  = true
+    loading.value = true
     errorMsg.value = ''
     await authStore.signin(email.value, password.value)
     router.push('/')
