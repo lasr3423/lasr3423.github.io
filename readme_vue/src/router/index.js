@@ -1,72 +1,114 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 
+// 아직 구현 전인 페이지에 임시로 사용하는 컴포넌트
+const Todo = { template: '<div style="padding:20px;color:#888;"><h3>🚧 준비 중인 페이지입니다.</h3></div>' };
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: () => import('@/views/Home.vue') },
-    { path: '/signin', component: () => import('@/views/member/SigninView.vue') },
-    { path: '/signup', component: () => import('@/views/member/SignupView.vue') },
+    // ── 공통 ──────────────────────────────────────────────────────
+    { path: '/',               component: () => import('@/views/Home.vue') },
+    { path: '/signin',         component: () => import('@/views/member/SigninView.vue') },
+    { path: '/signup',         component: () => import('@/views/member/SignupView.vue') },
     { path: '/oauth/callback', component: () => import('@/views/member/OAuthCallbackView.vue') },
+
+    // ── 결제 ──────────────────────────────────────────────────────
+    { path: '/payment',         component: () => import('@/views/payment/PaymentView.vue') },
+    { path: '/payment/success', component: () => import('@/views/payment/PaymentSuccessView.vue') },
+    { path: '/payment/fail',    component: () => import('@/views/payment/PaymentFailView.vue') },
+
+    // ── 마이페이지 (일반 유저) ─────────────────────────────────────
     {
-       path: '/mypage', component: () => import('@/views/member/MyPageView.vue'),
-      meta: { requiresAuth: true }
+      path: '/mypage',
+      component: () => import('@/views/member/MyPageView.vue'),
+      meta: { requiresAuth: true },
     },
     {
-      path: '/admin', component: () => import('@/views/admin/DashboardView.vue'),
-      meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] }
-    },
-    // 결제 관련 라우터 추가, 각 URL은 PG사 콘솔에 등록한 successUrl / failUrl / approval_url / returnUrl과 일치해야 함
-    { path: '/payment', component: () => import('@/views/payment/PaymentView.vue')},
-    {
-      path: '/payment/success',
-      component: () => import('@/views/payment/PaymentSuccessView.vue'),  // 토스 successUrl 처리
-    },
-    {
-      path: '/payment/fail',
-      component: () => import('@/views/payment/PaymentFailView.vue'),     // 토스 failUrl 처리
-    },
-    // {
-    //   path: '/payment/kakao/success',
-    //   component: () => import('@/views/payment/KakaoSuccessView.vue'),   // 카카오 approval_url 처리
-    // },
-    // {
-    //   path: '/payment/naver/success',
-    //   component: () => import('@/views/payment/NaverSuccessView.vue'),   // 네이버 returnUrl 처리
-    // }
-    {
-      // 마이페이지 주문 목록
-      // PaymentSuccessView에서 결제 완료 후 이 경로로 이동
       path: '/mypage/order',
       component: () => import('@/views/member/MyOrderView.vue'),
-      meta: { requiresAuth: true }  // 로그인 필수
+      meta: { requiresAuth: true },
     },
     {
-      // 주문 상세 — 특정 orderId의 상세 정보
       path: '/mypage/order/:orderId',
       component: () => import('@/views/member/MyOrderDetailView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
+    { path: '/mypage/payment',  component: Todo, meta: { requiresAuth: true } },
+    { path: '/mypage/edit',     component: Todo, meta: { requiresAuth: true } },
+    { path: '/mypage/password', component: Todo, meta: { requiresAuth: true } },
+    { path: '/mypage/withdraw', component: Todo, meta: { requiresAuth: true } },
+
+    // ── 장바구니 / 주문 ────────────────────────────────────────────
+    { path: '/cart',  component: Todo, meta: { requiresAuth: true } },
     {
-      // 장바구니 → 주문서 작성
-      // 체크아웃 버튼 클릭 시 이동, OrderStore.setOrder() 호출 후 PaymentView로 이동
       path: '/order',
       component: () => import('@/views/order/OrderView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true },
     },
-  ]
+
+    // ── 게시글 (비회원 접근 가능) ──────────────────────────────────
+    { path: '/notice', component: Todo },
+    { path: '/qna',    component: Todo },
+    { path: '/review', component: Todo },
+
+    // ── 관리자 ────────────────────────────────────────────────────
+    {
+      path: '/admin',
+      component: () => import('@/views/admin/DashboardView.vue'),
+      meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] },
+    },
+    // 주문 관리
+    { path: '/admin/order/list',      component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/order/approval',  component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/delivery/list',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/category/list',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/payment/list',    component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    // 상품 관리
+    { path: '/admin/product/list',    component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/product/stock',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/product/insert',  component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    // 게시글 관리
+    { path: '/admin/notice/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/qna/list',        component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/review/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    // 회원 관리
+    { path: '/admin/member/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/member/role',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+
+    // ── 404 ───────────────────────────────────────────────────────
+    {
+      path: '/:pathMatch(.*)*',
+      component: { template: '<div style="padding:20px;"><h3>404 — 페이지를 찾을 수 없습니다.</h3><router-link to="/">홈으로</router-link></div>' },
+    },
+  ],
 });
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
+
+  // 앱 첫 진입 시 RefreshToken으로 로그인 상태 복구
   if (!authStore.accessToken) {
-    await authStore.initialize();   // RefreshToken으로 상태 복구 시도
+    await authStore.initialize();
   }
+
+  // 이미 로그인한 상태에서 로그인/회원가입 페이지 접근 시 홈으로
+  const GUEST_ONLY = ['/signin', '/signup'];
+  if (GUEST_ONLY.includes(to.path) && authStore.isLoggedIn) {
+    return next({ path: '/' });
+  }
+
+  // 인증 필요한 페이지인데 비로그인이면 로그인 페이지로
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
-    return next({ path: '/signin', query: { redirect: to.fullPath } })
-  };
+    return next({ path: '/signin', query: { redirect: to.fullPath } });
+  }
+
+  // 역할 제한이 있는 페이지인데 권한 없으면 홈으로
+  if (to.meta.roles && !to.meta.roles.includes(authStore.userRole)) {
+    return next({ path: '/' });
+  }
 
   next();
-})
+});
 
 export default router;
