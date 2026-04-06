@@ -16,6 +16,11 @@ public class ProductListResponse {
     private final BigDecimal discountRate;
     private final String thumbnail;
     private final int salesCount;
+    private final Long categoryTopId;
+    private final String categoryTopName;
+    private final Long categorySubId;
+    private final String categorySubName;
+
 
     public ProductListResponse(Product product) {
         this.id = product.getId();
@@ -26,5 +31,9 @@ public class ProductListResponse {
         this.discountRate = product.getDiscountRate();
         this.thumbnail = product.getThumbnail();
         this.salesCount = product.getSalesCount();
+        this.categoryTopId = product.getCategoryTop().getId();
+        this.categoryTopName = product.getCategoryTop().getName();
+        this.categorySubId = product.getCategorySub().getId();
+        this.categorySubName = product.getCategorySub().getName();
     }
 }

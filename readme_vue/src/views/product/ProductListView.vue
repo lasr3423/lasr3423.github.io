@@ -8,10 +8,10 @@
       <!-- 대분류 탭 (전체 / 국내 / 해외) -->
       <div class="filter-tabs">
         <button
-          v-for="tab in categoryTabs"
-          :key="tab.value"
-          :class="['tab-btn', { active: selectedCategory === tab.value }]"
-          @click="selectCategory(tab.value)"
+        v-for="tab in categoryTabs"
+        :key="tab.topId"
+        :class="['tab-btn', { active: selectedTopId === tab.topId }]"
+        @click="selectCategory(tab.topId)"
         >
           {{ tab.label }}
         </button>
@@ -37,10 +37,10 @@
     <!-- 소분류 탭 -->
     <div class="sub-filter-tabs">
       <button
-        v-for="sub in subCategoryTabs"
-        :key="sub.value"
-        :class="['sub-tab-btn', { active: selectedSubCategory === sub.value }]"
-        @click="selectSubCategory(sub.value)"
+      v-for="sub in subCategoryTabs"
+      :key="sub.subId"
+      :class="['sub-tab-btn', { active: selectedSubId === sub.subId }]"
+      @click="selectSubCategory(sub.subId)"
       >
         {{ sub.label }}
       </button>
@@ -133,31 +133,56 @@ const cartStore    = useCartStore()
 const authStore    = useAuthStore()
 
 // ── 필터 상태 ──────────────────────────────────────────────────
-const selectedCategory    = ref('ALL')
-const selectedSubCategory = ref('ALL')
+// 숫자 ID 기반으로 관리 (null = 전체)
+const selectedTopId = ref(null)
+const selectedSubId = ref(null)
 const searchKeyword = ref('')
 const searchType    = ref('title')
 
-// 대분류 탭
+// 대분류 탭 — topId가 null이면 전체
 const categoryTabs = [
-  { label: '전체', value: 'ALL' },
-  { label: '국내', value: 'DOMESTIC' },
-  { label: '해외', value: 'FOREIGN' },
+  { label: '전체',   topId: null },
+  { label: '국내도서', topId: 1 },
+  { label: '해외도서', topId: 2 },
+  { label: '일본도서', topId: 3 },
 ]
 
-// 소분류 탭
-const subCategoryTabs = [
-  { label: '전체',   value: 'ALL' },
-  { label: '소설',   value: 'NOVEL' },
-  { label: '자기계발', value: 'SELF_HELP' },
-  { label: '컴퓨터', value: 'COMPUTER' },
-  { label: '취미',   value: 'HOBBY' },
-  { label: '여행',   value: 'TRAVEL' },
-  { label: '외국어', value: 'FOREIGN_LANG' },
-]
+// 소분류 탭 — 선택된 대분류에 따라 동적으로 표시
+// dummy_data.sql 카테고리 ID 기준
+const subCategoryMap = {
+  1: [
+    { label: '전체',   subId: null },
+    { label: '소설',   subId: 1 },
+    { label: '자기계발', subId: 2 },
+    { label: '경제/경영', subId: 3 },
+    { label: '과학/기술', subId: 4 },
+    { label: '역사/문화', subId: 5 },
+  ],
+  2: [
+    { label: '전체',    subId: null },
+    { label: 'Fiction', subId: 6 },
+    { label: 'Self-Help', subId: 7 },
+    { label: 'Business', subId: 8 },
+    { label: 'Science', subId: 9 },
+    { label: 'History', subId: 10 },
+  ],
+  3: [
+    { label: '전체',    subId: null },
+    { label: 'Fiction', subId: 11 },
+    { label: 'Self-Help', subId: 12 },
+    { label: 'Business', subId: 13 },
+    { label: 'Science', subId: 14 },
+    { label: 'History', subId: 15 },
+  ],
+}
+
+// 현재 대분류에 맞는 소분류 탭 목록 (대분류 미선택 시 빈 배열)
+const subCategoryTabs = computed(() => {
+  if (selectedTopId.value === null) return []
+  return subCategoryMap[selectedTopId.value] ?? []
+})
 
 // ── 페이지네이션 버튼 범위 ──────────────────────────────────────
-// 현재 페이지 앞뒤 2개씩만 표시
 const pageRange = computed(() => {
   const current = productStore.currentPage
   const total   = productStore.totalPages
@@ -170,23 +195,25 @@ const pageRange = computed(() => {
 
 // ── 이벤트 핸들러 ──────────────────────────────────────────────
 
-function selectCategory(value) {
-  selectedCategory.value = value
-  productStore.fetchProducts(0)
+function selectCategory(topId) {
+  selectedTopId.value = topId
+  selectedSubId.value = null  // 대분류 바꾸면 소분류 초기화
+  productStore.fetchProducts(0, topId, null)
 }
 
-function selectSubCategory(value) {
-  selectedSubCategory.value = value
-  productStore.fetchProducts(0)
+function selectSubCategory(subId) {
+  selectedSubId.value = subId
+  productStore.fetchProducts(0, selectedTopId.value, subId)
 }
 
 function handleSearch() {
-  productStore.fetchProducts(0)
+  productStore.fetchProducts(0, selectedTopId.value, selectedSubId.value)
 }
 
 function changePage(page) {
   if (page < 0 || page >= productStore.totalPages) return
-  productStore.fetchProducts(page)
+  // 페이지 이동 시 현재 필터 유지
+  productStore.fetchProducts(page, selectedTopId.value, selectedSubId.value)
   window.scrollTo(0, 0)
 }
 
@@ -208,25 +235,42 @@ async function addToCart(productId) {
   }
 }
 
+// ── 사이드바에서 ?topId=1&subId=2 로 들어올 때 처리 ─────────────
+watch(
+  () => [route.query.topId, route.query.subId],
+  ([topId, subId]) => {
+    const parsedTop = topId ? Number(topId) : null
+    const parsedSub = subId ? Number(subId) : null
+    selectedTopId.value = parsedTop
+    selectedSubId.value = parsedSub
+    productStore.fetchProducts(0, parsedTop, parsedSub)
+  }
+)
+
 // ── 헤더 검색창에서 keyword 넘어올 때 처리 ───────────────────────
-// AppHeader에서 router.push({ path:'/product', query:{ keyword:'...' } }) 하면 여기서 감지
 watch(
   () => route.query.keyword,
   (keyword) => {
     if (keyword) {
       searchKeyword.value = keyword
-      productStore.fetchProducts(0)
+      productStore.fetchProducts(0, selectedTopId.value, selectedSubId.value)
     }
   }
 )
 
 // ── 마운트 시 목록 로드 ───────────────────────────────────────
 onMounted(() => {
-  // 헤더에서 검색어 가지고 들어왔으면 그 키워드로, 아니면 그냥 전체 로드
+  // 사이드바에서 쿼리 가지고 들어왔을 때 처리
+  const topId = route.query.topId ? Number(route.query.topId) : null
+  const subId = route.query.subId ? Number(route.query.subId) : null
+  selectedTopId.value = topId
+  selectedSubId.value = subId
+
   if (route.query.keyword) {
     searchKeyword.value = route.query.keyword
   }
-  productStore.fetchProducts(0)
+
+  productStore.fetchProducts(0, topId, subId)
 })
 </script>
 
