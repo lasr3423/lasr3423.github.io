@@ -9,13 +9,13 @@ const router = createRouter({
   routes: [
     // ── 공통 ──────────────────────────────────────────────────────
     { path: '/',               component: () => import('@/views/Home.vue') },
-    { path: '/signin',         component: () => import('@/views/member/SigninView.vue') },
-    { path: '/signup',         component: () => import('@/views/member/SignupView.vue') },
-    { path: '/oauth/callback', component: () => import('@/views/member/OAuthCallbackView.vue') },
+    { path: '/signin',         component: () => import('@/views/member/SigninView.vue'),          meta: { layout: 'auth' } },
+    { path: '/signup',         component: () => import('@/views/member/SignupView.vue'),           meta: { layout: 'auth' } },
+    { path: '/oauth/callback', component: () => import('@/views/member/OAuthCallbackView.vue'),   meta: { layout: 'auth' } },
 
     // ── 결제 ──────────────────────────────────────────────────────
-    { path: '/payment',         component: () => import('@/views/payment/PaymentView.vue') },
-    { path: '/payment/success', component: () => import('@/views/payment/PaymentSuccessView.vue') },
+    { path: '/payment',         component: () => import('@/views/payment/PaymentView.vue'),        meta: { requiresAuth: true } },
+    { path: '/payment/success', component: () => import('@/views/payment/PaymentSuccessView.vue'), meta: { requiresAuth: true } },
     { path: '/payment/fail',    component: () => import('@/views/payment/PaymentFailView.vue') },
 
     // ── 마이페이지 (일반 유저) ─────────────────────────────────────
@@ -56,25 +56,25 @@ const router = createRouter({
     {
       path: '/admin',
       component: () => import('@/views/admin/DashboardView.vue'),
-      meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] },
+      meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' },
     },
     // 주문 관리
-    { path: '/admin/order/list',      component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/order/approval',  component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/delivery/list',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/category/list',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/payment/list',    component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/order/list',      component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/order/approval',  component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/delivery/list',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/category/list',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/payment/list',    component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
     // 상품 관리
-    { path: '/admin/product/list',    component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/product/stock',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/product/insert',  component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/product/list',    component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/product/stock',   component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/product/insert',  component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
     // 게시글 관리
-    { path: '/admin/notice/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/qna/list',        component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/review/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/notice/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/qna/list',        component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/review/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
     // 회원 관리
-    { path: '/admin/member/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
-    { path: '/admin/member/role',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] } },
+    { path: '/admin/member/list',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
+    { path: '/admin/member/role',     component: Todo, meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'], layout: 'admin' } },
 
     // ── 404 ───────────────────────────────────────────────────────
     {

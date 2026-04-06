@@ -1,194 +1,32 @@
 <template>
-  <div class="app-root">
-
-    <!-- ===== 헤더 ===== -->
-    <header class="app-header">
-      <!-- 로고 -->
-      <router-link to="/" class="logo">README</router-link>
-
-      <!-- 검색창: 관리자는 숨김 -->
-      <input
-        v-if="!authStore.isAdmin"
-        class="search-input"
-        type="text"
-        placeholder="도서 검색..."
-      />
-
-      <!-- 헤더 우측 메뉴 -->
-      <nav class="header-nav">
-
-        <!-- 비로그인 -->
-        <template v-if="!authStore.isLoggedIn">
-          <router-link to="/signin">로그인</router-link>
-          <router-link to="/signup">회원가입</router-link>
-        </template>
-
-        <!-- 일반 유저 로그인 상태 -->
-        <template v-else-if="!authStore.isAdmin">
-          <router-link to="/mypage/edit">회원 정보 수정</router-link>
-          <router-link to="/mypage" class="icon-btn" title="마이페이지">👤 마이페이지</router-link>
-          <router-link to="/cart" class="icon-btn" title="장바구니">🛒 장바구니</router-link>
-          <button class="btn-logout" @click="handleLogout">로그아웃</button>
-        </template>
-
-        <!-- 관리자 로그인 상태 -->
-        <template v-else>
-          <input class="admin-search" type="text" placeholder="회원 검색..." />
-          <router-link to="/admin/order/approval" class="icon-btn" title="주문 승인 요청">📋 주문 승인</router-link>
-          <router-link to="/admin/product/stock" class="icon-btn" title="재고 목록">📦 재고 목록</router-link>
-          <button class="btn-logout" @click="handleLogout">로그아웃</button>
-        </template>
-
-      </nav>
-    </header>
-
-    <!-- ===== 바디: 사이드바 + 메인 ===== -->
-    <div class="app-body">
-
-      <!-- 사이드바: signin/signup 페이지에서는 숨김 -->
-      <aside class="sidebar" v-if="showSidebar">
-
-        <!-- 일반 유저 사이드바 -->
-        <template v-if="!authStore.isAdmin">
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('order')">
-              주문/배송 <span>{{ open.order ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.order">
-              <li><router-link to="/mypage/order">주문 목록</router-link></li>
-              <li><router-link to="/cart">장바구니</router-link></li>
-              <li><router-link to="/mypage/payment">결제 내역</router-link></li>
-            </ul>
-          </div>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('board')">
-              게시글 <span>{{ open.board ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.board">
-              <li><router-link to="/notice">공지사항</router-link></li>
-              <li><router-link to="/qna">QnA</router-link></li>
-              <li><router-link to="/review">리뷰</router-link></li>
-            </ul>
-          </div>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('myinfo')">
-              회원 정보 <span>{{ open.myinfo ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.myinfo">
-              <li><router-link to="/mypage/edit">정보 수정</router-link></li>
-              <li><router-link to="/mypage/password">비밀번호 변경</router-link></li>
-              <li><router-link to="/mypage/withdraw">회원 탈퇴</router-link></li>
-            </ul>
-          </div>
-
-        </template>
-
-        <!-- 관리자 사이드바 -->
-        <template v-else>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title">
-              <router-link to="/admin">대시보드</router-link>
-            </div>
-          </div>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('adminOrder')">
-              주문 관리 <span>{{ open.adminOrder ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.adminOrder">
-              <li><router-link to="/admin/order/list">주문 목록</router-link></li>
-              <li><router-link to="/admin/delivery/list">배송 목록</router-link></li>
-              <li><router-link to="/admin/category/list">카테고리 목록</router-link></li>
-              <li><router-link to="/admin/payment/list">결제 목록</router-link></li>
-            </ul>
-          </div>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('adminProduct')">
-              상품 관리 <span>{{ open.adminProduct ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.adminProduct">
-              <li><router-link to="/admin/product/list">상품 목록</router-link></li>
-              <li><router-link to="/admin/product/insert">상품 추가</router-link></li>
-            </ul>
-          </div>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('adminBoard')">
-              게시글 <span>{{ open.adminBoard ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.adminBoard">
-              <li><router-link to="/admin/notice/list">공지사항</router-link></li>
-              <li><router-link to="/admin/qna/list">QnA 목록</router-link></li>
-              <li><router-link to="/admin/review/list">리뷰 목록</router-link></li>
-            </ul>
-          </div>
-
-          <div class="sidebar-section">
-            <div class="sidebar-title" @click="toggle('adminMember')">
-              회원 관리 <span>{{ open.adminMember ? '▾' : '▸' }}</span>
-            </div>
-            <ul v-show="open.adminMember">
-              <li><router-link to="/admin/member/list">회원 목록</router-link></li>
-              <li><router-link to="/admin/member/role">관리자 관리</router-link></li>
-            </ul>
-          </div>
-
-        </template>
-      </aside>
-
-      <!-- 메인 콘텐츠 -->
-      <main class="main-content">
-        <router-view />
-      </main>
-
-    </div>
-  </div>
+  <component :is="currentLayout">
+    <router-view />
+  </component>
 </template>
 
 <script setup>
-import { reactive, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/store/auth';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import MainLayout  from '@/layouts/MainLayout.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import AuthLayout  from '@/layouts/AuthLayout.vue';
 
-const authStore = useAuthStore();
-const router = useRouter();
 const route = useRoute();
 
-// 사이드바 숨김 경로 (로그인·회원가입 페이지는 전체 화면으로 사용)
-const AUTH_PATHS = ['/signin', '/signup', '/oauth/callback'];
-const showSidebar = computed(() => !AUTH_PATHS.includes(route.path));
-
-// 사이드바 섹션 열림/닫힘 상태
-const open = reactive({
-  order:        true,
-  board:        false,
-  myinfo:       false,
-  adminOrder:   true,
-  adminProduct: false,
-  adminBoard:   false,
-  adminMember:  false,
+// route.meta.layout 값에 따라 레이아웃 결정
+// 'admin' → AdminLayout
+// 'auth'  → AuthLayout (헤더/사이드바 없음)
+// 기본값  → MainLayout
+const currentLayout = computed(() => {
+  if (route.meta.layout === 'admin') return AdminLayout;
+  if (route.meta.layout === 'auth')  return AuthLayout;
+  return MainLayout;
 });
-
-function toggle(key) {
-  open[key] = !open[key];
-}
-
-async function handleLogout() {
-  await authStore.signout();
-  alert('로그아웃 되었습니다.');
-  router.push('/');
-}
 </script>
 
 <style>
-/* 전체 레이아웃 리셋 */
+/* ── 전역 리셋 ──────────────────────────── */
 * { box-sizing: border-box; }
-
 body { margin: 0; }
 
 #app {
@@ -198,6 +36,7 @@ body { margin: 0; }
   flex-direction: column;
 }
 
+/* ── 공통 레이아웃 구조 ─────────────────── */
 .app-root {
   display: flex;
   flex-direction: column;
@@ -257,7 +96,6 @@ body { margin: 0; }
   padding: 4px 6px;
   border-radius: 4px;
 }
-
 .header-nav a:hover { background: #f0f0f0; }
 
 .icon-btn { display: flex; align-items: center; gap: 4px; }
@@ -305,7 +143,6 @@ body { margin: 0; }
 }
 .sidebar-title:hover { background: #efefef; }
 
-/* 대시보드처럼 하위 메뉴 없이 링크만 있을 때 */
 .sidebar-title a {
   text-decoration: none;
   color: #444;
