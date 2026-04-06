@@ -6,18 +6,18 @@
     <form @submit.prevent="handleSignin">
       <input v-model="email" type="email" placeholder="이메일" required /><br>
       <input v-model="password" type="password" placeholder="비밀번호" required /><br>
-      <button type="submit" :disabled="loading">로그인</button><br>
+      <button type="submit" :disabled="loading">{{ loading ? '처리 중...' : '로그인' }}</button><br>
     </form>
 
     <p v-if="errorMsg" class="error">{{ errorMsg }}</p><br>
 
     <div class="divider">또는</div><br>
 
-    <!-- 구글 로그인: Spring Security OAuth2 자동 처리 URL -->
-    <a href="http://localhost:8202/oauth2/authorization/google" class="btn-social btn-google">
+    <!-- 구글 로그인 -->
+    <button @click="handleGoogleLogin" class="btn-social btn-google">
       구글로 로그인
-    </a>
-    <!-- 카카오 로그인: 서버에서 URL 받아서 이동 -->
+    </button>
+    <!-- 카카오 로그인 -->
     <button @click="handleKakaoLogin" class="btn-social btn-kakao">
       카카오로 로그인
     </button>
@@ -29,11 +29,12 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { authApi } from '@/api/auth';
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const email = ref('')
 const password = ref('')
@@ -45,7 +46,9 @@ async function handleSignin() {
     loading.value = true
     errorMsg.value = ''
     await authStore.signin(email.value, password.value)
-    router.push('/')
+    // 로그인 성공 후 원래 가려던 페이지로 이동, 없으면 홈으로
+    const redirect = route.query.redirect || '/'
+    router.push(redirect)
   } catch (e) {
     errorMsg.value = e.response?.data?.message || '로그인에 실패했습니다.'
   } finally {
@@ -53,13 +56,20 @@ async function handleSignin() {
   }
 }
 
+function handleGoogleLogin() {
+  // OAuth 콜백 후 돌아올 페이지 저장
+  sessionStorage.setItem('redirect', route.query.redirect || '/')
+  window.location.href = 'http://localhost:8202/oauth2/authorization/google'
+}
+
 async function handleKakaoLogin() {
   try {
+    // OAuth 콜백 후 돌아올 페이지 저장
+    sessionStorage.setItem('redirect', route.query.redirect || '/')
     const { data } = await authApi.getKakaoAuthUrl()
     window.location.href = data.authUrl
   } catch (e) {
     errorMsg.value = '카카오 로그인 연결에 실패했습니다.'
   }
 }
-
 </script>

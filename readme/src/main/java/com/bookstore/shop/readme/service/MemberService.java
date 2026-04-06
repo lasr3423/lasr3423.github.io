@@ -49,10 +49,10 @@ public class MemberService {
     // 로그인
     public ResponseEntity<TokenResponse> signin(SigninRequest req) {
         Member member = memberRepository.findByEmail(req.email())
-                .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("이메일 혹은 패스워드 오류입니다."));
 
         if (!passwordEncoder.matches(req.password(), member.getPassword()))
-            throw new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다.");
+            throw new RuntimeException("이메일 혹은 패스워드 오류입니다.");
 
         if (member.getMemberStatus() != MemberStatus.ACTIVATE)
             throw new RuntimeException("접근이 제한된 계정입니다.");
