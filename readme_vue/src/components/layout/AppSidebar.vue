@@ -1,32 +1,32 @@
-PDF 스타일 가이드 확인했어요. Primary #092C4C, Secondary #F2994A 기준으로 만들게요.
-vue<template>
+<template>
   <aside class="app-sidebar">
     <div class="sidebar-section">
       <p class="sidebar-title">카테고리</p>
 
-      <div v-for="top in categories" :key="top.name" class="category-group">
+      <div v-for="top in categories" :key="top.id" class="category-group">
         <!-- Top 카테고리 -->
         <button
           class="top-menu"
-          :class="{ active: activeTop === top.name }"
-          @click="toggleTop(top.name)"
+          :class="{ active: activeTopId === top.id }"
+          @click="toggleTop(top.id)"
         >
           {{ top.name }}
-          <span class="arrow" :class="{ open: activeTop === top.name }">›</span>
+          <span class="arrow" :class="{ open: activeTopId === top.id }">›</span>
         </button>
 
-        <!-- Sub 카테고리 (Top 활성화 시에만 노출) -->
-        <div v-if="activeTop === top.name" class="sub-menu">
+        <!-- Sub 카테고리 -->
+        <div v-if="activeTopId === top.id" class="sub-menu">
           <router-link
             v-for="sub in top.subs"
-            :key="sub"
-            :to="`/product?category=${sub}`"
-            :class="{ active: isActiveSub(sub) }"
+            :key="sub.id"
+            :to="`/product?topId=${top.id}&subId=${sub.id}`"
+            :class="{ active: isActiveSub(top.id, sub.id) }"
           >
-            {{ sub }}
+            {{ sub.name }}
           </router-link>
         </div>
       </div>
+
     </div>
   </aside>
 </template>
@@ -37,24 +37,57 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
+// dummy_data.sql 기준 — ID는 DB에서 실제 부여된 값과 일치해야 함
 const categories = [
-  { name: '국내도서', subs: ['IT/컴퓨터', '자기개발', '외국어', '소설', '만화'] },
-  { name: '해외도서', subs: ['IT/컴퓨터', '자기개발', '외국어', '소설', '만화'] },
-  { name: '일본도서', subs: ['IT/컴퓨터', '자기개발', '외국어', '소설', '만화'] },
+  {
+    id: 1,
+    name: '국내도서',
+    subs: [
+      { id: 1,  name: '소설' },
+      { id: 2,  name: '자기계발' },
+      { id: 3,  name: '경제/경영' },
+      { id: 4,  name: '과학/기술' },
+      { id: 5,  name: '역사/문화' },
+    ]
+  },
+  {
+    id: 2,
+    name: '해외도서',
+    subs: [
+      { id: 6,  name: 'Fiction' },
+      { id: 7,  name: 'Self-Help' },
+      { id: 8,  name: 'Business' },
+      { id: 9,  name: 'Science' },
+      { id: 10, name: 'History' },
+    ]
+  },
+  {
+    id: 3,
+    name: '일본도서',
+    subs: [
+      { id: 11, name: 'Fiction' },
+      { id: 12, name: 'Self-Help' },
+      { id: 13, name: 'Business' },
+      { id: 14, name: 'Science' },
+      { id: 15, name: 'History' },
+    ]
+  },
 ]
 
-const activeTop = ref(null)
+const activeTopId = ref(null)
 
-function toggleTop(name) {
-  activeTop.value = activeTop.value === name ? null : name
+function toggleTop(id) {
+  activeTopId.value = activeTopId.value === id ? null : id
 }
 
-function isActiveSub(sub) {
-  return route.query.category === sub
+// topId와 subId 둘 다 일치해야 active — 다른 top의 같은 이름 sub와 혼동 방지
+function isActiveSub(topId, subId) {
+  return Number(route.query.topId) === topId && Number(route.query.subId) === subId
 }
 </script>
 
 <style scoped>
+/* 기존 스타일 그대로 유지 */
 .app-sidebar {
   width: 180px;
   flex-shrink: 0;
