@@ -1,22 +1,17 @@
 <template>
   <div class="page-wrap">
-    <!-- 로딩 -->
     <div v-if="isLoading" class="loading">불러오는 중...</div>
 
     <template v-else-if="review">
-      <!-- 뒤로가기 -->
       <button class="btn-back" @click="$router.back()">← 목록으로</button>
 
-      <!-- 상품 링크 -->
       <div class="product-link" @click="goProduct">
-        <img :src="review.productThumbnail" alt="" class="product-thumb" />
+        <img :src="review.productThumbnail" alt="상품 이미지" class="product-thumb" />
         <span class="product-title">{{ review.productTitle }}</span>
         <span class="link-arrow">›</span>
       </div>
 
-      <!-- 리뷰 본문 -->
       <article class="review-card">
-        <!-- 헤더: 작성자 / 평점 / 날짜 -->
         <div class="review-header">
           <div class="reviewer-info">
             <span class="reviewer-name">{{ maskName(review.memberName) }}</span>
@@ -33,10 +28,8 @@
           <span class="review-date">{{ formatDate(review.createdAt) }}</span>
         </div>
 
-        <!-- 본문 -->
         <p class="review-content">{{ review.content }}</p>
 
-        <!-- 이미지 (FR-003 업로드된 이미지) -->
         <div v-if="review.imageUrls?.length" class="image-gallery">
           <img
             v-for="(url, i) in review.imageUrls"
@@ -48,10 +41,8 @@
           />
         </div>
 
-        <!-- 조회수 -->
         <p class="view-count">조회수 {{ review.hits }}</p>
 
-        <!-- 좋아요 / 싫어요 (FR-004) -->
         <div class="reaction-area">
           <button
             class="btn-reaction"
@@ -73,7 +64,6 @@
 
     <div v-else class="no-data">리뷰를 찾을 수 없습니다.</div>
 
-    <!-- 이미지 라이트박스 -->
     <div v-if="lightboxUrl" class="lightbox" @click="lightboxUrl = null">
       <img :src="lightboxUrl" alt="이미지 확대" class="lightbox-img" />
     </div>
@@ -85,6 +75,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth.js'
 import { getReviewDetail, reactReview } from '@/api/review.js'
+// import { getProductDetail } from '@/api/product.js' // ← 에러 방지를 위해 주석 처리
 
 const route     = useRoute()
 const router    = useRouter()
@@ -94,9 +85,10 @@ const review      = ref(null)
 const isLoading   = ref(true)
 const lightboxUrl = ref(null)
 
-// ── FR-005  리뷰 상세 조회 (view_count +1) ───
+// ── FR-005 리뷰 상세 조회 (view_count +1) ───
 onMounted(async () => {
   try {
+    // 본인이 담당하는 리뷰 상세 API만 호출
     const { data } = await getReviewDetail(route.params.id)
     review.value = data
   } catch (e) {
@@ -106,7 +98,7 @@ onMounted(async () => {
   }
 })
 
-// ── FR-004  리뷰 반응 ─────────────────────────
+// ── FR-004 리뷰 반응 처리 ─────────────────────────
 const handleReaction = async (type) => {
   if (!authStore.isLoggedIn) {
     alert('로그인이 필요합니다.')
@@ -129,14 +121,16 @@ const handleReaction = async (type) => {
   }
 }
 
-// ── 상품 상세 이동 ───────────────────────────
+// ── 상품 상세 이동 (팀원 페이지 유무에 따라 조절) ───────────────────────────
 const goProduct = () => {
   if (review.value?.productId) {
-    router.push(`/product/category/detail/${review.value.productId}`)
+    // 팀원 파트 페이지가 없을 경우를 대비해 콘솔로그만 남기거나 주석 유지
+    console.log('상품 상세 페이지로 이동 시도:', review.value.productId)
+    // router.push(`/product/category/detail/${review.value.productId}`) 
   }
 }
 
-// ── 유틸 ────────────────────────────────────
+// ── 유틸리티 함수 ────────────────────────────────────
 const openImage  = (url) => (lightboxUrl.value = url)
 const maskName   = (name) => name ? name[0] + '*'.repeat(name.length - 1) : ''
 const formatDate = (dt)   => dt ? dt.slice(0, 10) : ''
@@ -239,7 +233,7 @@ const formatDate = (dt)   => dt ? dt.slice(0, 10) : ''
 .btn-reaction {
   flex: 1;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid #ddd;        
   border-radius: 8px;
   background: #fff;
   cursor: pointer;

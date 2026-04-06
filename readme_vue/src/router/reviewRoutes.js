@@ -1,47 +1,36 @@
-// ─────────────────────────────────────────────────
-// router/index.js 에 추가할 리뷰 라우트 정의
-// ─────────────────────────────────────────────────
-
-import ReviewWriteView  from '@/views/review/ReviewWriteView.vue'
-import ReviewDetailView from '@/views/review/ReviewDetailView.vue'
-import AdminReviewView  from '@/views/admin/AdminReviewView.vue'
-
+/**
+ * 리뷰 도메인 라우트 설정
+ * 연관 요구사항: REQ-R-001 ~ REQ-R-005, REQ-M-016 ~ 020
+ */
 export const reviewRoutes = [
-  // FR-002, FR-003  리뷰 작성
-  // query: { productId }  필수
   {
-    path: '/review/write',
+    path: 'review/list',
+    name: 'ReviewList',
+    component: () => import('@/views/review/ReviewListView.vue'),
+    meta: { title: '상품 리뷰 목록' }
+  },
+  {
+    path: 'review/write',
     name: 'ReviewWrite',
-    component: ReviewWriteView,
-    meta: { requiresAuth: true }   // JWT 인증 필수
+    component: () => import('@/views/review/ReviewWriteView.vue'),
+    meta: { title: '리뷰 작성', requiresAuth: true } // 구매 확정 유저만 접근 [cite: 1385]
   },
-
-  // FR-005  리뷰 상세 조회 (view_count +1)
   {
-    path: '/review/detail/:id',
+    path: 'review/detail/:id',
     name: 'ReviewDetail',
-    component: ReviewDetailView
+    component: () => import('@/views/review/ReviewDetailView.vue'),
+    meta: { title: '리뷰 상세 조회' } // 조회수 자동 증가 로직 포함 [cite: 1389]
   },
-
-  // FA-029~031  관리자 리뷰 관리
   {
-    path: '/admin/review',
-    name: 'AdminReview',
-    component: AdminReviewView,
-    meta: { requiresAuth: true, roles: ['MANAGER', 'ADMIN'] }
+    path: 'review/edit/:id',
+    name: 'ReviewEdit',
+    component: () => import('@/views/review/ReviewEditView.vue'),
+    meta: { title: '리뷰 수정', requiresAuth: true }
+  },
+  {
+    path: 'review/delete-success',
+    name: 'ReviewDeleteSuccess',
+    component: () => import('@/views/review/ReviewDeleteSuccessView.vue'),
+    meta: { title: '삭제 완료' }
   }
-]
-
-// ─────────────────────────────────────────────────
-// 기존 index.js 의 createRouter() 에 spread 삽입 예시
-// ─────────────────────────────────────────────────
-//
-// import { reviewRoutes } from './reviewRoutes.js'
-//
-// const router = createRouter({
-//   history: createWebHistory(),
-//   routes: [
-//     ...기존라우트,
-//     ...reviewRoutes
-//   ]
-// })
+];
