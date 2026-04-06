@@ -42,7 +42,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 허용
                         .requestMatchers(
-                                "/api/auth/signup", "/api/auth/signin", "/api/auth/refresh", "/api/order/payment/fail"
+                                "/api/auth/signup",
+                                "/api/auth/signin",
+                                "/api/auth/refresh",
+                                "/api/order/payment/fail"
                         ).permitAll()
                         .requestMatchers("/api/oauth/**").permitAll()
                         .requestMatchers(HttpMethod.GET,
