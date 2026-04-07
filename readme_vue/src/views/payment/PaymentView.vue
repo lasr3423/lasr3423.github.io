@@ -100,9 +100,13 @@ function payWithToss() {
   const clientKey   = 'test_ck_AQ92ymxN34vmXlbmObdPrajRKXvd'
   const tossPayments = window.TossPayments(clientKey)
 
+  // Toss orderId 규칙: 영문·숫자·(-,_) 조합, 6~64자
+  // DB PK 단독("1","2")은 길이 미달 → ORDER-0000000001 형식으로 변환
+  const tossOrderId = `ORDER-${String(orderStore.orderId).padStart(10, '0')}`
+
   tossPayments.requestPayment('카드', {
     amount:       orderStore.finalPrice,
-    orderId:      String(orderStore.orderId),   // 토스 orderId는 String 타입
+    orderId:      tossOrderId,
     orderName:    orderStore.itemName || '도서 주문',
     customerName: customerName.value,
     successUrl:   `${window.location.origin}/payment/success`,

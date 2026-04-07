@@ -5,7 +5,7 @@ import com.bookstore.shop.readme.domain.Order;
 import java.time.LocalDateTime;
 
 public record OrderListResponse(
-        Long id,
+        Long orderId,
         String number,
         String orderStatus,
         int finalPrice,

@@ -13,22 +13,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class AdminService {
 
-    private final MemberRepository    memberRepository;
-    private final ProductRepository   productRepository;
-    private final OrderRepository     orderRepository;
-    private final DeliveryRepository  deliveryRepository;
+    private final MemberRepository       memberRepository;
+    private final ProductRepository      productRepository;
+    private final OrderRepository        orderRepository;
+    private final DeliveryRepository     deliveryRepository;
     private final CategoryTopRepository  categoryTopRepository;
     private final CategorySubRepository  categorySubRepository;
+    private final NoticeRepository       noticeRepository;
+    private final QnARepository          qnaRepository;
+    private final ReviewRepository       reviewRepository;
 
     // ── 대시보드 ────────────────────────────────────────────────────────────
 
@@ -236,6 +239,55 @@ public class AdminService {
                 orderRepository.findAllByOrderStatus(orderStatus, pageable)
                         .map(OrderListResponse::new)
         );
+    }
+
+    // ── 카테고리 관리 (/admin/category/list) ─────────────────────────────────
+
+    /** 대분류 카테고리 목록 (소분류 포함) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<CategoryResponse>> getAdminCategories() {
+        List<CategoryResponse> result = categoryTopRepository.findAll().stream()
+                .map(top -> new CategoryResponse(top,
+                        categorySubRepository.findByCategoryTopIdOrderBySortOrderAsc(top.getId())))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
+
+    // ── 공지사항 관리 (/admin/notice/list) ───────────────────────────────────
+
+    /** 관리자 전체 공지사항 목록 (삭제된 것 포함) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<NoticeResponse>> getAdminNotices(Pageable pageable) {
+        return ResponseEntity.ok(
+                noticeRepository.findAll(pageable).map(NoticeResponse::new));
+    }
+
+    // ── QnA 관리 (/admin/qna/list) ───────────────────────────────────────────
+
+    /** 관리자 전체 QnA 목록 (미답변 필터 선택) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<QnAResponse>> getAdminQnAs(boolean unansweredOnly, Pageable pageable) {
+        Page<QnAResponse> result = unansweredOnly
+                ? qnaRepository.findAllByAnswerIsNullAndDeletedAtIsNull(pageable).map(QnAResponse::new)
+                : qnaRepository.findAllByDeletedAtIsNull(pageable).map(QnAResponse::new);
+        return ResponseEntity.ok(result);
+    }
+
+    // ── 리뷰 관리 (/admin/review/list) ───────────────────────────────────────
+
+    /** 관리자 전체 리뷰 목록 */
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<ReviewResponse>> getAdminReviews(Pageable pageable) {
+        return ResponseEntity.ok(
+                reviewRepository.findAllByDeletedAtIsNull(pageable).map(ReviewResponse::new));
+    }
+
+    /** 관리자 리뷰 강제 삭제 (soft delete) */
+    public ResponseEntity<String> adminDeleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
+        review.setDeletedAt(LocalDateTime.now());
+        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
     }
 
     // ── 내부 유틸 ───────────────────────────────────────────────────────────
