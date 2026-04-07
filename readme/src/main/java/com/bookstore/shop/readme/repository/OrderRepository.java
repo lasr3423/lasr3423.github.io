@@ -1,6 +1,7 @@
 package com.bookstore.shop.readme.repository;
 
 import com.bookstore.shop.readme.domain.Order;
+import com.bookstore.shop.readme.domain.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
+
     // 회원 주문 내역 최신순 조회
     List<Order> findByMemberIdOrderByCreatedAtDesc(Long memberId);
 
@@ -17,4 +19,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findByIdAndMemberId(Long id, Long memberId);
     Page<Order> findByMemberId(Long memberId, Pageable pageable);
+
+    // 관리자 - 주문 상태별 수 (대시보드)
+    long countByOrderStatus(OrderStatus orderStatus);
 }
