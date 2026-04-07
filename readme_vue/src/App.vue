@@ -1,27 +1,8 @@
 <template>
-  <component :is="currentLayout">
-    <router-view />
-  </component>
+  <router-view />
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import MainLayout  from '@/layouts/MainLayout.vue';
-import AdminLayout from '@/layouts/AdminLayout.vue';
-import AuthLayout  from '@/layouts/AuthLayout.vue';
-
-const route = useRoute();
-
-// route.meta.layout 값에 따라 레이아웃 결정
-// 'admin' → AdminLayout
-// 'auth'  → AuthLayout (헤더/사이드바 없음)
-// 기본값  → MainLayout
-const currentLayout = computed(() => {
-  if (route.meta.layout === 'admin') return AdminLayout;
-  if (route.meta.layout === 'auth')  return AuthLayout;
-  return MainLayout;
-});
 </script>
 
 <style>
