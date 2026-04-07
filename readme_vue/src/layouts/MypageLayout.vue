@@ -1,43 +1,22 @@
 <template>
-  <div class="mypage-root">
-    <MyHeader />
-    <div class="mypage-body">
+  <div class="flex min-h-screen flex-col font-sans">
+
+    <!-- 마이페이지는 항상 로그인 상태 → UserHeader 고정 -->
+    <UserHeader />
+
+    <div class="mx-auto flex w-full max-w-[1280px] flex-1 gap-6 px-4 py-6">
       <MySidebar />
-      <main class="mypage-content">
+      <main class="min-w-0 flex-1">
         <RouterView />
       </main>
     </div>
-    <MyFooter />
+
+    <MainFooter />
   </div>
 </template>
 
 <script setup>
-import MyHeader  from '@/components/layout/MyHeader.vue';
-import MySidebar from '@/components/layout/MySidebar.vue';
-import MyFooter  from '@/components/layout/MyFooter.vue';
+import UserHeader  from '@/components/layout/UserHeader.vue';
+import MySidebar   from '@/components/layout/MySidebar.vue';
+import MainFooter  from '@/components/layout/MainFooter.vue';
 </script>
-
-<style scoped>
-.mypage-root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  font-family: var(--font-sans);
-}
-
-.mypage-body {
-  display: flex;
-  gap: var(--space-3);
-  flex: 1;
-  max-width: 1280px;
-  width: 100%;
-  margin: 0 auto;
-  padding: var(--space-3) var(--space-2);
-  box-sizing: border-box;
-}
-
-.mypage-content {
-  flex: 1;
-  min-width: 0;
-}
-</style>
