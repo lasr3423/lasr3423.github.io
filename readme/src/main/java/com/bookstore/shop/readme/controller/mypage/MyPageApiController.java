@@ -5,6 +5,8 @@ import com.bookstore.shop.readme.dto.request.UpdateMemberRequest;
 import com.bookstore.shop.readme.dto.response.MemberResponse;
 import com.bookstore.shop.readme.dto.response.OrderDetailResponse;
 import com.bookstore.shop.readme.dto.response.OrderListResponse;
+import com.bookstore.shop.readme.dto.response.PaymentStatusResponse;
+import com.bookstore.shop.readme.repository.PaymentRepository;
 import com.bookstore.shop.readme.security.CustomUserDetails;
 import com.bookstore.shop.readme.service.MemberService;
 import com.bookstore.shop.readme.service.OrderService;
@@ -22,8 +24,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/member")
 public class MyPageApiController {
 
-    private final MemberService memberService;
-    private final OrderService  orderService;
+    private final MemberService     memberService;
+    private final OrderService      orderService;
+    private final PaymentRepository paymentRepository; // [신규] 결제 내역 직접 조회
 
     // ── 회원 정보 ───────────────────────────────────────────────────────────
 
@@ -73,5 +76,19 @@ public class MyPageApiController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable Long orderId) {
         return orderService.getMyOrderDetail(user.getMemberId(), orderId);
+    }
+
+    // ── 결제 내역 (/mypage/payment 페이지 연동) ─────────────────────────────
+
+    /** [신규] 내 결제 내역 목록 (최신순, 페이징) */
+    @GetMapping("/me/payments")
+    public ResponseEntity<Page<PaymentStatusResponse>> getMyPayments(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PageableDefault(size = 10, sort = "createdAt",
+                    direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<PaymentStatusResponse> result =
+                paymentRepository.findByOrder_MemberId(user.getMemberId(), pageable)
+                        .map(PaymentStatusResponse::new);
+        return ResponseEntity.ok(result);
     }
 }

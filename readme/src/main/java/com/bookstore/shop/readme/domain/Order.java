@@ -35,10 +35,11 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private Integer finalPrice = 0;
 
-    @Column(nullable = false, length = 50)
+    // [수정] 프론트 OrderView.vue 폼에 수령인/우편번호 필드 없음 → nullable=true 로 완화
+    @Column(length = 50)
     private String receiverName;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String receiverPhone;
 
     @Column(nullable = false, length = 255)
@@ -47,7 +48,8 @@ public class Order extends BaseEntity {
     @Column(length = 255)
     private String deliveryAddressDetail;
 
-    @Column(nullable = false, length = 10)
+    // [수정] 우편번호도 프론트에서 미전송 → nullable=true 로 완화
+    @Column(length = 10)
     private String deliveryZipCode;
 
     @Column(length = 300)

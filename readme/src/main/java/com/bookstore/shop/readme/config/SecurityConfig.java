@@ -48,8 +48,10 @@ public class SecurityConfig {
                                 "/api/order/payment/fail"
                         ).permitAll()
                         .requestMatchers("/api/oauth/**").permitAll()
+                        // [수정] review/qna GET도 비로그인 허용 (상품 상세 페이지에서 탭으로 표시)
                         .requestMatchers(HttpMethod.GET,
-                                "/api/product/**", "/api/notice/**", "/api/category/**"
+                                "/api/product/**", "/api/notice/**",
+                                "/api/category/**", "/api/review/**", "/api/qna/**"
                         ).permitAll()
                         // 관리자 전용
                         .requestMatchers("/api/admin/**").hasAnyRole("MANAGER", "ADMIN")
