@@ -1,31 +1,31 @@
 <template>
-  <div class="app-root">
-    <AppHeader />
-    <div class="app-body">
-      <AppSidebar />
-      <main class="main-content">
+  <div class="mypage-root">
+    <MyHeader />
+    <div class="mypage-body">
+      <MySidebar />
+      <main class="mypage-content">
         <RouterView />
       </main>
     </div>
-    <AppFooter />
+    <MyFooter />
   </div>
 </template>
 
 <script setup>
-import AppHeader  from '@/components/layout/AppHeader.vue';
-import AppSidebar from '@/components/layout/AppSidebar.vue';
-import AppFooter  from '@/components/layout/AppFooter.vue';
+import MyHeader  from '@/components/layout/MyHeader.vue';
+import MySidebar from '@/components/layout/MySidebar.vue';
+import MyFooter  from '@/components/layout/MyFooter.vue';
 </script>
 
 <style scoped>
-.app-root {
+.mypage-root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   font-family: var(--font-sans);
 }
 
-.app-body {
+.mypage-body {
   display: flex;
   gap: var(--space-3);
   flex: 1;
@@ -36,7 +36,7 @@ import AppFooter  from '@/components/layout/AppFooter.vue';
   box-sizing: border-box;
 }
 
-.main-content {
+.mypage-content {
   flex: 1;
   min-width: 0;
 }
