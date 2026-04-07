@@ -6,6 +6,9 @@ import com.bookstore.shop.readme.dto.response.*;
 import com.bookstore.shop.readme.gateway.*;
 import com.bookstore.shop.readme.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -174,6 +177,28 @@ public class PaymentService {
         payment.setCancelReason(cancelReason);
         payment.setCancelledAt(LocalDateTime.now()); // 취소 완료 시각 기록
         paymentRepository.save(payment);
+    }
+
+    // ─── 마이페이지 내 결제 내역 조회 ────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<PaymentStatusResponse>> getMyPayments(Long memberId, Pageable pageable) {
+        return ResponseEntity.ok(
+                paymentRepository.findByOrder_MemberId(memberId, pageable)
+                        .map(PaymentStatusResponse::new));
+    }
+
+    // ─── 관리자 전체 결제 내역 조회 (상태 필터 선택) ───────────────────────
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<PaymentStatusResponse>> getAllPayments(String status, Pageable pageable) {
+        Page<PaymentStatusResponse> result;
+        if (status != null && !status.isBlank()) {
+            result = paymentRepository
+                    .findAllByPaymentStatus(PaymentStatus.valueOf(status), pageable)
+                    .map(PaymentStatusResponse::new);
+        } else {
+            result = paymentRepository.findAll(pageable).map(PaymentStatusResponse::new);
+        }
+        return ResponseEntity.ok(result);
     }
 
     // ─── 내부 유틸 메서드 ─────────────────────────────────────────────────

@@ -22,10 +22,14 @@ const router = useRouter();
 onMounted(async () => {
   const { paymentKey, orderId, amount } = route.query;
 
+  // Toss에서 돌아온 orderId는 "ORDER-0000000001" 형식
+  // 백엔드는 DB PK(숫자)를 받아야 하므로 접두사를 제거하고 Number로 변환
+  const numericOrderId = Number(String(orderId).replace('ORDER-', ''))
+
   try {
     await axios.post('/api/order/payment/confirm', {
       paymentKey,
-      orderId: Number(orderId),
+      orderId: numericOrderId,
       amount:  Number(amount),
     });
     router.push('/mypage/order');
