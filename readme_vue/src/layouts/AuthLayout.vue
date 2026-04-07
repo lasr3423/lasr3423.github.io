@@ -1,29 +1,16 @@
 <template>
-  <div class="auth-root">
-    <AppHeader />
-    <main class="auth-content">
+  <div class="flex min-h-screen flex-col font-sans">
+
+    <!-- 로그인/회원가입 페이지 → 비회원 헤더 -->
+    <GuestHeader />
+
+    <main class="flex flex-1 items-center justify-center px-4 py-12">
       <RouterView />
     </main>
+
   </div>
 </template>
 
 <script setup>
-import AppHeader from '@/components/layout/AppHeader.vue';
+import GuestHeader from '@/components/layout/GuestHeader.vue';
 </script>
-
-<style scoped>
-.auth-root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  font-family: var(--font-sans);
-}
-
-.auth-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-5) var(--space-2);
-}
-</style>
