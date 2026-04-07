@@ -1,102 +1,71 @@
 <template>
-  <div class="space-y-6">
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">My Orders</p>
-      <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">주문 내역</h1>
-    </section>
+  <div>
+    <h2>주문 내역</h2>
 
-    <section class="rounded-[2rem] border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div v-if="loading" class="flex items-center justify-center py-16 text-sm text-slate-400">불러오는 중...</div>
+    <!-- 주문이 없을 때 -->
+    <p v-if="orders.length === 0">주문 내역이 없습니다.</p>
 
-      <template v-else-if="orders.length > 0">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="border-b border-slate-200 bg-slate-50">
-              <tr>
-                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문번호</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">결제금액</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">상태</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문일</th>
-                <th class="px-6 py-4"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="order in orders" :key="order.id" class="hover:bg-slate-50 transition">
-                <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ order.number }}</td>
-                <td class="px-6 py-4 font-semibold text-slate-900">{{ order.finalPrice.toLocaleString() }}원</td>
-                <td class="px-6 py-4">
-                  <span :class="statusClass(order.orderStatus)" class="rounded-full px-3 py-1 text-xs font-semibold">
-                    {{ statusLabel(order.orderStatus) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-slate-500">{{ formatDate(order.orderAt) }}</td>
-                <td class="px-6 py-4 text-right">
-                  <router-link :to="`/mypage/order/${order.id}`"
-                    class="rounded-xl bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100">
-                    상세보기
-                  </router-link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <!-- 주문 목록 -->
+    <div v-for="order in orders" :key="order.orderId">
+      <p>주문번호: {{ order.orderNumber }}</p>
+      <p>결제 금액: {{ order.finalPrice.toLocaleString() }}원</p>
+      <p>주문 상태: {{ order.orderStatus }}</p>
+      <p>주문일: {{ order.createdAt }}</p>
 
-        <!-- 페이지네이션 -->
-        <div class="flex items-center justify-center gap-2 border-t border-slate-100 p-4">
-          <button :disabled="page === 0" @click="page--; fetchOrders()"
-            class="rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
-            이전
-          </button>
-          <span class="text-sm text-slate-500">{{ page + 1 }} / {{ totalPages }}</span>
-          <button :disabled="page >= totalPages - 1" @click="page++; fetchOrders()"
-            class="rounded-xl border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
-            다음
-          </button>
-        </div>
-      </template>
+      <!-- 주문 상세 보기 -->
+      <button @click="goDetail(order.orderId)">상세 보기</button>
 
-      <div v-else class="flex flex-col items-center justify-center gap-3 py-16 text-slate-400">
-        <span class="text-4xl">📦</span>
-        <p class="text-sm">주문 내역이 없습니다.</p>
-        <router-link to="/product" class="mt-2 rounded-2xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
-          쇼핑하러 가기
-        </router-link>
-      </div>
-    </section>
+      <!-- 주문 취소 (PAYED 상태에서만 가능) -->
+      <button
+        v-if="order.orderStatus === 'PAYED'"
+        @click="cancelOrder(order.orderId)">
+        주문 취소
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { memberApi } from '@/api/member';
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import api from '@/api/axios'
 
-const orders = ref([]);
-const loading = ref(true);
-const page = ref(0);
-const totalPages = ref(1);
+const router = useRouter()
+const orders = ref([]) // 주문 목록
 
-const statusLabel = (s) => ({ PENDING: '결제대기', PAYED: '결제완료', APPROVAL: '배송중', CANCELED: '취소' }[s] ?? s);
-const statusClass = (s) => ({
-  PENDING:  'bg-yellow-50 text-yellow-700',
-  PAYED:    'bg-green-50 text-green-700',
-  APPROVAL: 'bg-brand-50 text-brand-700',
-  CANCELED: 'bg-rose-50 text-rose-700',
-}[s] ?? 'bg-slate-100 text-slate-600');
-
-const formatDate = (d) => d ? new Date(d).toLocaleDateString('ko-KR') : '-';
-
-async function fetchOrders() {
+// ── 마운트 시 주문 목록 조회 ──────────────────────────────────────────────────
+onMounted(async () => {
   try {
-    loading.value = true;
-    const { data } = await memberApi.getOrders({ page: page.value, size: 10 });
-    orders.value = data.content;
-    totalPages.value = data.totalPages || 1;
+    // GET /api/order → 내 주문 목록 (최신순)
+    const { data } = await api.get('/api/order')
+    orders.value = data.content // Page<OrderSummaryResponse>.content
   } catch (e) {
-    console.error('주문 목록 로드 실패:', e);
-  } finally {
-    loading.value = false;
+    console.error('주문 목록 조회 실패', e)
   }
+})
+
+// ── 주문 상세 이동 ────────────────────────────────────────────────────────────
+function goDetail(orderId) {
+  router.push(`/mypage/order/${orderId}`)
 }
 
-onMounted(fetchOrders);
+// ── 주문 취소 ─────────────────────────────────────────────────────────────────
+async function cancelOrder(orderId) {
+  if (!confirm('주문을 취소하시겠습니까?')) return
+
+  try {
+    // DELETE /api/order/{orderId} → 주문 취소 + PG사 환불 처리
+    await api.delete(`/api/order/${orderId}`, {
+      data: { cancelReason: '고객 요청' } // request body
+    })
+    alert('주문이 취소되었습니다.')
+
+    // 목록 새로고침
+    const { data } = await api.get('/api/order')
+    orders.value = data.content
+  } catch (e) {
+    alert('주문 취소에 실패했습니다.')
+    console.error(e)
+  }
+}
 </script>
