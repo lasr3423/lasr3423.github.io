@@ -8,6 +8,9 @@ import com.bookstore.shop.readme.dto.ResetPasswordRequest;
 import com.bookstore.shop.readme.dto.SigninRequest;
 import com.bookstore.shop.readme.dto.SignupRequest;
 import com.bookstore.shop.readme.dto.TokenResponse;
+import com.bookstore.shop.readme.dto.request.ChangePasswordRequest;
+import com.bookstore.shop.readme.dto.request.UpdateMemberRequest;
+import com.bookstore.shop.readme.dto.response.MemberResponse;
 import com.bookstore.shop.readme.repository.MemberRepository;
 import com.bookstore.shop.readme.repository.RefreshTokenRepository;
 import com.bookstore.shop.readme.security.TokenBlacklistStore;
@@ -29,7 +32,6 @@ public class MemberService {
     private final JwtUtil jwtUtil;
     private final TokenBlacklistStore blacklistStore;
 
-    //   기본 기능
     // 회원가입
     public ResponseEntity<String> signup(SignupRequest req) {
         if (memberRepository.existsByEmail(req.email()))
@@ -60,9 +62,7 @@ public class MemberService {
         return ResponseEntity.ok(issueTokens(member));
     }
 
-    // 회원 정보 재설정
-
-    // 비밀번호 재설정
+    // 비밀번호 재설정 (이메일 인증 없이 임시 재설정)
     public ResponseEntity<String> resetPassword(ResetPasswordRequest req) {
         Member member = memberRepository.findByEmail(req.email())
                 .orElseThrow(() -> new RuntimeException("가입된 이메일이 없습니다."));
@@ -74,8 +74,6 @@ public class MemberService {
         member.updatePassword(passwordEncoder.encode((req.newPassword())));
         return ResponseEntity.ok("비밀번호가 변경되었습니다.");
     }
-
-    // 비밀번호 초기화
 
     // 로그아웃
     public ResponseEntity<String> signout(String accessToken) {
@@ -107,7 +105,48 @@ public class MemberService {
         return ResponseEntity.ok(new TokenResponse(newAccess, newRefresh));
     }
 
-    // 토큰 발급 공통 메서드
+    // ── 마이페이지 기능 ────────────────────────────────────────────────────
+
+    // 내 정보 조회
+    @Transactional(readOnly = true)
+    public ResponseEntity<MemberResponse> getMyInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        return ResponseEntity.ok(new MemberResponse(member));
+    }
+
+    // 회원 정보 수정 (이름 / 전화번호 / 주소)
+    public ResponseEntity<MemberResponse> updateInfo(Long memberId, UpdateMemberRequest req) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        member.updateInfo(req.name(), req.phone(), req.address());
+        return ResponseEntity.ok(new MemberResponse(member));
+    }
+
+    // 비밀번호 변경 (현재 비밀번호 확인 필수)
+    public ResponseEntity<String> changePassword(Long memberId, ChangePasswordRequest req) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        if (member.getProvider() != AuthProvider.LOCAL)
+            throw new RuntimeException("소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.");
+        if (!passwordEncoder.matches(req.currentPassword(), member.getPassword()))
+            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+        if (!req.newPassword().equals(req.confirmPassword()))
+            throw new RuntimeException("새 비밀번호가 일치하지 않습니다.");
+        member.updatePassword(passwordEncoder.encode(req.newPassword()));
+        return ResponseEntity.ok("비밀번호가 변경되었습니다.");
+    }
+
+    // 회원 탈퇴 (soft delete — memberStatus = DELETE, deleted_at 기록)
+    public ResponseEntity<String> withdraw(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다."));
+        member.withdraw();
+        refreshTokenRepository.deleteByMemberId(memberId);
+        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+    }
+
+    // ── 토큰 발급 공통 메서드 ─────────────────────────────────────────────
     private TokenResponse issueTokens(Member member) {
         String accessToken  = jwtUtil.generateAccessToken(member.getId(), member.getMemberRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(member.getId());
@@ -121,9 +160,4 @@ public class MemberService {
                 );
         return new TokenResponse(accessToken, refreshToken);
     }
-
-    // 회원 탈퇴
-
-    //
-
 }

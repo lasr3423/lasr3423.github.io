@@ -88,7 +88,9 @@ public class Member extends BaseEntity {
     }
 
     public void updateInfo(String name, String phone, String address) {
-        this.name = name; this.phone = phone; this.address = address;
+        this.name = name;
+        this.phone = phone;
+        this.address = address;
     }
 
     public void updatePassword(String encodedPassword) {

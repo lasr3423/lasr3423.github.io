@@ -1,94 +1,59 @@
-/* ── Google Fonts: Inter ─────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
 
-/* ── 브랜드 CSS 변수 (Style Guide 기준) ──────────────────── */
-:root {
-  /* Brand Colors */
-  --color-primary:   #092C4C;
-  --color-secondary: #F2994A;
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
 
-  /* State Colors (진한) */
-  --color-error:   #e11d48;
-  --color-warning: #B45309;
-  --color-success: #0d9488;
-  --color-info:    #0284c7;
+  --color-brand-50: #f5f8fb;
+  --color-brand-100: #dbe7f2;
+  --color-brand-200: #b9d0e6;
+  --color-brand-300: #8fb0d3;
+  --color-brand-400: #5e86b9;
+  --color-brand-500: #3b6799;
+  --color-brand-600: #244a75;
+  --color-brand-700: #173455;
+  --color-brand-800: #092c4c;
+  --color-brand-900: #061f36;
 
-  /* State Colors (연한 / 배경용) */
-  --color-error-bg:   #EB5757;
-  --color-warning-bg: #fef3c7;
-  --color-success-bg: #ccfbf1;
-  --color-info-bg:    #e0f2fe;
-
-  /* Black */
-  --color-black1: #000000;
-  --color-black2: #1D1D1D;
-  --color-black3: #282828;
-
-  /* White */
-  --color-white1: #FFFFFF;
-  --color-white2: #FDFDFD;
-
-  /* Gray */
-  --color-gray1: #333333;
-  --color-gray2: #4F4F4F;
-  --color-gray3: #828282;
-  --color-gray4: #BDBDBD;
-  --color-gray5: #E0E0E0;
-
-  /* Typography */
-  --font-sans: 'Inter', system-ui, 'Segoe UI', sans-serif;
-
-  /* Spacing (8px 단위) */
-  --space-1:  8px;
-  --space-2:  16px;
-  --space-3:  24px;
-  --space-4:  32px;
-  --space-5:  40px;
-  --space-6:  56px;
-  --space-7:  72px;
-  --space-8:  80px;
-  --space-9:  96px;
-  --space-10: 120px;
-
-  /* Shadow */
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+  --color-accent-400: #f5b16c;
+  --color-accent-500: #f2994a;
+  --color-accent-600: #db7f2e;
 }
 
-/* ── 기본 리셋 ───────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
 
-body {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--color-gray1);
-  background: var(--color-white1);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
+  html {
+    scroll-behavior: smooth;
+  }
 
-/* ── 헤딩 (Style Guide: line-height 1.1x) ───────────────── */
-h1 { font-size: 56px; line-height: 1.1; font-weight: 700; color: var(--color-black2); margin: 0; }
-h2 { font-size: 32px; line-height: 1.1; font-weight: 700; color: var(--color-black2); margin: 0; }
-h3 { font-size: 24px; line-height: 1.1; font-weight: 600; color: var(--color-black2); margin: 0; }
-h4 { font-size: 20px; line-height: 1.1; font-weight: 600; color: var(--color-black2); margin: 0; }
-h5 { font-size: 18px; line-height: 1.1; font-weight: 500; color: var(--color-black2); margin: 0; }
-h6 { font-size: 16px; line-height: 1.1; font-weight: 500; color: var(--color-black2); margin: 0; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top, rgba(245, 248, 251, 0.9), transparent 40%),
+      linear-gradient(180deg, #f8fafc 0%, #ffffff 24%, #f8fafc 100%);
+    color: #1f2937;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-p { margin: 0; }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
 
-/* ── 앱 래퍼 ─────────────────────────────────────────────── */
-#app {
-  min-height: 100vh;
-  font-family: var(--font-sans);
+  #app {
+    min-height: 100vh;
+  }
 }
