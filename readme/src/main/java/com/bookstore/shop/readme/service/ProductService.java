@@ -19,7 +19,25 @@ public class ProductService {
 
     // 상품 전체 목록 조회
     @Transactional(readOnly = true)
-    public Page<ProductListResponse> getProductList(Pageable pageable) {
+    public Page<ProductListResponse> getProductList(Long categoryTopId, Long categorySubId, Pageable pageable) {
+
+        // 소분류까지 선택된 경우
+        if (categoryTopId != null && categorySubId != null) {
+            return productRepository
+                    .findAllByProductStatusAndCategoryTopIdAndCategorySubId(
+                            ProductStatus.ACTIVATE, categoryTopId, categorySubId, pageable)
+                    .map(ProductListResponse::new);
+        }
+
+        // 대분류만 선택됬을 경우
+        if (categoryTopId != null) {
+            return productRepository
+                    .findAllByProductStatusAndCategoryTopId(
+                            ProductStatus.ACTIVATE, categoryTopId, pageable)
+                    .map(ProductListResponse::new);
+        }
+
+        // 전체 조회 (default)
         return productRepository
                 // ACTIVATE 상태인 상품만 조회(DEACTIVATE, DELETE 제외)
                 .findAllByProductStatus(ProductStatus.ACTIVATE, pageable)

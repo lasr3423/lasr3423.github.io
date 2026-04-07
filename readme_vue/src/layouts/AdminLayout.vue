@@ -1,10 +1,10 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-slate-100/80">
+  <div class="admin-root">
     <AdminHeader />
-    <div class="mx-auto flex w-full max-w-7xl flex-1 gap-6 px-4 py-6 lg:px-6">
+    <div class="admin-body">
       <AdminSidebar />
-      <main class="min-w-0 flex-1">
-        <slot />
+      <main class="admin-content">
+        <RouterView />
       </main>
     </div>
   </div>
@@ -14,3 +14,24 @@
 import AdminHeader from '@/components/layout/AdminHeader.vue';
 import AdminSidebar from '@/components/layout/AdminSidebar.vue';
 </script>
+
+<style scoped>
+.admin-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background: var(--color-white2);
+}
+
+.admin-body {
+  display: flex;
+  flex: 1;
+}
+
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3);
+}
+</style>

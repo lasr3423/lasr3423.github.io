@@ -1,12 +1,29 @@
 <template>
-  <div class="flex min-h-screen flex-col">
-    <MainHeader />
-    <main class="mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-4 py-10 lg:px-6">
-      <slot />
+  <div class="auth-root">
+    <AppHeader />
+    <main class="auth-content">
+      <RouterView />
     </main>
   </div>
 </template>
 
 <script setup>
-import MainHeader from '@/components/layout/MainHeader.vue';
+import AppHeader from '@/components/layout/AppHeader.vue';
 </script>
+
+<style scoped>
+.auth-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+}
+
+.auth-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-2);
+}
+</style>

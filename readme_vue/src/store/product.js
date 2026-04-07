@@ -7,6 +7,10 @@ export const useProductStore = defineStore('product', () => {
     // 상품 목록 데이터
     const products = ref([])
 
+    // 현재 선택된 카테고리 상태를 store에서 관리
+    const selectedTopId = ref(null)
+    const selectedSubId = ref(null)
+
     // 페이징 정보
     const currentPage = ref(0)  // 현재 페이지 (0부터 시작)
     const totalPages = ref(0)   // 전체 페이지 수
@@ -18,17 +22,29 @@ export const useProductStore = defineStore('product', () => {
     const error = ref(null)
 
     // 상품 목록 가져오기
-    async function fetchProducts(page = 0) {
+    async function fetchProducts(page = 0, topId = null, subId = null) {
+
+        // 파라미터가 명시적으로 넘어오면 store 상태 업데이트
+        // null이 아닌 경우만 덮어씀 (페이지 이동 시 기존 필터 유지용)
+        if (topId !== undefined) selectedTopId.value = topId
+        if (subId !== undefined) selectedSubId.value = subId
 
         loading.value = true
         error.value = null
 
+
         try {
-            const { data } = await productApi.getList({
+            const params = {
                 page,
                 size: pageSize.value,
                 sort: 'createdAt,desc'
-            })
+            }
+
+            // null 아닐 때만 파라미터에 추가(백엔드에서 required=false로 받아옴)
+            if (selectedTopId.value !== null) params.categoryTopId = selectedTopId.value
+            if (selectedSubId.value !== null) params.categorySubId = selectedSubId.value
+
+            const { data } = await productApi.getList(params)
             products.value = data.content
             currentPage.value = data.number
             totalPages.value = data.totalPages
@@ -50,6 +66,8 @@ export const useProductStore = defineStore('product', () => {
         pageSize,
         loading,
         error,
+        selectedTopId,
+        selectedSubId,
         fetchProducts
     }
 
