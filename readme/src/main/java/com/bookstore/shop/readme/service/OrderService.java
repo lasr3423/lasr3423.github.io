@@ -4,6 +4,7 @@ import com.bookstore.shop.readme.domain.*;
 import com.bookstore.shop.readme.dto.request.OrderCreateRequest;
 import com.bookstore.shop.readme.dto.response.OrderCreateResponse;
 import com.bookstore.shop.readme.dto.response.OrderDetailResponse;
+import com.bookstore.shop.readme.dto.response.OrderListResponse;
 import com.bookstore.shop.readme.dto.response.OrderSummaryResponse;
 import com.bookstore.shop.readme.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class OrderService {
     /*
      * 장바구니 -> 주문 생성
      * 체크된 CartItem 목록을 받아서 Order + OrderItem 레코드 생성
-     * 재고 확인 (PRoductStatus.ACTIVE + 수량)
+     * 재고 확인 (ProductStatus.ACTIVE + 수량)
      * totalPrice, discountAmount, finalPrice 계산 후 Order 저장
      * 성공 시 orderId 반환 -> 프론트에서 orderStore.setOrder() 호출에 사용
      */
@@ -123,6 +124,51 @@ public class OrderService {
 
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
         return new OrderDetailResponse(order, items);
+    }
+
+    // ── 마이페이지 전용 메서드 ────────────────────────────────────────────
+
+    /** 내 주문 목록 (마이페이지용 — ResponseEntity 포장, OrderListResponse 반환) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<OrderListResponse>> getMyOrders(Long memberId, Pageable pageable) {
+        return ResponseEntity.ok(
+                orderRepository.findByMemberId(memberId, pageable).map(OrderListResponse::new)
+        );
+    }
+
+    /** 내 주문 상세 (마이페이지용 — memberId 본인 검증 포함, ResponseEntity 포장) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<OrderDetailResponse> getMyOrderDetail(Long memberId, Long orderId) {
+        Order order = orderRepository.findByIdAndMemberId(orderId, memberId)
+                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+        return ResponseEntity.ok(new OrderDetailResponse(order, items));
+    }
+
+    // ── 관리자 전용 메서드 ────────────────────────────────────────────────
+
+    /** 전체 주문 목록 (관리자용 — memberId 검증 없음) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<OrderListResponse>> getAllOrders(Pageable pageable) {
+        return ResponseEntity.ok(orderRepository.findAll(pageable).map(OrderListResponse::new));
+    }
+
+    /** 주문 상세 조회 (관리자용 — memberId 검증 없음) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<OrderDetailResponse> getOrderDetail(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+        List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
+        return ResponseEntity.ok(new OrderDetailResponse(order, items));
+    }
+
+    /** 주문 상태 변경 (관리자용) */
+    @Transactional
+    public ResponseEntity<String> updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+        order.setOrderStatus(OrderStatus.valueOf(status));
+        return ResponseEntity.ok("주문 상태가 변경되었습니다.");
     }
 
     // ── 주문 취소 + PG사 환불 ────────────────────────────────────────────

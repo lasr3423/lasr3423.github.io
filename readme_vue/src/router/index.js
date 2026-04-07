@@ -100,18 +100,18 @@ const router = createRouter({
         //   path: 'payment',
         //   component: () => import('@/views/member/MyPaymentList.vue')
         // },
-        // {
-        //   path: 'edit',
-        //   component: () => import('@/views/member/MyEdit.vue')
-        // },
-        // {
-        //   path: 'password',
-        //   component: () => import('@/views/member/MyPassword.vue')
-        // },
-        // {
-        //   path: 'withdraw',
-        //   component: () => import('@/view/member/MyWithdraw.vue')
-        // },
+        {
+          path: 'edit',
+          component: () => import('@/views/member/MyPageEditView.vue')
+        },
+        {
+          path: 'password',
+          component: () => import('@/views/member/MyPasswordView.vue')
+        },
+        {
+          path: 'withdraw',
+          component: () => import('@/views/member/MyWithdrawView.vue')
+        },
       ]
     },
 
@@ -128,22 +128,22 @@ const router = createRouter({
           path: '',
           component: () => import('@/views/admin/DashboardView.vue')
         },
-        // 주문 관리 (절대경로 X → 상대경로로 작성해야 AdminLayout 안에서 렌더링됨)
-        { path: 'order/list',     component: Todo },
+        // 주문/배송 관리
+        { path: 'order/list',     component: () => import('@/views/admin/order/OrderListView.vue') },
         { path: 'order/approval', component: Todo },
-        { path: 'delivery/list',  component: Todo },
+        { path: 'delivery/list',  component: () => import('@/views/admin/delivery/DeliveryListView.vue') },
         { path: 'category/list',  component: Todo },
         { path: 'payment/list',   component: Todo },
         // 상품 관리
-        { path: 'product/list',   component: Todo },
+        { path: 'product/list',   component: () => import('@/views/admin/product/ProductListView.vue') },
         { path: 'product/stock',  component: Todo },
-        { path: 'product/insert', component: Todo },
+        { path: 'product/insert', component: () => import('@/views/admin/product/ProductInsertView.vue') },
         // 게시글 관리
         { path: 'notice/list',    component: Todo },
         { path: 'qna/list',       component: Todo },
         { path: 'review/list',    component: Todo },
         // 회원 관리
-        { path: 'member/list',    component: Todo },
+        { path: 'member/list',    component: () => import('@/views/admin/member/MemberListView.vue') },
         { path: 'member/role',    component: Todo },
       ]
     },

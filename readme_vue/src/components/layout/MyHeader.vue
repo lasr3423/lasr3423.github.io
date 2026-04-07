@@ -13,45 +13,45 @@
           v-model="searchKeyword"
           class="min-w-0 flex-1 bg-transparent px-3 text-sm text-slate-700 outline-none placeholder:text-slate-400"
           type="text"
-          placeholder="Search by title, author, or ISBN"
+          placeholder="도서 검색 (제목, 저자, ISBN)"
           @keyup.enter="handleSearch"
         >
         <select
           v-model="searchType"
           class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 outline-none"
         >
-          <option value="all">All</option>
-          <option value="title">Title</option>
-          <option value="author">Author</option>
+          <option value="all">전체</option>
+          <option value="title">제목</option>
+          <option value="author">저자</option>
           <option value="isbn">ISBN</option>
         </select>
         <button
           class="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
           @click="handleSearch"
         >
-          Search
+          검색
         </button>
       </div>
 
       <nav class="ml-auto flex items-center gap-2 text-sm font-medium text-slate-600">
         <template v-if="!authStore.isLoggedIn">
           <router-link class="rounded-full px-3 py-2 transition hover:bg-slate-100 hover:text-brand-800" to="/signin">
-            Sign in
+            로그인
           </router-link>
           <router-link class="rounded-full bg-accent-500 px-4 py-2 text-white transition hover:bg-accent-600" to="/signup">
-            Sign up
+            회원가입
           </router-link>
         </template>
 
         <template v-else>
           <router-link class="hidden rounded-full px-3 py-2 transition hover:bg-slate-100 hover:text-brand-800 md:inline-flex" to="/mypage/edit">
-            Profile
+            내 정보
           </router-link>
           <router-link class="rounded-full px-3 py-2 transition hover:bg-slate-100 hover:text-brand-800" to="/mypage">
-            My Page
+            마이페이지
           </router-link>
           <router-link class="relative rounded-full px-3 py-2 transition hover:bg-slate-100 hover:text-brand-800" to="/cart">
-            Cart
+            장바구니
             <span
               v-if="cartStore.totalCount > 0"
               class="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-500 px-1 text-[11px] font-bold text-white"
@@ -63,7 +63,7 @@
             class="rounded-full border border-slate-200 px-4 py-2 text-slate-600 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800"
             @click="handleLogout"
           >
-            Sign out
+            로그아웃
           </button>
         </template>
       </nav>
@@ -97,6 +97,7 @@ function handleSearch() {
 
 async function handleLogout() {
   await authStore.signout();
+  alert('로그아웃 되었습니다.');
   router.push('/');
 }
 </script>

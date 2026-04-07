@@ -2,7 +2,7 @@
   <aside class="hidden w-72 shrink-0 lg:block">
     <div class="sticky top-24 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div class="border-b border-slate-200 bg-brand-800 px-5 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white">
-        Browse
+        내 메뉴
       </div>
 
       <div class="p-3">
@@ -44,29 +44,29 @@ const open = reactive({
 const sections = [
   {
     key: 'order',
-    title: 'Orders',
+    title: '주문/배송',
     items: [
-      { label: 'Order history', to: '/mypage/order' },
-      { label: 'Cart', to: '/cart' },
-      { label: 'Payment history', to: '/mypage/payment' },
+      { label: '주문 목록', to: '/mypage/order' },
+      { label: '장바구니', to: '/cart' },
+      { label: '결제 내역', to: '/mypage/payment' },
     ],
   },
   {
     key: 'board',
-    title: 'Community',
+    title: '게시글',
     items: [
-      { label: 'Notice', to: '/notice' },
+      { label: '공지사항', to: '/notice' },
       { label: 'QnA', to: '/qna' },
-      { label: 'Review', to: '/review' },
+      { label: '리뷰', to: '/review' },
     ],
   },
   {
     key: 'myinfo',
-    title: 'Account',
+    title: '회원 정보',
     items: [
-      { label: 'Edit profile', to: '/mypage/edit' },
-      { label: 'Change password', to: '/mypage/password' },
-      { label: 'Withdraw', to: '/mypage/withdraw' },
+      { label: '정보 수정', to: '/mypage/edit' },
+      { label: '비밀번호 변경', to: '/mypage/password' },
+      { label: '회원 탈퇴', to: '/mypage/withdraw' },
     ],
   },
 ];
