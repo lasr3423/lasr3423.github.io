@@ -1,6 +1,7 @@
 package com.bookstore.shop.readme.dto.response;
 
 import com.bookstore.shop.readme.domain.CartItem;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 @Getter
@@ -13,6 +14,9 @@ public class CartItemResponse {
     private final int salePrice;
     private final String thumbnail;
     private final int quantity;
+    // [수정] boolean isXxx 필드는 Jackson이 getXxx() 게터를 찾아 "checked"로 직렬화함
+    //        프론트가 item.isChecked 로 접근하므로 @JsonProperty로 키 명시
+    @JsonProperty("isChecked")
     private final boolean isChecked;
     private final int itemTotal;
 

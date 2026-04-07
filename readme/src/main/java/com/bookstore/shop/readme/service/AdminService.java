@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.stream.Collectors;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -204,6 +206,36 @@ public class AdminService {
             }
         }
         return ResponseEntity.ok(new DeliveryResponse(delivery));
+    }
+
+    // ── 재고 관리 (/admin/product/stock) ─────────────────────────────────────
+
+    /** [신규] 상품 재고 수량 직접 변경 */
+    public ResponseEntity<String> updateStock(Long productId, int stock) {
+        if (stock < 0) throw new RuntimeException("재고는 0 이상이어야 합니다.");
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+        product.setStock(stock);
+        // 재고 0이면 비활성화, 재고 복구 시 활성화
+        if (stock == 0 && product.getProductStatus() == ProductStatus.ACTIVATE) {
+            product.setProductStatus(ProductStatus.DEACTIVATE);
+        } else if (stock > 0 && product.getProductStatus() == ProductStatus.DEACTIVATE) {
+            product.setProductStatus(ProductStatus.ACTIVATE);
+        }
+        return ResponseEntity.ok("재고가 " + stock + "개로 변경되었습니다.");
+    }
+
+    // ── 주문 상태 필터 조회 ───────────────────────────────────────────────────
+
+    /** [신규] 특정 상태 주문만 조회 — 승인 대기(PAYED) 목록 페이지에서 사용 */
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<OrderListResponse>> getOrdersByStatus(
+            String status, Pageable pageable) {
+        OrderStatus orderStatus = OrderStatus.valueOf(status);
+        return ResponseEntity.ok(
+                orderRepository.findAllByOrderStatus(orderStatus, pageable)
+                        .map(OrderListResponse::new)
+        );
     }
 
     // ── 내부 유틸 ───────────────────────────────────────────────────────────

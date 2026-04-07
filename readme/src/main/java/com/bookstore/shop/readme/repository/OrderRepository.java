@@ -22,4 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // 관리자 - 주문 상태별 수 (대시보드)
     long countByOrderStatus(OrderStatus orderStatus);
+
+    // [신규] 관리자 - 특정 상태 주문 목록 (승인 대기 페이지 등에서 사용)
+    Page<Order> findAllByOrderStatus(OrderStatus orderStatus, Pageable pageable);
 }
