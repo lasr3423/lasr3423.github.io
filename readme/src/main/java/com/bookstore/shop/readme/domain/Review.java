@@ -26,6 +26,11 @@ public class Review extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;         // 리뷰 내용
 
+    /** 조회수 — DB설계서 review.hits */
+    @Column(name = "hits", nullable = false)
+    @Builder.Default
+    private int hits = 0;
+
     @Column(name = "deleted_at")
     private java.time.LocalDateTime deletedAt; // soft delete
 }

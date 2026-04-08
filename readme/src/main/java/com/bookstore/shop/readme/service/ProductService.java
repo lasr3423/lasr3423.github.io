@@ -17,29 +17,41 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    // 상품 전체 목록 조회
+    // 상품 목록 조회 + 키워드 검색 (REQ-P-001, REQ-P-003, REQ-P-004 통합)
     @Transactional(readOnly = true)
-    public Page<ProductListResponse> getProductList(Long categoryTopId, Long categorySubId, Pageable pageable) {
+    public Page<ProductListResponse> getProductList(Long categoryTopId, Long categorySubId,
+                                                     String keyword, Pageable pageable) {
+        // 키워드 검색이 있는 경우
+        if (keyword != null && !keyword.isBlank()) {
+            if (categoryTopId != null && categorySubId != null) {
+                return productRepository
+                        .searchByKeywordAndSub(ProductStatus.ACTIVATE, categoryTopId, categorySubId, keyword, pageable)
+                        .map(ProductListResponse::new);
+            }
+            if (categoryTopId != null) {
+                return productRepository
+                        .searchByKeywordAndTop(ProductStatus.ACTIVATE, categoryTopId, keyword, pageable)
+                        .map(ProductListResponse::new);
+            }
+            return productRepository
+                    .searchByKeyword(ProductStatus.ACTIVATE, keyword, pageable)
+                    .map(ProductListResponse::new);
+        }
 
-        // 소분류까지 선택된 경우
+        // 키워드 없는 일반 조회
         if (categoryTopId != null && categorySubId != null) {
             return productRepository
                     .findAllByProductStatusAndCategoryTopIdAndCategorySubId(
                             ProductStatus.ACTIVATE, categoryTopId, categorySubId, pageable)
                     .map(ProductListResponse::new);
         }
-
-        // 대분류만 선택됬을 경우
         if (categoryTopId != null) {
             return productRepository
                     .findAllByProductStatusAndCategoryTopId(
                             ProductStatus.ACTIVATE, categoryTopId, pageable)
                     .map(ProductListResponse::new);
         }
-
-        // 전체 조회 (default)
         return productRepository
-                // ACTIVATE 상태인 상품만 조회(DEACTIVATE, DELETE 제외)
                 .findAllByProductStatus(ProductStatus.ACTIVATE, pageable)
                 .map(ProductListResponse::new);
     }

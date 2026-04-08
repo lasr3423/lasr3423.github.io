@@ -5,7 +5,10 @@ import com.bookstore.shop.readme.domain.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +28,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // [신규] 관리자 - 특정 상태 주문 목록 (승인 대기 페이지 등에서 사용)
     Page<Order> findAllByOrderStatus(OrderStatus orderStatus, Pageable pageable);
+
+    // 대시보드 — 기간별 주문 수
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    // 대시보드 — 기간별 매출 합계 (finalPrice 합산, PAYED/APPROVAL 상태만)
+    @Query("SELECT COALESCE(SUM(o.finalPrice), 0) FROM Order o " +
+           "WHERE o.createdAt BETWEEN :start AND :end " +
+           "AND o.orderStatus IN ('PAYED', 'APPROVAL')")
+    long sumFinalPriceBetween(@Param("start") LocalDateTime start,
+                              @Param("end") LocalDateTime end);
 }

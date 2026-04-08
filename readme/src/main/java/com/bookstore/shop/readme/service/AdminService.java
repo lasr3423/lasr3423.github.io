@@ -1,6 +1,7 @@
 package com.bookstore.shop.readme.service;
 
 import com.bookstore.shop.readme.domain.*;
+import com.bookstore.shop.readme.dto.request.CategoryCreateRequest;
 import com.bookstore.shop.readme.dto.request.DeliveryUpdateRequest;
 import com.bookstore.shop.readme.dto.request.ProductCreateRequest;
 import com.bookstore.shop.readme.dto.request.ProductUpdateRequest;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,19 +34,48 @@ public class AdminService {
     private final NoticeRepository       noticeRepository;
     private final QnARepository          qnaRepository;
     private final ReviewRepository       reviewRepository;
+    private final ReviewService          reviewService;   // 리뷰 상세/삭제 위임
 
-    // ── 대시보드 ────────────────────────────────────────────────────────────
+    // ── 대시보드 — REQ-A-001~007 ────────────────────────────────────────────
 
     @Transactional(readOnly = true)
     public ResponseEntity<DashboardResponse> getDashboard() {
-        long totalMembers   = memberRepository.count();
-        long activeMembers  = memberRepository.countByMemberStatus(MemberStatus.ACTIVATE);
-        long totalProducts  = productRepository.count();
-        long totalOrders    = orderRepository.count();
-        long pendingOrders  = orderRepository.countByOrderStatus(OrderStatus.PENDING);
+        LocalDateTime todayStart  = LocalDate.now().atStartOfDay();
+        LocalDateTime todayEnd    = todayStart.plusDays(1);
+        LocalDateTime monthStart  = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+
+        // 회원
+        long totalMembers    = memberRepository.count();
+        long activeMembers   = memberRepository.countByMemberStatus(MemberStatus.ACTIVATE);
+        long todayNewMembers = memberRepository.countByCreatedAtBetween(todayStart, todayEnd);
+        long monthNewMembers = memberRepository.countByCreatedAtBetween(monthStart, todayEnd);
+
+        // 상품 (재고 10개 이하 = 부족)
+        long totalProducts    = productRepository.count();
+        long lowStockProducts = productRepository
+                .countByStockLessThanAndProductStatus(10, ProductStatus.ACTIVATE);
+
+        // 주문
+        long totalOrders   = orderRepository.count();
+        long pendingOrders = orderRepository.countByOrderStatus(OrderStatus.PENDING);
+        long payedOrders   = orderRepository.countByOrderStatus(OrderStatus.PAYED);
+        long todayOrders   = orderRepository.countByCreatedAtBetween(todayStart, todayEnd);
+        long todaySales    = orderRepository.sumFinalPriceBetween(todayStart, todayEnd);
+        long monthOrders   = orderRepository.countByCreatedAtBetween(monthStart, todayEnd);
+        long monthSales    = orderRepository.sumFinalPriceBetween(monthStart, todayEnd);
+
+        // QnA 미답변 (depth=0 질문 중 WAITING 상태)
+        long unansweredQnaCount = qnaRepository.countByDepthAndQnaStatusAndDeletedAtIsNull(0, QnaStatus.WAITING);
+
+        // 배송 READY
+        long readyDeliveryCount = deliveryRepository.countByDeliveryStatus(DeliveryStatus.READY);
 
         return ResponseEntity.ok(new DashboardResponse(
-                totalMembers, activeMembers, totalProducts, totalOrders, pendingOrders));
+                totalMembers, activeMembers, todayNewMembers, monthNewMembers,
+                totalProducts, lowStockProducts,
+                totalOrders, pendingOrders, payedOrders,
+                todayOrders, todaySales, monthOrders, monthSales,
+                unansweredQnaCount, readyDeliveryCount));
     }
 
     // ── 회원 관리 ───────────────────────────────────────────────────────────
@@ -241,7 +272,7 @@ public class AdminService {
         );
     }
 
-    // ── 카테고리 관리 (/admin/category/list) ─────────────────────────────────
+    // ── 카테고리 관리 (/admin/category) ──────────────────────────────────────
 
     /** 대분류 카테고리 목록 (소분류 포함) */
     @Transactional(readOnly = true)
@@ -253,27 +284,87 @@ public class AdminService {
         return ResponseEntity.ok(result);
     }
 
-    // ── 공지사항 관리 (/admin/notice/list) ───────────────────────────────────
+    /** 대분류 카테고리 등록 — FA-027 */
+    public ResponseEntity<Long> createCategoryTop(CategoryCreateRequest req) {
+        CategoryTop top = CategoryTop.builder()
+                .name(req.name())
+                .sortOrder(req.sortOrder() != null ? req.sortOrder() : 0)
+                .categoryStatus(CategoryStatus.ACTIVATE)
+                .build();
+        categoryTopRepository.save(top);
+        return ResponseEntity.status(201).body(top.getId());
+    }
 
-    /** 관리자 전체 공지사항 목록 (삭제된 것 포함) */
+    /** 소분류 카테고리 등록 — FA-027 */
+    public ResponseEntity<Long> createCategorySub(CategoryCreateRequest req) {
+        CategoryTop top = categoryTopRepository.findById(req.categoryTopId())
+                .orElseThrow(() -> new RuntimeException("대분류 카테고리를 찾을 수 없습니다."));
+        CategorySub sub = CategorySub.builder()
+                .categoryTop(top)
+                .name(req.name())
+                .sortOrder(req.sortOrder() != null ? req.sortOrder() : 0)
+                .categoryStatus(CategoryStatus.ACTIVATE)
+                .build();
+        categorySubRepository.save(sub);
+        return ResponseEntity.status(201).body(sub.getId());
+    }
+
+    /** 대분류 카테고리 수정 — FA-028 */
+    public ResponseEntity<String> updateCategoryTop(Long topId, CategoryCreateRequest req) {
+        CategoryTop top = categoryTopRepository.findById(topId)
+                .orElseThrow(() -> new RuntimeException("대분류 카테고리를 찾을 수 없습니다."));
+        if (req.name() != null) top.setName(req.name());
+        if (req.sortOrder() != null) top.setSortOrder(req.sortOrder());
+        return ResponseEntity.ok("카테고리가 수정되었습니다.");
+    }
+
+    /** 소분류 카테고리 수정 — FA-028 */
+    public ResponseEntity<String> updateCategorySub(Long subId, CategoryCreateRequest req) {
+        CategorySub sub = categorySubRepository.findById(subId)
+                .orElseThrow(() -> new RuntimeException("소분류 카테고리를 찾을 수 없습니다."));
+        if (req.name() != null) sub.setName(req.name());
+        if (req.sortOrder() != null) sub.setSortOrder(req.sortOrder());
+        return ResponseEntity.ok("카테고리가 수정되었습니다.");
+    }
+
+    /** 대분류 카테고리 삭제 (DEACTIVATE) — FA-029 */
+    public ResponseEntity<String> deleteCategoryTop(Long topId) {
+        CategoryTop top = categoryTopRepository.findById(topId)
+                .orElseThrow(() -> new RuntimeException("대분류 카테고리를 찾을 수 없습니다."));
+        top.setCategoryStatus(CategoryStatus.DEACTIVATE);
+        return ResponseEntity.ok("카테고리가 비활성화되었습니다.");
+    }
+
+    /** 소분류 카테고리 삭제 (DEACTIVATE) — FA-029 */
+    public ResponseEntity<String> deleteCategorySub(Long subId) {
+        CategorySub sub = categorySubRepository.findById(subId)
+                .orElseThrow(() -> new RuntimeException("소분류 카테고리를 찾을 수 없습니다."));
+        sub.setCategoryStatus(CategoryStatus.DEACTIVATE);
+        return ResponseEntity.ok("카테고리가 비활성화되었습니다.");
+    }
+
+    // ── 공지사항 관리 (/admin/notice) ────────────────────────────────────────
+
+    /** 관리자 전체 공지사항 목록 */
     @Transactional(readOnly = true)
     public ResponseEntity<Page<NoticeResponse>> getAdminNotices(Pageable pageable) {
         return ResponseEntity.ok(
                 noticeRepository.findAll(pageable).map(NoticeResponse::new));
     }
 
-    // ── QnA 관리 (/admin/qna/list) ───────────────────────────────────────────
-
-    /** 관리자 전체 QnA 목록 (미답변 필터 선택) */
+    /** 관리자 공지사항 상세 조회 — FA-031 */
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<QnAResponse>> getAdminQnAs(boolean unansweredOnly, Pageable pageable) {
-        Page<QnAResponse> result = unansweredOnly
-                ? qnaRepository.findAllByAnswerIsNullAndDeletedAtIsNull(pageable).map(QnAResponse::new)
-                : qnaRepository.findAllByDeletedAtIsNull(pageable).map(QnAResponse::new);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<NoticeResponse> getAdminNoticeDetail(Long noticeId) {
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
+        return ResponseEntity.ok(new NoticeResponse(notice));
     }
 
-    // ── 리뷰 관리 (/admin/review/list) ───────────────────────────────────────
+    // ── QnA 관리 (/admin/qna) ────────────────────────────────────────────────
+
+    // getAdminQnAs — AdminApiController에서 QnAService.getAllQnAs()로 직접 위임하므로 제거됨
+
+    // ── 리뷰 관리 (/admin/review) ─────────────────────────────────────────────
 
     /** 관리자 전체 리뷰 목록 */
     @Transactional(readOnly = true)
@@ -282,12 +373,15 @@ public class AdminService {
                 reviewRepository.findAllByDeletedAtIsNull(pageable).map(ReviewResponse::new));
     }
 
-    /** 관리자 리뷰 강제 삭제 (soft delete) */
+    /** 관리자 리뷰 상세 조회 — FA-036 (이미지/반응 포함 — ReviewService 위임) */
+    @Transactional(readOnly = true)
+    public ResponseEntity<ReviewResponse> getAdminReviewDetail(Long reviewId) {
+        return reviewService.getReviewDetailForAdmin(reviewId);
+    }
+
+    /** 관리자 리뷰 강제 삭제 (soft delete — ReviewService 위임) */
     public ResponseEntity<String> adminDeleteReview(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-        review.setDeletedAt(LocalDateTime.now());
-        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
+        return reviewService.adminDeleteReview(reviewId);
     }
 
     // ── 내부 유틸 ───────────────────────────────────────────────────────────

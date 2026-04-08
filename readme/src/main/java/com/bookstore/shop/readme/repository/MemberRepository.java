@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -41,4 +42,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // 상태별 회원 수 (대시보드 통계용)
     long countByMemberStatus(MemberStatus memberStatus);
 
+    // 대시보드 — 기간별 신규 가입 수
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

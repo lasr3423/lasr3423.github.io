@@ -20,15 +20,19 @@ public class ProductApiController {
 
     // 유저 페이지
 
+    // GET /api/product?keyword=&categoryTopId=&categorySubId=
+    // REQ-P-001(목록) + REQ-P-003(검색) + REQ-P-004(카테고리 필터) 통합
     @GetMapping
     public ResponseEntity<Page<ProductListResponse>> getProductList(
             @RequestParam(required = false) Long categoryTopId,
             @RequestParam(required = false) Long categorySubId,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        Page<ProductListResponse> result = productService.getProductList(categoryTopId, categorySubId, pageable);
+        Page<ProductListResponse> result =
+                productService.getProductList(categoryTopId, categorySubId, keyword, pageable);
 
-        return ResponseEntity.ok(result);   // HTTP 200 + JSON
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/detail/{productId}")
