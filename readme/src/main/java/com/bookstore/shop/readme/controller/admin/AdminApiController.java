@@ -79,6 +79,11 @@ public class AdminApiController {
         return adminService.getProduct(productId);
     }
 
+    @GetMapping("/products/isbn")
+    public ResponseEntity<IsbnBookLookupResponse> lookupBookByIsbn(@RequestParam String isbn) {
+        return adminService.lookupBookByIsbn(isbn);
+    }
+
     @PostMapping("/products")
     public ResponseEntity<Long> createProduct(@RequestBody ProductCreateRequest req) {
         return adminService.createProduct(req);

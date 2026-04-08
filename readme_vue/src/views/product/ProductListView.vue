@@ -69,7 +69,7 @@
 
         <!-- 상품 이미지 -->
         <img
-          :src="product.thumbnail || '/img/no-image.png'"
+          :src="resolveAssetUrl(product.thumbnail)"
           :alt="product.title"
           class="product-thumbnail"
           @click="goToDetail(product.id)"
@@ -125,6 +125,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useProductStore } from '@/store/product'
 import { useCartStore } from '@/store/cart'
 import { useAuthStore } from '@/store/auth'
+import { resolveAssetUrl } from '@/utils/asset'
 
 const router = useRouter()
 const route  = useRoute()

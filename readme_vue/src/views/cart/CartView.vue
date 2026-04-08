@@ -60,7 +60,7 @@
           <!-- 상품 정보 -->
           <div class="col-info">
             <img
-              :src="item.thumbnail || '/img/no-image.png'"
+              :src="resolveAssetUrl(item.thumbnail)"
               :alt="item.title"
               class="item-thumbnail"
               @click="router.push(`/product/${item.productId}`)"
@@ -154,6 +154,7 @@ import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore }  from '@/store/cart'
 import { useOrderStore } from '@/store/order'
+import { resolveAssetUrl } from '@/utils/asset'
 
 const router     = useRouter()
 const cartStore  = useCartStore()

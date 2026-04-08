@@ -14,7 +14,7 @@
         <!-- 책 이미지 -->
         <div class="image-area">
           <img
-            :src="product.thumbnail || '/img/no-image.png'"
+            :src="resolveAssetUrl(product.thumbnail)"
             :alt="product.title"
             class="product-image"
           />
@@ -114,6 +114,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { productApi } from '@/api/product'
 import { useCartStore } from '@/store/cart'
 import { useAuthStore } from '@/store/auth'
+import { resolveAssetUrl } from '@/utils/asset'
 
 const route    = useRoute()
 const router   = useRouter()
