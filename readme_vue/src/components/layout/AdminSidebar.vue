@@ -55,18 +55,20 @@ const sections = [
     key: 'adminOrder',
     title: 'Orders',
     items: [
-      { label: 'Order list', to: '/admin/order/list' },
-      { label: 'Delivery list', to: '/admin/delivery/list' },
-      { label: 'Category list', to: '/admin/category/list' },
-      { label: 'Payment list', to: '/admin/payment/list' },
+      { label: 'Order list',      to: '/admin/order/list' },
+      { label: 'Order approval',  to: '/admin/order/approval' },
+      { label: 'Delivery list',   to: '/admin/delivery/list' },
+      { label: 'Category list',   to: '/admin/category/list' },
+      { label: 'Payment list',    to: '/admin/payment/list' },
     ],
   },
   {
     key: 'adminProduct',
     title: 'Products',
     items: [
-      { label: 'Product list', to: '/admin/product/list' },
-      { label: 'Create product', to: '/admin/product/insert' },
+      { label: 'Product list',    to: '/admin/product/list' },
+      { label: 'Stock manage',    to: '/admin/product/stock' },
+      { label: 'Create product',  to: '/admin/product/insert' },
     ],
   },
   {
