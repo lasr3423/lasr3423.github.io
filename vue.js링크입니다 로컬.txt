@@ -1,0 +1,35 @@
+⭐ 리뷰 (Review)
+[cite_start]목록 조회: /review/list?productId=1 [cite: 1383]
+[cite_start]상세 조회: /review/detail/1 [cite: 260, 1389]
+[cite_start]리뷰 작성: /review/write?productId=1 (로그인 필수) [cite: 254, 1385]
+[cite_start]리뷰 수정: /review/edit/1 (본인만) [cite: 138, 1282]
+삭제 완료 화면: /review/delete-success (삭제 처리 후 이동)
+
+
+💬 QnA (1:1 문의)
+[cite_start]목록 조회: /qna [cite: 240, 1373]
+[cite_start]상세 조회: /qna/detail/1 [cite: 250, 1380]
+[cite_start]문의 등록: /qna/write (로그인 필수) [cite: 242, 1375]
+[cite_start]문의 수정: /qna/edit/1 (답변 완료 전까지만) [cite: 149, 1290]
+삭제 완료 화면: /qna/delete-success (삭제 처리 후 이동)
+
+📢 공지사항 (Notice)
+[cite_start]목록 조회: /notice [cite: 236, 1369]
+[cite_start]상세 조회: /notice/1 [cite: 237, 1371]
+🔐 관리자(Admin)용 URL
+[cite_start]관리자(MANAGER/ADMIN)가 데이터를 모니터링하고 관리하는 경로입니다. [cite: 1171, 1172]
+
+⭐ 리뷰 관리
+[cite_start]리뷰 목록 관리: /admin/review [cite: 72, 1228]
+[cite_start]리뷰 상세 및 삭제: /admin/review/detail/1 (강제 삭제 버튼 포함) [cite: 74, 1230]
+💬 QnA 관리
+[cite_start]문의 목록 관리: /admin/qna [cite: 78, 1233]
+[cite_start]문의 상세 및 답변: /admin/qna/detail/1 (답변 등록/수정/삭제 수행) [cite: 80, 1235]
+
+📢 공지사항 관리
+[cite_start]공지 목록 관리: /admin/notice [cite: 63, 1221]
+[cite_start]공지 등록 폼: /admin/notice/form [cite: 66, 1223]
+[cite_start]공지 수정 폼: /admin/notice/edit/1 [cite: 68, 1224]
+[cite_start]공지 상세 조회: /admin/notice/detail/1 [cite: 64, 1222]
+✅ 공통
+관리자 작업 결과 화면: /admin/action-success (관리 업무 완료 시 피드백)
