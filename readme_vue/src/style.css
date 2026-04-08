@@ -1,23 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
 
-  --color-brand-50: #f5f8fb;
-  --color-brand-100: #dbe7f2;
-  --color-brand-200: #b9d0e6;
-  --color-brand-300: #8fb0d3;
-  --color-brand-400: #5e86b9;
-  --color-brand-500: #3b6799;
-  --color-brand-600: #244a75;
-  --color-brand-700: #173455;
-  --color-brand-800: #092c4c;
-  --color-brand-900: #061f36;
+  /* Style Guide: Primary */
+  --color-brand-50: #f3f6fb;
+  --color-brand-100: #dde7f5;
+  --color-brand-200: #bccde7;
+  --color-brand-300: #8ea8d0;
+  --color-brand-400: #5f82b6;
+  --color-brand-500: #3d6292;
+  --color-brand-600: #264873;
+  --color-brand-700: #173251;
+  --color-brand-800: #102540;
+  --color-brand-900: #0b1a2f;
 
-  --color-accent-400: #f5b16c;
-  --color-accent-500: #f2994a;
-  --color-accent-600: #db7f2e;
+  /* Style Guide: Point */
+  --color-accent-50: #fff4ea;
+  --color-accent-100: #ffe2c7;
+  --color-accent-200: #ffc48c;
+  --color-accent-300: #ffab5e;
+  --color-accent-400: #f89a3f;
+  --color-accent-500: #ef7d1a;
+  --color-accent-600: #d86408;
+
+  /* Style Guide: UI Neutral */
+  --color-surface-50: #f8fafc;
+  --color-surface-100: #f1f5f9;
+  --color-surface-200: #e2e8f0;
+  --color-ink-700: #334155;
+  --color-ink-800: #1e293b;
+  --color-ink-900: #0f172a;
 }
 
 @layer base {
@@ -33,9 +47,10 @@
     margin: 0;
     min-height: 100vh;
     background:
-      radial-gradient(circle at top, rgba(245, 248, 251, 0.9), transparent 40%),
-      linear-gradient(180deg, #f8fafc 0%, #ffffff 24%, #f8fafc 100%);
-    color: #1f2937;
+      radial-gradient(circle at top, rgba(255, 244, 234, 0.9), transparent 28%),
+      radial-gradient(circle at right top, rgba(221, 231, 245, 0.9), transparent 24%),
+      linear-gradient(180deg, #f8fafc 0%, #ffffff 38%, #f6f8fc 100%);
+    color: var(--color-ink-800);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -55,5 +70,23 @@
 
   #app {
     min-height: 100vh;
+  }
+}
+
+@layer components {
+  .surface-panel {
+    @apply rounded-[2rem] border border-slate-200 bg-white shadow-sm;
+  }
+
+  .surface-soft {
+    @apply rounded-[1.5rem] border border-slate-200 bg-slate-50;
+  }
+
+  .point-chip {
+    @apply inline-flex items-center rounded-full bg-accent-50 px-3 py-1 text-xs font-semibold text-accent-600;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold tracking-tight text-slate-900;
   }
 }

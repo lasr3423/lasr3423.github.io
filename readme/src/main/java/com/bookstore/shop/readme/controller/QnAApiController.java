@@ -1,5 +1,6 @@
 package com.bookstore.shop.readme.controller;
 
+import com.bookstore.shop.readme.dto.request.AdminQnAAnswerRequest;
 import com.bookstore.shop.readme.dto.request.QnACreateRequest;
 import com.bookstore.shop.readme.dto.request.QnAUpdateRequest;
 import com.bookstore.shop.readme.dto.response.QnAResponse;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,5 +64,15 @@ public class QnAApiController {
             @PathVariable Long qnaId,
             @AuthenticationPrincipal CustomUserDetails user) {
         return qnaService.deleteQnA(qnaId, user.getMemberId());
+    }
+
+    @PostMapping("/{qnaId}/answer")
+    @PreAuthorize("hasAnyRole('MANAGER', 'ADMIN')")
+    public ResponseEntity<QnAResponse> answerQnA(
+            @PathVariable Long qnaId,
+            @RequestBody AdminQnAAnswerRequest req,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        String title = (req.title() == null || req.title().isBlank()) ? "관리자 답변" : req.title();
+        return qnaService.answerQnA(qnaId, title, req.content(), user.getMemberId());
     }
 }

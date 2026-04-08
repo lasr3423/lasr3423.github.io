@@ -2,8 +2,7 @@ package com.bookstore.shop.readme.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 
-public record NoticeCreateRequest(
+public record AdminQnAAnswerRequest(
         String title,
-        String content,
-        @JsonAlias("pinned") boolean isFixed
+        @JsonAlias("answer") String content
 ) {}

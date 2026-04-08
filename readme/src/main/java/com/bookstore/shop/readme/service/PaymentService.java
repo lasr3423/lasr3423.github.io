@@ -208,6 +208,13 @@ public class PaymentService {
         return ResponseEntity.ok(result);
     }
 
+    @Transactional(readOnly = true)
+    public ResponseEntity<PaymentStatusResponse> getPaymentDetail(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("결제 정보를 찾을 수 없습니다."));
+        return ResponseEntity.ok(new PaymentStatusResponse(payment));
+    }
+
     // ─── 내부 유틸 메서드 ─────────────────────────────────────────────────
 
     // 금액 검증 — 탬퍼링 방지 핵심 메서드

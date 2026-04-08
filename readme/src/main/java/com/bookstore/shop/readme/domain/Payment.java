@@ -2,8 +2,6 @@ package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,6 +24,7 @@ public class Payment extends BaseEntity {
     private String method;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.READY;
 
     @Column(nullable = false)

@@ -2,7 +2,6 @@ package com.bookstore.shop.readme.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -24,15 +23,19 @@ public class Order extends BaseEntity {
     private String number;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @Column(nullable = false)
+    @Builder.Default
     private int totalPrice = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private int discountAmount = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer finalPrice = 0;
 
     // [수정] 프론트 OrderView.vue 폼에 수령인/우편번호 필드 없음 → nullable=true 로 완화

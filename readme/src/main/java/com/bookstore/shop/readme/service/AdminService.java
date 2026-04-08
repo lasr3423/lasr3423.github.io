@@ -84,21 +84,13 @@ public class AdminService {
     @Transactional(readOnly = true)
     public ResponseEntity<Page<MemberResponse>> getMembers(
             String keyword, String status, Pageable pageable) {
+        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        MemberStatus memberStatus = (status == null || status.isBlank()) ? null : MemberStatus.valueOf(status);
 
-        Page<MemberResponse> result;
-
-        if (keyword != null && !keyword.isBlank()) {
-            result = memberRepository
-                    .findByNameContainingOrEmailContaining(keyword, keyword, pageable)
-                    .map(MemberResponse::new);
-        } else if (status != null && !status.isBlank()) {
-            result = memberRepository
-                    .findAllByMemberStatus(MemberStatus.valueOf(status), pageable)
-                    .map(MemberResponse::new);
-        } else {
-            result = memberRepository.findAll(pageable).map(MemberResponse::new);
-        }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(
+                memberRepository.searchByKeywordAndStatus(normalizedKeyword, memberStatus, pageable)
+                        .map(MemberResponse::new)
+        );
     }
 
     /** 회원 상세 조회 */
@@ -349,7 +341,7 @@ public class AdminService {
     @Transactional(readOnly = true)
     public ResponseEntity<Page<NoticeResponse>> getAdminNotices(Pageable pageable) {
         return ResponseEntity.ok(
-                noticeRepository.findAll(pageable).map(NoticeResponse::new));
+                noticeRepository.findAllByDeletedAtIsNull(pageable).map(NoticeResponse::new));
     }
 
     /** 관리자 공지사항 상세 조회 — FA-031 */

@@ -30,6 +30,18 @@ const router = createRouter({
           component: () => import('@/views/product/ProductDetailView.vue')
         },
         {
+          path: 'notice',
+          component: () => import('@/views/board/NoticeListView.vue')
+        },
+        {
+          path: 'qna',
+          component: () => import('@/views/board/QnaListView.vue')
+        },
+        {
+          path: 'review',
+          component: () => import('@/views/board/ReviewListView.vue')
+        },
+        {
           path: 'cart',
           component: () => import('@/views/cart/CartView.vue'),
           meta: { requiresAuth: true }
