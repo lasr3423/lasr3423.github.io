@@ -11,7 +11,6 @@
         <RouterView />
       </main>
     </div>
-
     <MainFooter />
   </div>
 </template>

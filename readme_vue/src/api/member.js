@@ -13,4 +13,6 @@ export const memberApi = {
     getOrders:      (params) => api.get('/api/member/me/orders', { params }),
     // 내 주문 상세
     getOrder:       (id)     => api.get(`/api/member/me/orders/${id}`),
+    // 내 결제 내역
+    getPayments:    (params) => api.get('/api/member/me/payments', { params }),
 };
