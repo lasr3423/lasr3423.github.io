@@ -1,15 +1,12 @@
 package com.bookstore.shop.readme.controller.mypage;
 
 import com.bookstore.shop.readme.dto.request.ChangePasswordRequest;
+import com.bookstore.shop.readme.dto.request.QnAUpdateRequest;
+import com.bookstore.shop.readme.dto.request.ReviewUpdateRequest;
 import com.bookstore.shop.readme.dto.request.UpdateMemberRequest;
-import com.bookstore.shop.readme.dto.response.MemberResponse;
-import com.bookstore.shop.readme.dto.response.OrderDetailResponse;
-import com.bookstore.shop.readme.dto.response.OrderListResponse;
-import com.bookstore.shop.readme.dto.response.PaymentStatusResponse;
+import com.bookstore.shop.readme.dto.response.*;
 import com.bookstore.shop.readme.security.CustomUserDetails;
-import com.bookstore.shop.readme.service.MemberService;
-import com.bookstore.shop.readme.service.OrderService;
-import com.bookstore.shop.readme.service.PaymentService;
+import com.bookstore.shop.readme.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-// [수정] PaymentRepository 직접 주입 제거 → PaymentService 위임으로 변경
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
@@ -28,6 +24,8 @@ public class MyPageApiController {
     private final MemberService  memberService;
     private final OrderService   orderService;
     private final PaymentService paymentService;
+    private final ReviewService  reviewService;
+    private final QnAService     qnaService;
 
     // ── 회원 정보 ───────────────────────────────────────────────────────────
 
@@ -80,5 +78,75 @@ public class MyPageApiController {
             @AuthenticationPrincipal CustomUserDetails user,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return paymentService.getMyPayments(user.getMemberId(), pageable);
+    }
+
+    // ── 내 리뷰 관리 (/mypage/review) ──────────────────────────────────────
+
+    // 내 리뷰 목록 — REQ-M-016
+    @GetMapping("/me/reviews")
+    public ResponseEntity<Page<ReviewResponse>> getMyReviews(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return reviewService.getMyReviews(user.getMemberId(), pageable);
+    }
+
+    // 내 리뷰 상세 — REQ-M-017
+    @GetMapping("/me/reviews/{reviewId}")
+    public ResponseEntity<ReviewResponse> getMyReviewDetail(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long reviewId) {
+        return reviewService.getMyReviewDetail(reviewId, user.getMemberId());
+    }
+
+    // 내 리뷰 수정 — REQ-M-018
+    @PutMapping("/me/reviews/{reviewId}")
+    public ResponseEntity<ReviewResponse> updateMyReview(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long reviewId,
+            @RequestBody ReviewUpdateRequest req) {
+        return reviewService.updateReview(reviewId, req, user.getMemberId());
+    }
+
+    // 내 리뷰 삭제 — REQ-M-019
+    @DeleteMapping("/me/reviews/{reviewId}")
+    public ResponseEntity<String> deleteMyReview(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long reviewId) {
+        return reviewService.deleteReview(reviewId, user.getMemberId());
+    }
+
+    // ── 내 QnA 관리 (/mypage/qna) ──────────────────────────────────────────
+
+    // 내 QnA 목록 — REQ-M-021
+    @GetMapping("/me/qnas")
+    public ResponseEntity<Page<QnAResponse>> getMyQnAs(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return qnaService.getMyQnAs(user.getMemberId(), pageable);
+    }
+
+    // 내 QnA 상세 — REQ-M-022
+    @GetMapping("/me/qnas/{qnaId}")
+    public ResponseEntity<QnAResponse> getMyQnADetail(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long qnaId) {
+        return qnaService.getMyQnADetail(qnaId, user.getMemberId());
+    }
+
+    // 내 QnA 수정 — REQ-M-023
+    @PutMapping("/me/qnas/{qnaId}")
+    public ResponseEntity<QnAResponse> updateMyQnA(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long qnaId,
+            @RequestBody QnAUpdateRequest req) {
+        return qnaService.updateQnA(qnaId, req, user.getMemberId());
+    }
+
+    // 내 QnA 삭제 — REQ-M-024
+    @DeleteMapping("/me/qnas/{qnaId}")
+    public ResponseEntity<String> deleteMyQnA(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @PathVariable Long qnaId) {
+        return qnaService.deleteQnA(qnaId, user.getMemberId());
     }
 }

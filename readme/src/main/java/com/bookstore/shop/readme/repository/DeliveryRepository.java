@@ -12,4 +12,7 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     Optional<Delivery> findByOrderId(Long orderId);
 
     Page<Delivery> findAllByDeliveryStatus(DeliveryStatus status, Pageable pageable);
+
+    // 대시보드 — 배송 상태별 건수
+    long countByDeliveryStatus(DeliveryStatus status);
 }

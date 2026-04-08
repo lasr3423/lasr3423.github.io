@@ -1,12 +1,15 @@
 package com.bookstore.shop.readme.controller.admin;
 
+import com.bookstore.shop.readme.dto.request.CategoryCreateRequest;
 import com.bookstore.shop.readme.dto.request.DeliveryUpdateRequest;
 import com.bookstore.shop.readme.dto.request.ProductCreateRequest;
 import com.bookstore.shop.readme.dto.request.ProductUpdateRequest;
 import com.bookstore.shop.readme.dto.response.*;
+import com.bookstore.shop.readme.security.CustomUserDetails;
 import com.bookstore.shop.readme.service.AdminService;
 import com.bookstore.shop.readme.service.OrderService;
 import com.bookstore.shop.readme.service.PaymentService;
+import com.bookstore.shop.readme.service.QnAService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +33,7 @@ public class AdminApiController {
     private final AdminService   adminService;
     private final OrderService   orderService;
     private final PaymentService paymentService;
+    private final QnAService     qnaService;
 
     // ── 대시보드 ────────────────────────────────────────────────────────────
 
@@ -159,14 +164,54 @@ public class AdminApiController {
         return paymentService.getAllPayments(status, pageable);
     }
 
-    // ── 카테고리 관리 (/admin/category/list) ─────────────────────────────────
+    // ── 카테고리 관리 (/admin/categories) ────────────────────────────────────
 
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryResponse>> getAdminCategories() {
         return adminService.getAdminCategories();
     }
 
-    // ── 공지사항 관리 (/admin/notice/list) ───────────────────────────────────
+    // 대분류 등록 — FA-027
+    @PostMapping("/categories/top")
+    public ResponseEntity<Long> createCategoryTop(@RequestBody CategoryCreateRequest req) {
+        return adminService.createCategoryTop(req);
+    }
+
+    // 소분류 등록 — FA-027
+    @PostMapping("/categories/sub")
+    public ResponseEntity<Long> createCategorySub(@RequestBody CategoryCreateRequest req) {
+        return adminService.createCategorySub(req);
+    }
+
+    // 대분류 수정 — FA-028
+    @PutMapping("/categories/top/{topId}")
+    public ResponseEntity<String> updateCategoryTop(
+            @PathVariable Long topId,
+            @RequestBody CategoryCreateRequest req) {
+        return adminService.updateCategoryTop(topId, req);
+    }
+
+    // 소분류 수정 — FA-028
+    @PutMapping("/categories/sub/{subId}")
+    public ResponseEntity<String> updateCategorySub(
+            @PathVariable Long subId,
+            @RequestBody CategoryCreateRequest req) {
+        return adminService.updateCategorySub(subId, req);
+    }
+
+    // 대분류 비활성화 — FA-029
+    @DeleteMapping("/categories/top/{topId}")
+    public ResponseEntity<String> deleteCategoryTop(@PathVariable Long topId) {
+        return adminService.deleteCategoryTop(topId);
+    }
+
+    // 소분류 비활성화 — FA-029
+    @DeleteMapping("/categories/sub/{subId}")
+    public ResponseEntity<String> deleteCategorySub(@PathVariable Long subId) {
+        return adminService.deleteCategorySub(subId);
+    }
+
+    // ── 공지사항 관리 (/admin/notices) ───────────────────────────────────────
 
     @GetMapping("/notices")
     public ResponseEntity<Page<NoticeResponse>> getAdminNotices(
@@ -174,21 +219,71 @@ public class AdminApiController {
         return adminService.getAdminNotices(pageable);
     }
 
-    // ── QnA 관리 (/admin/qna/list) ───────────────────────────────────────────
+    // 공지사항 상세 조회 — FA-031
+    @GetMapping("/notices/{noticeId}")
+    public ResponseEntity<NoticeResponse> getAdminNoticeDetail(@PathVariable Long noticeId) {
+        return adminService.getAdminNoticeDetail(noticeId);
+    }
 
+    // ── QnA 관리 (/admin/qnas) ───────────────────────────────────────────────
+
+    // depth=0 질문 목록 (unansweredOnly=true → WAITING 상태만)
     @GetMapping("/qnas")
     public ResponseEntity<Page<QnAResponse>> getAdminQnAs(
             @RequestParam(required = false, defaultValue = "false") boolean unansweredOnly,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return adminService.getAdminQnAs(unansweredOnly, pageable);
+        return qnaService.getAllQnAs(unansweredOnly, pageable);
     }
 
-    // ── 리뷰 관리 (/admin/review/list) ───────────────────────────────────────
+    // QnA 상세 조회 — FA-039
+    @GetMapping("/qnas/{qnaId}")
+    public ResponseEntity<QnAResponse> getAdminQnADetail(@PathVariable Long qnaId) {
+        return qnaService.getAdminQnADetail(qnaId);
+    }
+
+    // 답변 등록 — qnaId=질문 ID, 관리자 memberId로 자식 QnA(depth+1) 생성
+    @PostMapping("/qnas/{qnaId}/answer")
+    public ResponseEntity<QnAResponse> answerQnA(
+            @PathVariable Long qnaId,
+            @RequestBody java.util.Map<String, String> body,
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return qnaService.answerQnA(qnaId, body.get("title"), body.get("content"), user.getMemberId());
+    }
+
+    // QnA 상태 변경 — FA-040 (WAITING / PROCESSING / COMPLETE)
+    @PatchMapping("/qnas/{qnaId}/status")
+    public ResponseEntity<String> updateQnAStatus(
+            @PathVariable Long qnaId,
+            @RequestParam String status) {
+        return qnaService.updateQnAStatus(qnaId, status);
+    }
+
+    // 답변 수정 — FA-042 (answerQnaId = 답변 QnA 레코드의 ID)
+    @PutMapping("/qnas/{answerQnaId}/answer")
+    public ResponseEntity<QnAResponse> updateAdminAnswer(
+            @PathVariable Long answerQnaId,
+            @RequestBody java.util.Map<String, String> body) {
+        return qnaService.updateAdminAnswer(answerQnaId, body.get("content"));
+    }
+
+    // 답변 삭제 — FA-043 (answerQnaId = 답변 QnA 레코드의 ID)
+    @DeleteMapping("/qnas/{answerQnaId}/answer")
+    public ResponseEntity<String> deleteAdminAnswer(@PathVariable Long answerQnaId) {
+        return qnaService.deleteAdminAnswer(answerQnaId);
+    }
+
+    // ── 리뷰 관리 (/admin/reviews) ───────────────────────────────────────────
 
     @GetMapping("/reviews")
     public ResponseEntity<Page<ReviewResponse>> getAdminReviews(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return adminService.getAdminReviews(pageable);
+    }
+
+    // 리뷰 상세 조회 — FA-036
+    @GetMapping("/reviews/{reviewId}")
+    public ResponseEntity<ReviewResponse> getAdminReviewDetail(@PathVariable Long reviewId) {
+        return adminService.getAdminReviewDetail(reviewId);
     }
 
     @DeleteMapping("/reviews/{reviewId}")

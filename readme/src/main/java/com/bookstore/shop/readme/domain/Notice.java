@@ -22,13 +22,15 @@ public class Notice extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;         // 내용
 
-    @Column(nullable = false)
+    /** 상단 고정 여부 — DB 컬럼명: is_fixed */
+    @Column(name = "is_fixed", nullable = false)
     @Builder.Default
-    private boolean pinned = false; // 상단 고정 여부
+    private boolean isFixed = false;
 
-    @Column(nullable = false)
+    /** 조회수 — DB 컬럼명: view_count */
+    @Column(name = "view_count", nullable = false)
     @Builder.Default
-    private int viewCount = 0;      // 조회수
+    private int viewCount = 0;
 
     @Column(name = "deleted_at")
     private java.time.LocalDateTime deletedAt; // soft delete

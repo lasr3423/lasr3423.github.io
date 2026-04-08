@@ -20,8 +20,9 @@ import java.time.LocalDateTime;
 public class PaymentService {
 
     // Repository: DB 접근 계층
-    private final PaymentRepository paymentRepository;
-    private final OrderRepository orderRepository;
+    private final PaymentRepository  paymentRepository;
+    private final OrderRepository    orderRepository;
+    private final DeliveryRepository deliveryRepository;
 
     // Gateway: 각 PG사 API 호출 계층 (전략 패턴 구현체)
     private final TossPaymentGateway tossPaymentGateway;
@@ -94,6 +95,9 @@ public class PaymentService {
         // 6. 주문 상태도 PAYED로 업데이트
         order.setOrderStatus(OrderStatus.PAYED);
         orderRepository.save(order);
+
+        // 7. 배송 레코드 자동 생성 — REQ-D-001
+        createDeliveryIfAbsent(order);
     }
 
     // ─── 카카오/네이버 결제 최종 승인 (/approve) ─────────────────────────
@@ -134,6 +138,9 @@ public class PaymentService {
         // 7. 주문 상태도 PAYED로 업데이트
         order.setOrderStatus(OrderStatus.PAYED);
         orderRepository.save(order);
+
+        // 8. 배송 레코드 자동 생성 — REQ-D-001
+        createDeliveryIfAbsent(order);
     }
 
     // ─── 결제 실패 처리 (토스 failUrl) ───────────────────────────────────
@@ -224,5 +231,18 @@ public class PaymentService {
             case "NAVER" -> naverPaymentGateway;  // 네이버 구현체 반환
             default -> throw new RuntimeException("지원하지 않는 결제 수단입니다: " + provider);
         };
+    }
+
+    // 배송 레코드 자동 생성 — REQ-D-001
+    // 결제 완료 시 호출 (confirmToss / approvePayment 양쪽에서 사용)
+    // 중복 생성 방지: 이미 delivery 레코드가 있으면 생성하지 않음
+    private void createDeliveryIfAbsent(Order order) {
+        boolean alreadyExists = deliveryRepository.findByOrderId(order.getId()).isPresent();
+        if (!alreadyExists) {
+            Delivery delivery = new Delivery();
+            delivery.setOrder(order);
+            delivery.setDeliveryStatus(DeliveryStatus.READY);  // 초기 상태: 배송 준비
+            deliveryRepository.save(delivery);
+        }
     }
 }

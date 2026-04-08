@@ -30,12 +30,13 @@ public class NoticeService {
                 noticeRepository.findAllByDeletedAtIsNull(pageable).map(NoticeResponse::new));
     }
 
-    // ── 공지사항 상세 (조회수 증가) ──────────────────────────────────────────
+    // ── 공지사항 상세 (조회수 증가 — REQ-N-002) ──────────────────────────────
     public ResponseEntity<NoticeResponse> getNotice(Long noticeId) {
         Notice notice = noticeRepository.findById(noticeId)
                 .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
         if (notice.getDeletedAt() != null)
             throw new RuntimeException("삭제된 공지사항입니다.");
+        // 조회수 자동 증가
         notice.setViewCount(notice.getViewCount() + 1);
         return ResponseEntity.ok(new NoticeResponse(notice));
     }
@@ -48,7 +49,7 @@ public class NoticeService {
                 .author(author)
                 .title(req.title())
                 .content(req.content())
-                .pinned(req.pinned())
+                .isFixed(req.isFixed())
                 .build();
         noticeRepository.save(notice);
         return ResponseEntity.status(201).body(notice.getId());
@@ -60,7 +61,7 @@ public class NoticeService {
                 .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다."));
         notice.setTitle(req.title());
         notice.setContent(req.content());
-        notice.setPinned(req.pinned());
+        notice.setFixed(req.isFixed());
         return ResponseEntity.ok(new NoticeResponse(notice));
     }
 
