@@ -1,4 +1,4 @@
-import api from './axios';
+import api from './axios'
 
 export const adminApi = {
   getDashboard: () => api.get('/api/admin/dashboard'),
@@ -28,17 +28,24 @@ export const adminApi = {
   updateDelivery: (id, data) => api.patch(`/api/admin/deliveries/${id}`, data),
 
   getPayments: (params) => api.get('/api/admin/payments', { params }),
+  getPayment: (id) => api.get(`/api/admin/payments/${id}`),
 
   getCategories: () => api.get('/api/admin/categories'),
 
   getAdminNotices: (params) => api.get('/api/admin/notices', { params }),
-  createNotice: (data) => api.post('/api/notice', data),
-  updateNotice: (id, data) => api.put(`/api/notice/${id}`, data),
-  deleteNotice: (id) => api.delete(`/api/notice/${id}`),
+  getAdminNotice: (id) => api.get(`/api/admin/notices/${id}`),
+  createNotice: (data) => api.post('/api/admin/notices', data),
+  updateNotice: (id, data) => api.put(`/api/admin/notices/${id}`, data),
+  deleteNotice: (id) => api.delete(`/api/admin/notices/${id}`),
 
   getAdminQnas: (params) => api.get('/api/admin/qnas', { params }),
-  answerQna: (id, answer) => api.post(`/api/qna/${id}/answer`, { answer }),
+  getAdminQna: (id) => api.get(`/api/admin/qnas/${id}`),
+  answerQna: (id, content, title = '관리자 답변') => api.post(`/api/admin/qnas/${id}/answer`, { title, content }),
+  updateAnswerQna: (id, content, title = '관리자 답변') => api.put(`/api/admin/qnas/${id}/answer`, { title, content }),
+  deleteAnswerQna: (id) => api.delete(`/api/admin/qnas/${id}/answer`),
+  updateQnaStatus: (id, status) => api.patch(`/api/admin/qnas/${id}/status`, null, { params: { status } }),
 
   getAdminReviews: (params) => api.get('/api/admin/reviews', { params }),
+  getAdminReview: (id) => api.get(`/api/admin/reviews/${id}`),
   deleteReview: (id) => api.delete(`/api/admin/reviews/${id}`),
-};
+}

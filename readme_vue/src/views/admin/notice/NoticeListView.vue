@@ -1,95 +1,164 @@
 <template>
   <div class="space-y-6">
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
-      <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">공지사항 관리</h1>
-    </section>
-
-    <!-- 등록 폼 -->
-    <section class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 class="mb-4 text-sm font-bold text-slate-700">공지사항 등록</h2>
-      <div class="space-y-3">
-        <input v-model="form.title" type="text" placeholder="제목"
-          class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
-        <textarea v-model="form.content" rows="3" placeholder="내용"
-          class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
-        <div class="flex items-center justify-between">
-          <label class="flex items-center gap-2 text-sm text-slate-600">
-            <input v-model="form.pinned" type="checkbox" class="rounded" />
-            상단 고정
-          </label>
-          <button @click="createNotice"
-            class="rounded-2xl bg-brand-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
-            등록
-          </button>
+    <section class="surface-panel rounded-[2rem] p-6">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p class="point-chip">관리자 공지사항</p>
+          <h1 class="section-title mt-3">공지사항을 등록하고 노출 상태를 관리하세요</h1>
+          <p class="mt-2 text-sm text-slate-500">
+            상단 고정, 내용 수정, 삭제까지 한 화면에서 처리할 수 있습니다.
+          </p>
         </div>
+        <button
+          class="rounded-xl bg-brand-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+          @click="openCreate"
+        >
+          공지 등록
+        </button>
       </div>
     </section>
 
-    <!-- 목록 -->
-    <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-      <div v-if="loading" class="flex items-center justify-center py-16 text-sm text-slate-400">불러오는 중...</div>
+    <section class="surface-panel overflow-hidden rounded-[2rem]">
+      <div v-if="loading" class="p-12 text-center text-sm text-slate-500">공지사항을 불러오는 중입니다...</div>
 
       <template v-else-if="notices.length > 0">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="border-b border-slate-200 bg-slate-50">
+            <thead class="bg-slate-50 text-slate-500">
               <tr>
-                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">고정</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">제목</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">작성일</th>
-                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">상태</th>
-                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">관리</th>
+                <th class="px-6 py-4 text-center font-semibold">고정</th>
+                <th class="px-6 py-4 text-left font-semibold">제목</th>
+                <th class="px-6 py-4 text-left font-semibold">작성자</th>
+                <th class="px-6 py-4 text-center font-semibold">상태</th>
+                <th class="px-6 py-4 text-right font-semibold">작성일</th>
+                <th class="px-6 py-4 text-right font-semibold">관리</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="n in notices" :key="n.noticeId" class="transition hover:bg-slate-50">
-                <td class="px-6 py-4 text-center text-xs">
-                  <span v-if="n.pinned" class="font-bold text-brand-800">📌</span>
-                  <span v-else class="text-slate-300">—</span>
+              <tr v-for="notice in notices" :key="notice.noticeId">
+                <td class="px-6 py-4 text-center text-sm">
+                  <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+                        :class="notice.pinned ? 'bg-brand-50 text-brand-700' : 'bg-slate-100 text-slate-500'">
+                    {{ notice.pinned ? '고정' : '일반' }}
+                  </span>
                 </td>
-                <td class="px-6 py-4 font-medium text-slate-800">{{ n.title }}</td>
-                <td class="px-6 py-4 text-xs text-slate-400">{{ formatDate(n.createdAt) }}</td>
-                <td class="px-6 py-4 text-center">
-                  <span v-if="n.deletedAt" class="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">삭제됨</span>
-                  <span v-else class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">게시중</span>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button v-if="!n.deletedAt"
-                    class="rounded-xl bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-600"
-                    @click="deleteNotice(n.noticeId)">
-                    삭제
+                <td class="px-6 py-4">
+                  <button class="text-left" @click="selectNotice(notice)">
+                    <p class="font-semibold text-slate-900">{{ notice.title }}</p>
+                    <p class="mt-1 line-clamp-2 text-xs text-slate-500">{{ notice.content }}</p>
                   </button>
+                </td>
+                <td class="px-6 py-4 text-slate-600">{{ notice.authorName }}</td>
+                <td class="px-6 py-4 text-center">
+                  <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+                        :class="notice.deletedAt ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-700'">
+                    {{ notice.deletedAt ? '삭제됨' : '게시중' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right text-slate-500">{{ formatDate(notice.createdAt) }}</td>
+                <td class="px-6 py-4">
+                  <div class="flex justify-end gap-2">
+                    <button
+                      class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                      @click="startEdit(notice)"
+                    >
+                      수정
+                    </button>
+                    <button
+                      v-if="!notice.deletedAt"
+                      class="rounded-xl bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-600"
+                      @click="removeNotice(notice.noticeId)"
+                    >
+                      삭제
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="flex items-center justify-center gap-2 border-t border-slate-100 p-4">
-          <button :disabled="page === 0" @click="page--; fetchNotices()"
-            class="rounded-xl border border-slate-200 px-3 py-1.5 text-sm disabled:opacity-40">이전</button>
+
+        <div class="flex items-center justify-center gap-3 border-t border-slate-100 p-4">
+          <button class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-40"
+                  :disabled="page === 0" @click="movePage(page - 1)">이전</button>
           <span class="text-sm text-slate-500">{{ page + 1 }} / {{ totalPages }}</span>
-          <button :disabled="page >= totalPages - 1" @click="page++; fetchNotices()"
-            class="rounded-xl border border-slate-200 px-3 py-1.5 text-sm disabled:opacity-40">다음</button>
+          <button class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:opacity-40"
+                  :disabled="page >= totalPages - 1" @click="movePage(page + 1)">다음</button>
         </div>
       </template>
 
-      <div v-else class="flex items-center justify-center py-16 text-sm text-slate-400">공지사항이 없습니다.</div>
+      <div v-else class="p-12 text-center text-sm text-slate-500">등록된 공지사항이 없습니다.</div>
     </section>
+
+    <section v-if="selectedNotice" class="surface-panel rounded-[2rem] p-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold text-slate-500">선택한 공지 상세</p>
+          <h2 class="mt-1 text-xl font-bold text-slate-900">{{ selectedNotice.title }}</h2>
+        </div>
+        <span class="rounded-full px-3 py-1 text-xs font-semibold"
+              :class="selectedNotice.pinned ? 'bg-brand-50 text-brand-700' : 'bg-slate-100 text-slate-500'">
+          {{ selectedNotice.pinned ? '상단 고정' : '일반 공지' }}
+        </span>
+      </div>
+      <p class="mt-4 whitespace-pre-line text-sm leading-7 text-slate-700">{{ selectedNotice.content }}</p>
+    </section>
+
+    <div v-if="editorOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
+      <div class="w-full max-w-2xl rounded-[2rem] bg-white p-6 shadow-2xl">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-500">{{ editorMode === 'create' ? '공지 등록' : '공지 수정' }}</p>
+            <h2 class="mt-1 text-2xl font-bold text-slate-900">
+              {{ editorMode === 'create' ? '새 공지사항 작성' : '공지사항 수정' }}
+            </h2>
+          </div>
+          <button class="text-sm font-medium text-slate-500 hover:text-slate-800" @click="closeEditor">닫기</button>
+        </div>
+
+        <div class="mt-6 space-y-4">
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700">제목</span>
+            <input v-model="form.title" type="text"
+                   class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                   placeholder="공지 제목을 입력해 주세요" />
+          </label>
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700">내용</span>
+            <textarea v-model="form.content" rows="8"
+                      class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+                      placeholder="공지 내용을 입력해 주세요" />
+          </label>
+          <label class="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <input v-model="form.pinned" type="checkbox" class="rounded" />
+            상단 고정 공지로 노출
+          </label>
+        </div>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button class="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  @click="closeEditor">취소</button>
+          <button class="rounded-xl bg-brand-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+                  @click="saveNotice">{{ editorMode === 'create' ? '등록하기' : '수정 저장' }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { adminApi } from '@/api/admin'
 
-const notices    = ref([])
-const loading    = ref(true)
-const page       = ref(0)
+const notices = ref([])
+const loading = ref(true)
+const page = ref(0)
 const totalPages = ref(1)
-const form       = reactive({ title: '', content: '', pinned: false })
-
-const formatDate = (d) => d ? new Date(d).toLocaleDateString('ko-KR') : '-'
+const selectedNotice = ref(null)
+const editorOpen = ref(false)
+const editorMode = ref('create')
+const editingId = ref(null)
+const form = reactive({ title: '', content: '', pinned: false })
 
 async function fetchNotices() {
   loading.value = true
@@ -97,31 +166,75 @@ async function fetchNotices() {
     const { data } = await adminApi.getAdminNotices({ page: page.value, size: 20 })
     notices.value = data.content ?? []
     totalPages.value = data.totalPages || 1
-  } catch (e) {
-    console.error('공지사항 로드 실패', e)
+    if (!selectedNotice.value && notices.value.length) selectedNotice.value = notices.value[0]
+  } catch (error) {
+    console.error('공지사항 조회 실패', error)
   } finally {
     loading.value = false
   }
 }
 
-async function createNotice() {
-  if (!form.title.trim() || !form.content.trim()) return alert('제목과 내용을 입력해주세요.')
+function movePage(nextPage) {
+  page.value = nextPage
+  fetchNotices()
+}
+
+function formatDate(value) {
+  if (!value) return '-'
+  return new Date(value).toLocaleDateString('ko-KR')
+}
+
+function selectNotice(notice) {
+  selectedNotice.value = notice
+}
+
+function openCreate() {
+  editorMode.value = 'create'
+  editingId.value = null
+  form.title = ''
+  form.content = ''
+  form.pinned = false
+  editorOpen.value = true
+}
+
+function startEdit(notice) {
+  editorMode.value = 'edit'
+  editingId.value = notice.noticeId
+  form.title = notice.title
+  form.content = notice.content
+  form.pinned = notice.pinned
+  editorOpen.value = true
+}
+
+function closeEditor() {
+  editorOpen.value = false
+}
+
+async function saveNotice() {
+  if (!form.title.trim() || !form.content.trim()) {
+    alert('제목과 내용을 모두 입력해 주세요.')
+    return
+  }
+
   try {
-    await adminApi.createNotice({ title: form.title, content: form.content, pinned: form.pinned })
-    Object.assign(form, { title: '', content: '', pinned: false })
-    fetchNotices()
-  } catch (e) {
-    alert(e.response?.data?.message || '등록 실패')
+    const payload = { title: form.title, content: form.content, pinned: form.pinned }
+    if (editorMode.value === 'create') await adminApi.createNotice(payload)
+    else await adminApi.updateNotice(editingId.value, payload)
+    closeEditor()
+    await fetchNotices()
+  } catch (error) {
+    alert(error.response?.data?.message || '공지사항 저장 중 문제가 발생했습니다.')
   }
 }
 
-async function deleteNotice(id) {
+async function removeNotice(noticeId) {
   if (!confirm('이 공지사항을 삭제하시겠습니까?')) return
   try {
-    await adminApi.deleteNotice(id)
-    fetchNotices()
-  } catch (e) {
-    alert(e.response?.data?.message || '삭제 실패')
+    await adminApi.deleteNotice(noticeId)
+    if (selectedNotice.value?.noticeId === noticeId) selectedNotice.value = null
+    await fetchNotices()
+  } catch (error) {
+    alert(error.response?.data?.message || '공지사항 삭제 중 문제가 발생했습니다.')
   }
 }
 

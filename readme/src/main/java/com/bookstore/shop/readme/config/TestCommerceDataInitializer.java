@@ -2,21 +2,41 @@ package com.bookstore.shop.readme.config;
 
 import com.bookstore.shop.readme.domain.*;
 import com.bookstore.shop.readme.repository.*;
+import com.bookstore.shop.readme.service.KakaoBookSearchService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 @org.springframework.core.annotation.Order(2)
 @RequiredArgsConstructor
 public class TestCommerceDataInitializer implements CommandLineRunner {
 
-    private static final int SEED_PRODUCT_COUNT = 10;
+    private static final int SEED_ORDER_COUNT = 10;
+    private static final int SEARCH_PAGE_SIZE = 50;
+    private static final int SEARCH_MAX_PAGE = 50;
+    private static final List<String> SEARCH_KEYWORDS = List.of(
+            "소설", "에세이", "시", "경제", "경영", "자기계발", "역사", "철학", "심리학", "과학",
+            "수학", "물리", "생명과학", "의학", "예술", "디자인", "건축", "요리", "여행", "인문학",
+            "정치", "사회", "교육", "아동", "청소년", "IT", "프로그래밍", "자바", "스프링", "데이터",
+            "인공지능", "머신러닝", "웹개발", "마케팅", "브랜딩", "리더십", "투자", "회계", "창업", "외국어",
+            "문학", "만화", "파이썬", "리눅스", "게임", "사진", "건강", "취미", "문화", "예제",
+            "가", "나", "다", "라", "마", "바", "사", "아", "자", "차",
+            "A", "B", "C", "D", "E", "F", "G", "H"
+    );
 
     private final MemberRepository memberRepository;
     private final CategoryTopRepository categoryTopRepository;
@@ -29,6 +49,10 @@ public class TestCommerceDataInitializer implements CommandLineRunner {
     private final NoticeRepository noticeRepository;
     private final QnARepository qnaRepository;
     private final ReviewRepository reviewRepository;
+    private final KakaoBookSearchService kakaoBookSearchService;
+
+    @Value("${seed.api-product-count:1000}")
+    private int seedProductCount;
 
     @Override
     @Transactional
@@ -41,7 +65,7 @@ public class TestCommerceDataInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException("Seed admin member is missing."));
 
         List<Member> users = loadSeedUsers();
-        List<Product> products = seedProducts();
+        List<Product> products = seedProductsFromKakao();
 
         seedOrders(users, products);
         seedNotices(admin);
@@ -60,47 +84,207 @@ public class TestCommerceDataInitializer implements CommandLineRunner {
         return users;
     }
 
-    private List<Product> seedProducts() {
-        CategoryTop korean = saveCategoryTop("국내도서", 1);
-        CategoryTop foreign = saveCategoryTop("외국도서", 2);
+    private List<Product> seedProductsFromKakao() {
+        CategoryTop domestic = saveCategoryTop("국내도서", 1);
+        CategoryTop foreign = saveCategoryTop("해외도서", 2);
 
-        CategorySub novel = saveCategorySub(korean, "소설", 1);
-        CategorySub it = saveCategorySub(korean, "IT/컴퓨터", 2);
-        CategorySub selfHelp = saveCategorySub(korean, "자기계발", 3);
-        CategorySub business = saveCategorySub(foreign, "경제경영", 1);
+        CategorySub novel = saveCategorySub(domestic, "소설", 1);
+        CategorySub humanities = saveCategorySub(domestic, "인문", 2);
+        CategorySub economy = saveCategorySub(domestic, "경제/경영", 3);
+        CategorySub it = saveCategorySub(domestic, "IT/컴퓨터", 4);
+        CategorySub foreignNovel = saveCategorySub(foreign, "해외소설", 1);
 
+        List<CategorySub> categoryCycle = List.of(novel, humanities, economy, it, foreignNovel);
         List<Product> products = new ArrayList<>();
-        for (int i = 1; i <= SEED_PRODUCT_COUNT; i += 1) {
-            CategoryTop categoryTop = i <= 7 ? korean : foreign;
-            CategorySub categorySub = switch (i % 4) {
-                case 1 -> novel;
-                case 2 -> it;
-                case 3 -> selfHelp;
-                default -> business;
-            };
+        Set<String> usedKeys = new HashSet<>();
 
-            Product product = Product.builder()
-                    .categoryTop(categoryTop)
-                    .categorySub(categorySub)
-                    .title(String.format("테스트 도서 %02d", i))
-                    .author(String.format("테스트 저자 %02d", i))
-                    .description(String.format("관리자 기능 테스트용 도서 데이터 %02d", i))
-                    .price(15000 + (i * 1000))
-                    .discountRate(java.math.BigDecimal.valueOf((i % 3) * 5L))
-                    .salePrice(14000 + (i * 900))
-                    .stock(20 + i)
-                    .thumbnail("/uploads/test-book-" + i + ".png")
-                    .viewCount(i * 10)
-                    .salesCount(i * 3)
-                    .productStatus(ProductStatus.ACTIVATE)
-                    .build();
-            products.add(productRepository.save(product));
+        for (String keyword : SEARCH_KEYWORDS) {
+            if (products.size() >= seedProductCount) {
+                break;
+            }
+
+            for (int page = 1; page <= SEARCH_MAX_PAGE; page += 1) {
+                KakaoBookSearchService.KakaoBookSearchResult result =
+                        kakaoBookSearchService.searchByTitle(keyword, page, SEARCH_PAGE_SIZE);
+
+                if (result.documents().isEmpty()) {
+                    break;
+                }
+
+                for (Map<String, Object> doc : result.documents()) {
+                    if (products.size() >= seedProductCount) {
+                        break;
+                    }
+
+                    String title = limit(text(doc.get("title")), 300);
+                    String author = limit(joinAuthors(doc.get("authors")), 200);
+                    String isbn = normalizeKakaoIsbn(text(doc.get("isbn")));
+                    String uniqueKey = StringUtils.hasText(isbn)
+                            ? "ISBN:" + isbn
+                            : "TITLE:" + title + "|" + defaultText(author, "");
+
+                    if (!StringUtils.hasText(title) || !usedKeys.add(uniqueKey)) {
+                        continue;
+                    }
+
+                    int index = products.size();
+                    CategorySub categorySub = categoryCycle.get(index % categoryCycle.size());
+                    CategoryTop categoryTop = categorySub.getCategoryTop();
+                    int price = parsePrice(doc.get("price"), 12000 + (index * 75));
+                    BigDecimal discountRate = resolveDiscountRate(doc, index);
+                    int salePrice = parsePrice(doc.get("sale_price"), calcSalePrice(price, discountRate));
+
+                    Product product = Product.builder()
+                            .categoryTop(categoryTop)
+                            .categorySub(categorySub)
+                            .title(title)
+                            .author(defaultText(author, "작자미상"))
+                            .isbn(isbn)
+                            .description(buildDescription(doc, isbn))
+                            .price(price)
+                            .discountRate(discountRate)
+                            .salePrice(salePrice)
+                            .stock(30 + (index % 40))
+                            .thumbnail(resolveThumbnail(doc, isbn, title))
+                            .viewCount(index * 5)
+                            .salesCount(index * 2)
+                            .productStatus(ProductStatus.ACTIVATE)
+                            .build();
+
+                    products.add(productRepository.save(product));
+                }
+
+                if (products.size() >= seedProductCount || result.isEnd()) {
+                    break;
+                }
+            }
         }
+
+        if (products.size() < SEED_ORDER_COUNT) {
+            throw new IllegalStateException("Kakao API seed product count is too small: " + products.size());
+        }
+
         return products;
     }
 
+    private String resolveThumbnail(Map<String, Object> doc, String isbn, String title) {
+        String thumbnail = text(doc.get("thumbnail"));
+        if (StringUtils.hasText(thumbnail)) {
+            return thumbnail;
+        }
+        return buildPlaceholderThumbnail(isbn, title);
+    }
+
+    private String buildPlaceholderThumbnail(String isbn, String title) {
+        String label = StringUtils.hasText(title) ? title : defaultText(isbn, "ReadMe Book");
+        String encodedLabel = URLEncoder.encode(limit(label, 32), StandardCharsets.UTF_8);
+        return "https://placehold.co/320x480/F8FAFC/0F172A/png?text=" + encodedLabel;
+    }
+
+    private String buildDescription(Map<String, Object> doc, String isbn) {
+        String contents = limit(text(doc.get("contents")), 700);
+        String publisher = text(doc.get("publisher"));
+        String datetime = text(doc.get("datetime"));
+        String url = text(doc.get("url"));
+
+        StringBuilder builder = new StringBuilder();
+        if (StringUtils.hasText(contents)) {
+            builder.append(contents).append("\n\n");
+        } else {
+            builder.append("카카오 도서 검색 API 기반 테스트용 상품 데이터입니다.\n\n");
+        }
+        builder.append("출판사: ").append(defaultText(publisher, "정보 없음")).append("\n");
+        builder.append("ISBN: ").append(defaultText(isbn, "정보 없음")).append("\n");
+        builder.append("출간일시: ").append(defaultText(datetime, "정보 없음"));
+        if (StringUtils.hasText(url)) {
+            builder.append("\n참고 URL: ").append(url);
+        }
+        return builder.toString();
+    }
+
+    private BigDecimal resolveDiscountRate(Map<String, Object> doc, int index) {
+        int price = parsePrice(doc.get("price"), 0);
+        int salePrice = parsePrice(doc.get("sale_price"), 0);
+        if (price > 0 && salePrice > 0 && salePrice < price) {
+            double rate = (1 - (salePrice / (double) price)) * 100;
+            return BigDecimal.valueOf(Math.round(rate * 10) / 10.0);
+        }
+        return BigDecimal.valueOf((index % 4) * 5L);
+    }
+
+    private String normalizeKakaoIsbn(String rawIsbn) {
+        if (!StringUtils.hasText(rawIsbn)) {
+            return "";
+        }
+
+        String[] tokens = rawIsbn.split("\\s+");
+        String best = "";
+        for (String token : tokens) {
+            String normalized = token.replaceAll("[^0-9Xx]", "");
+            if (!StringUtils.hasText(normalized)) {
+                continue;
+            }
+            if (normalized.length() == 13) {
+                return normalized;
+            }
+            if (!StringUtils.hasText(best)) {
+                best = normalized;
+            }
+        }
+        return best;
+    }
+
+    private String joinAuthors(Object value) {
+        if (value instanceof List<?> list && !list.isEmpty()) {
+            return list.stream().map(String::valueOf).reduce((left, right) -> left + ", " + right).orElse(null);
+        }
+        return text(value);
+    }
+
+    private int parsePrice(Object priceValue, int fallback) {
+        if (priceValue == null) {
+            return fallback;
+        }
+        if (priceValue instanceof Number number) {
+            return number.intValue();
+        }
+
+        String digits = String.valueOf(priceValue).replaceAll("[^0-9]", "");
+        if (!StringUtils.hasText(digits)) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(digits);
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
+    private int calcSalePrice(int price, BigDecimal discountRate) {
+        if (discountRate == null || discountRate.compareTo(BigDecimal.ZERO) == 0) {
+            return price;
+        }
+        BigDecimal ratio = BigDecimal.ONE.subtract(discountRate.divide(BigDecimal.valueOf(100)));
+        return ratio.multiply(BigDecimal.valueOf(price)).intValue();
+    }
+
+    private String defaultText(String value, String fallback) {
+        return StringUtils.hasText(value) ? value : fallback;
+    }
+
+    private String text(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private String limit(String value, int maxLength) {
+        if (!StringUtils.hasText(value)) {
+            return value;
+        }
+        return value.length() <= maxLength ? value : value.substring(0, maxLength);
+    }
+
     private void seedOrders(List<Member> users, List<Product> products) {
-        for (int i = 1; i <= 10; i += 1) {
+        for (int i = 1; i <= SEED_ORDER_COUNT; i += 1) {
             Member member = users.get((i - 1) % users.size());
             Product product = products.get(i - 1);
             OrderStatus orderStatus = resolveOrderStatus(i);
@@ -180,7 +364,7 @@ public class TestCommerceDataInitializer implements CommandLineRunner {
             Notice notice = Notice.builder()
                     .author(admin)
                     .title(String.format("테스트 공지사항 %02d", i))
-                    .content(String.format("관리자 공지 기능 점검용 본문 %02d", i))
+                    .content(String.format("관리자 공지 기능 확인용 본문 %02d", i))
                     .isFixed(i <= 2)
                     .viewCount(i * 11)
                     .build();

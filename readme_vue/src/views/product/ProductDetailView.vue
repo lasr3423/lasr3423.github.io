@@ -1,391 +1,224 @@
 <template>
-  <div>
+  <div class="space-y-6">
+    <section v-if="loading" class="page-section text-center">
+      <p class="py-16 text-sm text-slate-500">상품 정보를 불러오는 중입니다.</p>
+    </section>
 
-    <!-- 로딩 / 에러 -->
-    <div v-if="loading" class="status-area">불러오는 중...</div>
-    <div v-else-if="error" class="status-area error">{{ error }}</div>
+    <section v-else-if="error" class="page-section text-center">
+      <p class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-12 text-sm text-rose-700">{{ error }}</p>
+    </section>
 
-    <!-- 상품 정보 본문 -->
     <template v-else-if="product">
+      <section class="page-section">
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:items-start">
+          <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-100">
+            <img
+              :src="resolveAssetUrl(product.thumbnail)"
+              :alt="product.title"
+              class="aspect-[3/4] w-full object-cover"
+            />
+          </div>
 
-      <!-- 상단: 이미지 + 오른쪽 정보 -->
-      <div class="product-top">
+          <div class="space-y-6">
+            <div class="space-y-3">
+              <p class="text-sm font-semibold uppercase tracking-[0.18em] text-brand-700">Detail</p>
+              <h1 class="text-3xl font-bold tracking-tight text-slate-900 lg:text-4xl">{{ product.title }}</h1>
+              <p class="text-base text-slate-500">{{ product.author }}</p>
+            </div>
 
-        <!-- 책 이미지 -->
-        <div class="image-area">
-          <img
-            :src="resolveAssetUrl(product.thumbnail)"
-            :alt="product.title"
-            class="product-image"
-          />
+            <div class="surface-soft p-5">
+              <div class="flex flex-wrap items-end gap-3">
+                <span v-if="Number(product.discountRate) > 0" class="text-lg font-bold text-accent-600">
+                  {{ Number(product.discountRate) }}%
+                </span>
+                <span class="text-3xl font-bold text-brand-800">{{ Number(product.salePrice).toLocaleString() }}원</span>
+                <span class="text-base text-slate-400 line-through">{{ Number(product.price).toLocaleString() }}원</span>
+              </div>
+              <p class="mt-2 text-sm text-slate-500">예상 적립금 {{ Math.floor(product.salePrice * 0.1).toLocaleString() }}원</p>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="surface-soft p-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">재고</p>
+                <p v-if="product.stock === 0" class="mt-2 text-sm font-semibold text-rose-600">현재 품절 상태입니다.</p>
+                <p v-else-if="product.stock <= 5" class="mt-2 text-sm font-semibold text-amber-600">남은 재고 {{ product.stock }}권</p>
+                <p v-else class="mt-2 text-sm font-semibold text-emerald-600">재고 여유 있음</p>
+              </div>
+              <div class="surface-soft p-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">배송</p>
+                <p class="mt-2 text-sm font-semibold text-slate-700">오늘 주문 시 빠른 출고</p>
+                <p class="mt-1 text-xs leading-5 text-slate-500">배송 현황은 마이페이지에서 바로 확인할 수 있어요.</p>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-4 rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm font-semibold text-slate-700">수량 선택</p>
+                <div class="mt-3 inline-flex items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+                  <button
+                    type="button"
+                    class="h-11 w-11 text-lg text-slate-600 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-300"
+                    :disabled="quantity <= 1"
+                    @click="decreaseQty"
+                  >
+                    -
+                  </button>
+                  <span class="min-w-14 text-center text-base font-semibold text-slate-900">{{ quantity }}</span>
+                  <button
+                    type="button"
+                    class="h-11 w-11 text-lg text-slate-600 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-300"
+                    :disabled="product.stock === 0 || quantity >= product.stock"
+                    @click="increaseQty"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="rounded-2xl bg-brand-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                :disabled="product.stock === 0"
+                @click="addToCart"
+              >
+                장바구니 담기
+              </button>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <!-- 오른쪽 정보 -->
-        <div class="info-area">
-          <h1 class="product-title">{{ product.title }}</h1>
-          <p class="product-author">{{ product.author }}</p>
-
-          <!-- 정가 -->
-          <div class="price-row">
-            <span class="label">가격</span>
-            <span class="original-price">{{ product.price.toLocaleString() }}원</span>
-          </div>
-
-          <!-- 할인가 + 별점 + 적립 -->
-          <div class="sale-price-row">
-            <span class="stars">★★★★☆</span>
-            <span class="discount-rate">{{ product.discountRate }}%</span>
-            <span class="sale-price">{{ product.salePrice.toLocaleString() }}원</span>
-            <span class="point-info">
-              {{ Math.floor(product.salePrice * 0.1).toLocaleString() }}원 (10% 적립)
-            </span>
-          </div>
-
-          <!-- 재고 상태 -->
-          <p v-if="product.stock === 0" class="out-of-stock">품절된 상품입니다.</p>
-          <p v-else-if="product.stock <= 5" class="stock-warning">
-            ⚠️ 재고 {{ product.stock }}개 남았습니다.
-          </p>
-
-          <!-- 수량 선택 -->
-          <div class="quantity-row">
-            <button class="qty-btn" @click="decreaseQty" :disabled="quantity <= 1">-</button>
-            <span class="qty-value">{{ quantity }}</span>
-            <button class="qty-btn" @click="increaseQty" :disabled="product.stock === 0">+</button>
-          </div>
-
-          <!-- 장바구니 버튼 -->
-          <button
-            class="cart-btn"
-            @click="addToCart"
-            :disabled="product.stock === 0"
-          >
-            🛒 장바구니 담기
-          </button>
-        </div>
-      </div>
-
-      <!-- 탭 영역 -->
-      <div class="tabs-area">
-        <div class="tab-list">
+      <section class="page-section">
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-4">
           <button
             v-for="tab in tabs"
             :key="tab.key"
-            :class="['tab-btn', { active: activeTab === tab.key }]"
+            type="button"
+            :class="[
+              'rounded-full px-4 py-2 text-sm font-semibold transition',
+              activeTab === tab.key
+                ? 'bg-brand-800 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+            ]"
             @click="activeTab = tab.key"
           >
             {{ tab.label }}
           </button>
         </div>
 
-        <div class="tab-content">
-          <!-- 상품정보 -->
-          <div v-if="activeTab === 'info'">
-            <p class="description">{{ product.description || '상품 설명이 없습니다.' }}</p>
+        <div class="pt-6">
+          <div v-if="activeTab === 'info'" class="prose prose-slate max-w-none text-sm leading-7">
+            <p>{{ product.description || '상품 설명이 아직 등록되지 않았습니다.' }}</p>
           </div>
 
-          <!-- 리뷰 (추후 구현) -->
-          <div v-if="activeTab === 'review'">
-            <p class="tab-placeholder">리뷰 기능은 준비 중입니다.</p>
+          <div v-else-if="activeTab === 'review'" class="surface-soft px-6 py-12 text-center">
+            <p class="text-base font-semibold text-slate-700">리뷰 기능은 준비 중입니다.</p>
+            <p class="mt-2 text-sm text-slate-500">다음 단계에서 도서별 리뷰 화면이 연결될 예정이에요.</p>
           </div>
 
-          <!-- QnA (추후 구현) -->
-          <div v-if="activeTab === 'qna'">
-            <p class="tab-placeholder">QnA 기능은 준비 중입니다.</p>
+          <div v-else-if="activeTab === 'qna'" class="surface-soft px-6 py-12 text-center">
+            <p class="text-base font-semibold text-slate-700">Q&amp;A 기능은 준비 중입니다.</p>
+            <p class="mt-2 text-sm text-slate-500">문의 등록과 답변 확인 흐름을 이 영역에 연결할 예정이에요.</p>
           </div>
 
-          <!-- 배송/교환 -->
-          <div v-if="activeTab === 'delivery'">
-            <div class="delivery-info">
-              <p>📦 <strong>두밀배송</strong> — 오전 주문 시 당일 배송</p>
-              <p>🔄 교환/반품 사유에 따라 비용이 발생할 수 있습니다.</p>
+          <div v-else class="grid gap-4 lg:grid-cols-2">
+            <div class="surface-soft p-5">
+              <p class="text-sm font-semibold text-slate-800">배송 안내</p>
+              <p class="mt-3 text-sm leading-6 text-slate-500">
+                결제 완료 후 순차 출고되며, 배송 준비와 배송 중 상태를 마이페이지에서 확인할 수 있습니다.
+              </p>
+            </div>
+            <div class="surface-soft p-5">
+              <p class="text-sm font-semibold text-slate-800">교환/반품 안내</p>
+              <p class="mt-3 text-sm leading-6 text-slate-500">
+                상품 상태와 배송 단계에 따라 교환 및 반품이 가능하며, 자세한 기준은 고객센터 안내를 따라 주세요.
+              </p>
             </div>
           </div>
         </div>
-      </div>
-
+      </section>
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { productApi } from '@/api/product'
-import { useCartStore } from '@/store/cart'
-import { useAuthStore } from '@/store/auth'
-import { resolveAssetUrl } from '@/utils/asset'
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { productApi } from '@/api/product';
+import { useCartStore } from '@/store/cart';
+import { useAuthStore } from '@/store/auth';
+import { resolveAssetUrl } from '@/utils/asset';
 
-const route    = useRoute()
-const router   = useRouter()
-const cartStore  = useCartStore()
-const authStore  = useAuthStore()
+const route = useRoute();
+const router = useRouter();
+const cartStore = useCartStore();
+const authStore = useAuthStore();
 
-// ── 상태 ─────────────────────────────────────────────────────
-const product  = ref(null)
-const loading  = ref(false)
-const error    = ref(null)
-const quantity = ref(1)
+const product = ref(null);
+const loading = ref(false);
+const error = ref(null);
+const quantity = ref(1);
 
-// 탭
 const tabs = [
-  { key: 'info',     label: '상품정보' },
-  { key: 'review',   label: '리뷰' },
-  { key: 'qna',      label: 'Q&A' },
+  { key: 'info', label: '상품 정보' },
+  { key: 'review', label: '리뷰' },
+  { key: 'qna', label: 'Q&A' },
   { key: 'delivery', label: '배송/교환' },
-]
-const activeTab = ref('info')
+];
+const activeTab = ref('info');
 
-// ── 수량 조절 ─────────────────────────────────────────────────
 function increaseQty() {
   if (product.value && quantity.value < product.value.stock) {
-    quantity.value++
+    quantity.value += 1;
   }
 }
+
 function decreaseQty() {
-  if (quantity.value > 1) quantity.value--
+  if (quantity.value > 1) {
+    quantity.value -= 1;
+  }
 }
 
-// ── 장바구니 담기 ─────────────────────────────────────────────
 async function addToCart() {
   if (!authStore.isLoggedIn) {
-    alert('로그인이 필요합니다.')
-    router.push('/signin')
-    return
+    alert('로그인이 필요합니다.');
+    router.push('/signin');
+    return;
   }
+
   try {
-    await cartStore.addItem(product.value.id, quantity.value)
-    alert(`장바구니에 ${quantity.value}권 담겼습니다.`)
+    await cartStore.addItem(product.value.id, quantity.value);
+    alert(`장바구니에 ${quantity.value}권을 담았습니다.`);
   } catch (e) {
-    alert('장바구니 담기에 실패했습니다.')
+    alert('장바구니 담기에 실패했습니다.');
   }
 }
 
-// ── 데이터 로드 ───────────────────────────────────────────────
 async function fetchProduct() {
-  loading.value = true
-  error.value   = null
+  loading.value = true;
+  error.value = null;
+  quantity.value = 1;
+
   try {
-    const { data } = await productApi.getDetail(route.params.productId)
-    product.value  = data
+    const { data } = await productApi.getDetail(route.params.productId);
+    product.value = data;
   } catch (e) {
     error.value = e.response?.status === 404
       ? '존재하지 않는 상품입니다.'
-      : '상품 정보를 불러오지 못했습니다.'
+      : '상품 정보를 불러오지 못했습니다.';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-onMounted(() => { fetchProduct() })
+watch(
+  () => route.params.productId,
+  () => {
+    fetchProduct();
+  },
+);
+
+onMounted(() => {
+  fetchProduct();
+});
 </script>
-
-<style scoped>
-.status-area {
-  text-align: center;
-  padding: 80px 0;
-  color: var(--color-gray3);
-  font-size: 14px;
-  font-family: var(--font-sans);
-}
-.status-area.error { color: var(--color-error); }
-
-/* 상단 상품 영역 */
-.product-top {
-  display: flex;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-}
-
-/* 이미지 */
-.image-area { flex-shrink: 0; }
-.product-image {
-  width: 220px;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: 8px;
-  box-shadow: var(--shadow-md);
-}
-
-/* 오른쪽 정보 */
-.info-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-.product-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-black2);
-  margin: 0;
-  font-family: var(--font-sans);
-  line-height: 1.3;
-}
-.product-author {
-  font-size: 14px;
-  color: var(--color-gray2);
-  font-family: var(--font-sans);
-}
-
-/* 가격 */
-.price-row { display: flex; align-items: center; gap: 12px; }
-.label { font-size: 13px; color: var(--color-gray3); width: 40px; font-family: var(--font-sans); }
-.original-price {
-  font-size: 14px;
-  color: var(--color-gray4);
-  text-decoration: line-through;
-  font-family: var(--font-sans);
-}
-
-.sale-price-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  flex-wrap: wrap;
-}
-.stars { color: var(--color-secondary); font-size: 16px; }
-.discount-rate {
-  color: var(--color-secondary);
-  font-size: 22px;
-  font-weight: 700;
-  font-family: var(--font-sans);
-}
-.sale-price {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--color-black2);
-  font-family: var(--font-sans);
-}
-.point-info {
-  font-size: 12px;
-  color: var(--color-info);
-  font-family: var(--font-sans);
-}
-
-/* 재고 */
-.stock-warning {
-  font-size: 13px;
-  color: var(--color-warning);
-  font-family: var(--font-sans);
-}
-.out-of-stock {
-  font-size: 13px;
-  color: var(--color-error);
-  font-weight: 700;
-  font-family: var(--font-sans);
-}
-
-/* 수량 */
-.quantity-row {
-  display: flex;
-  align-items: center;
-  border: 1.5px solid var(--color-gray5);
-  border-radius: 6px;
-  width: fit-content;
-  overflow: hidden;
-  transition: border-color 0.2s;
-}
-.quantity-row:focus-within { border-color: var(--color-primary); }
-.qty-btn {
-  background: var(--color-white2);
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 6px 14px;
-  color: var(--color-gray1);
-  transition: background 0.2s, color 0.2s;
-  font-family: var(--font-sans);
-}
-.qty-btn:disabled { color: var(--color-gray4); cursor: default; }
-.qty-btn:not(:disabled):hover {
-  background: var(--color-primary);
-  color: var(--color-white1);
-}
-.qty-value {
-  font-size: 16px;
-  font-weight: 600;
-  min-width: 36px;
-  text-align: center;
-  padding: 6px 4px;
-  border-left: 1px solid var(--color-gray5);
-  border-right: 1px solid var(--color-gray5);
-  color: var(--color-black2);
-  font-family: var(--font-sans);
-}
-
-/* 장바구니 버튼 */
-.cart-btn {
-  padding: 14px 32px;
-  background: var(--color-primary);
-  color: var(--color-white1);
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  width: fit-content;
-  font-family: var(--font-sans);
-  transition: background 0.2s;
-}
-.cart-btn:hover:not(:disabled) { background: var(--color-secondary); }
-.cart-btn:disabled { background: var(--color-gray4); cursor: default; }
-
-/* 탭 */
-.tabs-area { border-top: 1px solid var(--color-gray5); padding-top: var(--space-3); }
-.tab-list {
-  display: flex;
-  border-bottom: 2px solid var(--color-gray5);
-  margin-bottom: var(--space-3);
-}
-.tab-btn {
-  padding: 12px 20px;
-  background: none;
-  border: none;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--color-gray3);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  transition: color 0.2s;
-}
-.tab-btn:hover { color: var(--color-secondary); }
-.tab-btn.active {
-  color: var(--color-primary);
-  font-weight: 700;
-  border-bottom-color: var(--color-primary);
-}
-
-/* 탭 내용 */
-.tab-content { min-height: 200px; }
-.description {
-  font-size: 14px;
-  line-height: 1.8;
-  color: var(--color-gray1);
-  white-space: pre-line;
-  font-family: var(--font-sans);
-}
-.tab-placeholder {
-  text-align: center;
-  padding: 40px 0;
-  color: var(--color-gray4);
-  font-size: 14px;
-  font-family: var(--font-sans);
-}
-.delivery-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-size: 14px;
-  color: var(--color-gray2);
-  font-family: var(--font-sans);
-}
-
-/* 반응형 */
-@media (max-width: 600px) {
-  .product-top { flex-direction: column; }
-  .product-image { width: 160px; }
-}
-</style>

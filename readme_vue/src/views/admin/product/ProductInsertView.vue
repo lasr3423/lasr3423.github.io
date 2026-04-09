@@ -4,7 +4,7 @@
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">상품 등록</h1>
       <p class="mt-3 text-sm leading-6 text-slate-500">
-        ISBN으로 표지를 조회하거나 직접 이미지를 업로드해서 상품 정보를 등록할 수 있어.
+        ISBN으로 카카오 도서 검색 결과를 불러오거나, 직접 이미지를 업로드해서 상품 정보를 등록할 수 있어요.
       </p>
     </section>
 
@@ -13,18 +13,33 @@
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <label class="block space-y-2 sm:col-span-2">
             <span class="text-sm font-medium text-slate-700">도서명 *</span>
-            <input v-model="form.title" type="text" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model="form.title"
+              type="text"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">저자 *</span>
-            <input v-model="form.author" type="text" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model="form.author"
+              type="text"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <div class="space-y-2">
             <span class="text-sm font-medium text-slate-700">ISBN</span>
             <div class="flex gap-2">
-              <input v-model="form.isbn" type="text" placeholder="978..." class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+              <input
+                v-model="form.isbn"
+                type="text"
+                placeholder="978..."
+                class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+              />
               <button
                 type="button"
                 :disabled="isbnLoading"
@@ -34,7 +49,7 @@
                 {{ isbnLoading ? '조회 중...' : 'ISBN 조회' }}
               </button>
             </div>
-            <p class="text-xs text-slate-500">국립중앙도서관 ISBN Open API의 표지와 서지 정보를 불러와.</p>
+            <p class="text-xs text-slate-500">카카오 도서 검색 API로 책 제목, 저자, 표지 이미지를 채워요.</p>
           </div>
 
           <label class="block space-y-2">
@@ -58,7 +73,7 @@
                 {{ uploadLoading ? '이미지 업로드 중...' : '이미지 업로드' }}
               </button>
               <span class="text-sm text-slate-500">
-                {{ form.thumbnail || '업로드 또는 ISBN 조회 후 대표 이미지 경로가 설정돼.' }}
+                {{ form.thumbnail || '업로드 또는 ISBN 조회 결과가 여기에 반영돼요.' }}
               </span>
             </div>
 
@@ -70,32 +85,67 @@
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">정가(원) *</span>
-            <input v-model.number="form.price" type="number" min="0" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model.number="form.price"
+              type="number"
+              min="0"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">할인율(%)</span>
-            <input v-model.number="form.discountRate" type="number" min="0" max="100" step="0.1" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model.number="form.discountRate"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">재고 수량 *</span>
-            <input v-model.number="form.stock" type="number" min="0" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model.number="form.stock"
+              type="number"
+              min="0"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">상위 카테고리 ID *</span>
-            <input v-model.number="form.categoryTopId" type="number" min="1" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model.number="form.categoryTopId"
+              type="number"
+              min="1"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">하위 카테고리 ID *</span>
-            <input v-model.number="form.categorySubId" type="number" min="1" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+            <input
+              v-model.number="form.categorySubId"
+              type="number"
+              min="1"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            />
           </label>
 
           <label class="block space-y-2 sm:col-span-2">
             <span class="text-sm font-medium text-slate-700">도서 소개</span>
-            <textarea v-model="form.description" rows="5" class="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"></textarea>
+            <textarea
+              v-model="form.description"
+              rows="5"
+              class="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+            ></textarea>
           </label>
         </div>
 
@@ -188,9 +238,9 @@ async function lookupIsbn() {
     form.value.author = data.author || form.value.author;
     form.value.thumbnail = data.thumbnail || form.value.thumbnail;
     previewUrl.value = data.thumbnail || previewUrl.value;
-    successMsg.value = 'ISBN으로 도서 정보를 불러왔어.';
+    successMsg.value = '카카오 도서 검색 결과를 불러왔어요.';
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || 'ISBN 조회에 실패했어.';
+    errorMsg.value = error.response?.data?.message || 'ISBN 조회에 실패했어요.';
   } finally {
     isbnLoading.value = false;
   }
@@ -198,7 +248,7 @@ async function lookupIsbn() {
 
 async function uploadThumbnail() {
   if (!selectedFile.value) {
-    errorMsg.value = '먼저 업로드할 이미지 파일을 선택해 주세요.';
+    errorMsg.value = '업로드할 이미지 파일을 선택해 주세요.';
     return;
   }
 
@@ -212,9 +262,9 @@ async function uploadThumbnail() {
     const { data } = await adminApi.uploadProductThumbnail(formData);
     form.value.thumbnail = data.storedPath;
     previewUrl.value = data.accessUrl;
-    successMsg.value = '대표 이미지가 업로드되었어.';
+    successMsg.value = '대표 이미지가 업로드되었어요.';
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || '이미지 업로드에 실패했어.';
+    errorMsg.value = error.response?.data?.message || '이미지 업로드에 실패했어요.';
   } finally {
     uploadLoading.value = false;
   }
@@ -227,10 +277,10 @@ async function handleSubmit() {
     successMsg.value = '';
 
     await adminApi.createProduct(form.value);
-    successMsg.value = '상품이 등록되었어.';
+    successMsg.value = '상품이 등록되었어요.';
     setTimeout(() => router.push('/admin/product/list'), 1000);
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || '상품 등록에 실패했어.';
+    errorMsg.value = error.response?.data?.message || '상품 등록에 실패했어요.';
   } finally {
     loading.value = false;
   }

@@ -35,7 +35,7 @@ public class AdminService {
     private final QnARepository qnaRepository;
     private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
-    private final IsbnOpenApiService isbnOpenApiService;
+    private final KakaoBookSearchService kakaoBookSearchService;
 
     @Transactional(readOnly = true)
     public ResponseEntity<DashboardResponse> getDashboard() {
@@ -127,7 +127,7 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<IsbnBookLookupResponse> lookupBookByIsbn(String isbn) {
-        return ResponseEntity.ok(isbnOpenApiService.lookupByIsbn(isbn));
+        return ResponseEntity.ok(kakaoBookSearchService.lookupByIsbn(isbn));
     }
 
     public ResponseEntity<Long> createProduct(ProductCreateRequest req) {

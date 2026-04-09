@@ -2,25 +2,24 @@
   <div class="flex min-h-screen flex-col font-sans">
     <GuestHeader />
 
-    <main class="flex flex-1 items-center justify-center bg-[radial-gradient(circle_at_top,#f8fbff_0%,#eef4ff_35%,#f8fafc_100%)] px-4 py-12">
-      <div class="grid w-full max-w-6xl gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <section class="hidden rounded-[2.5rem] bg-brand-800 p-10 text-white shadow-2xl shadow-brand-900/20 lg:block">
+    <main class="flex flex-1 items-center justify-center bg-[radial-gradient(circle_at_top,#f8fbff_0%,#eef4ff_35%,#f8fafc_100%)] px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+      <div class="grid w-full max-w-6xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <section class="hidden rounded-[2.5rem] bg-brand-800 p-8 text-white shadow-2xl shadow-brand-900/20 xl:block">
           <p class="text-sm font-semibold uppercase tracking-[0.28em] text-brand-200">ReadMe Membership</p>
           <h1 class="mt-4 text-4xl font-bold leading-tight">
-            읽고 싶은 책을
+            좋은 책을
             <br>
-            가장 빠르게 만나는 방법
+            더 편안하게 만나는 방법
           </h1>
           <p class="mt-5 max-w-xl text-sm leading-7 text-brand-100">
-            베스트셀러, 신간도서, 이벤트 도서까지 한 곳에서 찾고
-            주문과 결제, 배송 조회까지 편리하게 이용해보세요.
+            베스트셀러 탐색부터 주문과 결제, 배송 조회까지 한 흐름으로 이어지는 온라인 서점 경험을 제공합니다.
           </p>
 
           <div class="mt-10 grid gap-4 sm:grid-cols-3">
             <article class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">혜택</p>
               <p class="mt-2 text-lg font-bold">첫 구매 쿠폰</p>
-              <p class="mt-2 text-xs leading-6 text-brand-100">신규 회원 전용 할인과 추천 도서를 확인할 수 있어요.</p>
+              <p class="mt-2 text-xs leading-6 text-brand-100">신규 회원 대상 할인과 추천 도서를 한눈에 확인할 수 있어요.</p>
             </article>
             <article class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">주문</p>

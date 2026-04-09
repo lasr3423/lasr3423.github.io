@@ -28,26 +28,33 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+
 file:
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
-isbn:
-  api:
-    base-url: ${ISBN_API_BASE_URL:https://www.nl.go.kr/seoji/SearchApi.do}
-    cert-key: ${ISBN_API_CERT_KEY:}
-jwt:
-  secret: ${JWT_SECRET}
-  access-token-expiration: 1800000      # 30분 (ms)
-  refresh-token-expiration: 604800000   # 7일 (ms)
+
 kakao:
+  book:
+    base-url: ${KAKAO_BOOK_API_BASE_URL:https://dapi.kakao.com/v3/search/book}
+    rest-api-key: ${KAKAO_BOOK_REST_API_KEY:${KAKAO_CLIENT_ID:}}
   client-id: ${KAKAO_CLIENT_ID}
   client-secret: ${KAKAO_CLIENT_SECRET}
   redirect-uri: http://localhost:8202/api/oauth/kakao/callback
+
+seed:
+  api-product-count: ${SEED_API_PRODUCT_COUNT:1000}
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 1800000
+  refresh-token-expiration: 604800000
+
 app:
   base-url: ${APP_BASE_URL:http://localhost:8202}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
   oauth2:
     redirect-uri: ${FRONT_OAUTH_REDIRECT_URI:http://localhost:5173/oauth/callback}
+
 payment:
   callback:
     success-path: /api/payments/success
@@ -72,6 +79,7 @@ payment:
     chain-id: ${NAVER_PAY_CHAIN_ID:}
     merchant-id: ${NAVER_PAY_MERCHANT_ID:}
     return-url: ${APP_BASE_URL:http://localhost:8202}/payments/naver/return
+
 logging:
   level:
     root: info

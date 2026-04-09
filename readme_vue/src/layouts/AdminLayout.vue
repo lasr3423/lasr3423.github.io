@@ -1,21 +1,17 @@
 <template>
   <div class="flex min-h-screen flex-col bg-slate-100 font-sans">
-
-    <!-- 관리자 전용 헤더 -->
     <AdminHeader />
 
-    <div class="flex flex-1">
+    <div class="app-shell flex flex-1 items-start gap-6 py-6 lg:gap-8 lg:py-8">
       <AdminSidebar />
-      <main class="min-w-0 flex-1 p-6">
+      <main class="content-stack rounded-[2rem] bg-white/60 p-0">
         <RouterView />
       </main>
     </div>
-
-    <!-- 관리자 페이지는 푸터 없음 -->
   </div>
 </template>
 
 <script setup>
-import AdminHeader  from '@/components/layout/AdminHeader.vue';
+import AdminHeader from '@/components/layout/AdminHeader.vue';
 import AdminSidebar from '@/components/layout/AdminSidebar.vue';
 </script>

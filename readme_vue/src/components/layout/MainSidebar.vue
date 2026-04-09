@@ -1,6 +1,6 @@
 <template>
-  <aside class="hidden w-56 shrink-0 lg:block">
-    <div class="sticky top-[112px] space-y-4">
+  <aside class="hidden w-60 shrink-0 xl:block">
+    <div class="sticky top-28 space-y-4">
       <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <p class="border-b border-slate-200 px-4 py-3 text-sm font-bold text-brand-800">
           주요 메뉴

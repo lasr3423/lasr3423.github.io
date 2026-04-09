@@ -1,6 +1,6 @@
 <template>
-  <header class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm">
-    <div class="mx-auto flex max-w-[1440px] items-center gap-4 px-4 py-3">
+  <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+    <div class="app-shell flex items-center gap-4 py-3">
       <router-link
         to="/"
         class="shrink-0 text-xl font-bold tracking-tight text-brand-800 transition hover:text-accent-500"
@@ -65,8 +65,8 @@
       </nav>
     </div>
 
-    <div class="border-t border-slate-100 bg-slate-50">
-      <div class="mx-auto flex max-w-[1440px] items-center gap-6 overflow-x-auto px-4 py-2 text-sm font-medium text-slate-600">
+    <div class="border-t border-slate-100 bg-slate-50/90">
+      <div class="app-shell flex items-center gap-6 overflow-x-auto py-2 text-sm font-medium text-slate-600">
         <router-link
           v-for="item in primaryMenus"
           :key="item.label"
