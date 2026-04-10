@@ -67,7 +67,7 @@ payment:
     fail-url: ${APP_BASE_URL:http://localhost:8202}/payments/toss/fail
   kakao:
     enabled: true
-    cid: ${KAKAO_CID:}
+    cid: TC0ONETIME
     admin-key: ${KAKAO_ADMIN_KEY:}
     approval-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/approve
     cancel-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/cancel

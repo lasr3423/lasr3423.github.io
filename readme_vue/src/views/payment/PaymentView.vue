@@ -292,6 +292,7 @@ async function startPayment() {
     })
 
     const redirectUrl = data.redirectPcUrl || data.redirectMobileUrl || data.redirectUrl
+    console.log(redirectUrl)
 
     if (!redirectUrl) {
       throw new Error('결제창 이동 주소를 받지 못했습니다.')
@@ -300,7 +301,12 @@ async function startPayment() {
     window.location.href = redirectUrl
   } catch (error) {
     console.error('카카오 결제 준비 실패', error)
-    alert('카카오페이 결제를 준비하는 중 문제가 발생했습니다. 관리자 키와 CID 설정을 확인해 주세요.')
+    console.error('error.response?.data = ', error?.response?.data)
+    console.error('error.response?.status =', error?.response?.status)
+    console.error('error.message = ', error?.message)
+    alert(
+      error?.response?.data?.message||error?.message||'카카오페이 결제 준비 중 오류가 발생했다'
+    )
   } finally {
     loading.value = false
   }

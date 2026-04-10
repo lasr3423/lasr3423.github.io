@@ -57,7 +57,7 @@ public class TossPaymentGateway implements PaymentGateway {
         // orderId는 토스에서 String 타입 → String.valueOf()로 변환
         Map<String, Object> body = new HashMap<>();
         body.put("paymentKey", request.getPaymentKey());
-        body.put("orderId", String.valueOf(request.getOrderId()));
+        body.put("orderId", String.format("ORDER-%010d", request.getOrderId()));
         body.put("amount", request.getAmount());
 
         // HTTP 요청 생성: body + headers 묶음
