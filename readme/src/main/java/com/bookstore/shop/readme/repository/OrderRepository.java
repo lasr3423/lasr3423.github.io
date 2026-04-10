@@ -38,4 +38,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "AND o.orderStatus IN ('PAYED', 'APPROVAL')")
     long sumFinalPriceBetween(@Param("start") LocalDateTime start,
                               @Param("end") LocalDateTime end);
+
+    // 자동 만료 스케줄러용 — PAYMENT_PENDING 상태이면서 생성 시각이 기준 시각 이전인 주문 조회
+    // → 토스 결제의 경우 Payment 레코드가 없으므로 Order 레벨에서 직접 만료 처리
+    List<Order> findByOrderStatusAndCreatedAtBefore(OrderStatus status, LocalDateTime before);
 }

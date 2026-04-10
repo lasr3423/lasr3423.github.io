@@ -1,10 +1,13 @@
 package com.bookstore.shop.readme.repository;
 
 import com.bookstore.shop.readme.domain.Payment;
+import com.bookstore.shop.readme.domain.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 // JpaRepository<Payment, Long> : Payment 엔티티, PK 타입 Long
@@ -22,6 +25,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     // [신규] 관리자 전체 결제 목록 — findAll(pageable) 로 대체 가능하지만
     //        추후 상태/기간 필터 추가를 고려해 별도 선언
-    Page<Payment> findAllByPaymentStatus(
-            com.bookstore.shop.readme.domain.PaymentStatus status, Pageable pageable);
+    Page<Payment> findAllByPaymentStatus(PaymentStatus status, Pageable pageable);
+
+    // [신규] 자동 취소 스케줄러용 — 특정 상태이면서 생성 시각이 기준 시각 이전인 결제 목록 조회
+    // → SELECT * FROM payment WHERE payment_status = ? AND created_at < ?
+    List<Payment> findByPaymentStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime before);
 }

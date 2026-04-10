@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 // @Service : 비즈니스 로직 계층 빈 등록
 // @RequiredArgsConstructor : final 필드 생성자 주입 자동 생성
@@ -23,6 +26,10 @@ public class PaymentService {
     private final PaymentRepository  paymentRepository;
     private final OrderRepository    orderRepository;
     private final DeliveryRepository deliveryRepository;
+
+    private final CartRepository     cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
     // Gateway: 각 PG사 API 호출 계층 (전략 패턴 구현체)
     private final TossPaymentGateway tossPaymentGateway;
@@ -93,12 +100,16 @@ public class PaymentService {
         payment.setPaidAt(LocalDateTime.now());          // 결제 완료 시각 기록
         paymentRepository.save(payment);
 
-        // 6. 주문 상태도 PAYED로 업데이트
-        order.setOrderStatus(OrderStatus.PAYED);
+        // 6. 주문 상태를 PAYMENT_PENDING → PENDING 으로 전환 (결제 확인 완료)
+        order.setOrderStatus(OrderStatus.PENDING);
         orderRepository.save(order);
 
-        // 7. 배송 레코드 자동 생성 — REQ-D-001
+        // 7. 배송 레코드 자동 생성
         createDeliveryIfAbsent(order);
+
+        // 8. 결제 성공 확정 후 장바구니 아이템 삭제
+        //    주문에 포함된 상품들만 골라서 삭제 (다른 세션 장바구니에 영향 없음)
+        clearOrderedCartItems(order.getId(), memberId);
     }
 
     // ─── 카카오/네이버 결제 최종 승인 (/approve) ─────────────────────────
@@ -136,12 +147,14 @@ public class PaymentService {
         payment.setPaidAt(LocalDateTime.now());
         paymentRepository.save(payment);
 
-        // 7. 주문 상태도 PAYED로 업데이트
-        order.setOrderStatus(OrderStatus.PAYED);
+        // 7. 주문 상태를 PAYMENT_PENDING → PENDING 으로 전환 (결제 확인 완료)
+        order.setOrderStatus(OrderStatus.PENDING);
         orderRepository.save(order);
 
         // 8. 배송 레코드 자동 생성 — REQ-D-001
         createDeliveryIfAbsent(order);
+
+        clearOrderedCartItems(order.getId(), memberId);
     }
 
     // ─── 결제 실패 처리 (토스 failUrl) ───────────────────────────────────
@@ -252,5 +265,29 @@ public class PaymentService {
             delivery.setDeliveryStatus(DeliveryStatus.READY);  // 초기 상태: 배송 준비
             deliveryRepository.save(delivery);
         }
+    }
+    /**
+     * 결제 완료된 주문의 상품에 해당하는 장바구니 아이템만 삭제
+     *
+     * - OrderItem에서 주문된 productId 목록을 추출
+     * - 해당 회원의 장바구니에서 그 상품들만 찾아서 삭제
+     * - 다른 회원의 장바구니나 주문에 포함되지 않은 아이템은 건드리지 않음
+     */
+    private void clearOrderedCartItems(Long orderId, Long memberId) {
+        // 1. 이 주문에 포함된 상품 ID 목록 조회
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+        Set<Long> orderedProductIds = orderItems.stream()
+                .map(oi -> oi.getProduct().getId())
+                .collect(Collectors.toSet());
+
+        // 2. 해당 회원의 장바구니 조회 (없으면 아무것도 안 함)
+        cartRepository.findByMemberId(memberId).ifPresent(cart -> {
+            // 3. 주문된 상품에 해당하는 아이템만 필터링해서 삭제
+            List<CartItem> toRemove = cartItemRepository.findByCartId(cart.getId())
+                    .stream()
+                    .filter(ci -> orderedProductIds.contains(ci.getProduct().getId()))
+                    .collect(Collectors.toList());
+            cartItemRepository.deleteAll(toRemove);
+        });
     }
 }

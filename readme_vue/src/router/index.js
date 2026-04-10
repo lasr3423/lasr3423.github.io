@@ -64,6 +64,10 @@ const router = createRouter({
           path: 'payment/fail',
           component: () => import('@/views/payment/PaymentFailView.vue')
         },
+        {
+          path: 'payment/complete',
+          component: () => import('@/views/payment/PaymentCompleteView.vue')
+        },
       ]
     },
 

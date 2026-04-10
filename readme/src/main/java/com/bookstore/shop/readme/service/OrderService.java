@@ -60,7 +60,7 @@ public class OrderService {
         Order order = Order.builder()
                 .member(member)
                 .number(UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase())
-                .orderStatus(OrderStatus.PENDING)
+                .orderStatus(OrderStatus.PAYMENT_PENDING) // 결제 완료 전 초기 상태 (30분 초과 시 자동 취소)
                 .totalPrice(totalPrice)
                 .discountAmount(discountAmount)
                 .finalPrice(finalPrice)
@@ -88,8 +88,6 @@ public class OrderService {
                     .build();
             orderItemRepository.save(orderItem);
         }
-
-        cartItemRepository.deleteAll(cartItems);
 
         String itemName = cartItems.get(0).getProduct().getTitle()
                 + (cartItems.size() > 1 ? " 외 " + (cartItems.size() - 1) + "건" : "");
@@ -191,12 +189,14 @@ public class OrderService {
         }
 
         switch (currentStatus) {
-            case PENDING -> {
+            case PAYMENT_PENDING -> {
+                // 결제 미완료 주문: 취소만 가능
                 if (nextStatus != OrderStatus.CANCELED) {
-                    throw new RuntimeException("결제 전 주문은 취소만 가능합니다.");
+                    throw new RuntimeException("결제 진행 중인 주문은 취소만 가능합니다.");
                 }
             }
-            case PAYED -> {
+            case PENDING, PAYED -> {
+                // 결제 완료 주문: 승인 또는 취소만 가능
                 if (nextStatus != OrderStatus.APPROVAL && nextStatus != OrderStatus.CANCELED) {
                     throw new RuntimeException("결제 완료 주문은 승인 또는 취소만 가능합니다.");
                 }
