@@ -68,7 +68,7 @@ payment:
   kakao:
     enabled: true
     cid: TC0ONETIME
-    admin-key: ${KAKAO_ADMIN_KEY:}
+    secret-key: ${KAKAO_SECRET_KEY:}
     approval-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/approve
     cancel-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/cancel
     fail-url: ${APP_BASE_URL:http://localhost:8202}/payments/kakao/fail
