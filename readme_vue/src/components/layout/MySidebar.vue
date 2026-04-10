@@ -1,5 +1,5 @@
 <template>
-  <aside class="hidden w-60 shrink-0 lg:block">
+  <aside class="hidden w-64 shrink-0 xl:block">
     <div class="sticky top-24 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div class="border-b border-slate-200 bg-brand-800 px-5 py-4 text-sm font-semibold tracking-[0.2em] text-white">
         마이페이지
@@ -22,12 +22,13 @@
 
 <script setup>
 const menuItems = [
-  { label: '주문/배송 조회', to: '/mypage/order' },
+  { label: '주문 / 배송 조회', to: '/mypage/order' },
+  { label: '결제 내역', to: '/mypage/payment' },
   { label: '장바구니', to: '/cart' },
   { label: 'QnA', to: '/qna' },
   { label: '상품 리뷰', to: '/review' },
   { label: '회원정보 변경', to: '/mypage/edit' },
   { label: '비밀번호 변경', to: '/mypage/password' },
   { label: '회원 탈퇴', to: '/mypage/withdraw' },
-];
+]
 </script>

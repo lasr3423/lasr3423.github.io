@@ -1,229 +1,232 @@
 <template>
-  <div class="min-h-screen bg-slate-50 py-8">
-    <div class="mx-auto max-w-3xl px-4">
-
-      <h1 class="mb-6 text-2xl font-bold text-brand-800">주문서</h1>
-
-      <!-- 주문 상품 없을 때 -->
-      <div
-        v-if="checkedItems.length === 0"
-        class="rounded-2xl border border-slate-200 bg-white py-16 text-center text-slate-400"
-      >
-        선택된 상품이 없습니다.
-        <div class="mt-4">
-          <button
-            class="rounded-xl bg-brand-800 px-6 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
-            @click="router.push('/cart')"
-          >
-            장바구니로 이동
-          </button>
-        </div>
+  <section class="page-section">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-8">
+        <p class="point-chip">주문서 작성</p>
+        <h1 class="section-title mt-3">배송 정보와 결제 금액을 확인해 주세요</h1>
+        <p class="mt-2 text-sm text-slate-500">
+          장바구니에서 선택한 상품을 기준으로 주문이 생성됩니다.
+        </p>
       </div>
 
-      <template v-else>
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div
+        v-if="checkedItems.length === 0"
+        class="surface-panel rounded-[2rem] p-10 text-center"
+      >
+        <h2 class="text-xl font-semibold text-slate-900">선택한 상품이 없습니다</h2>
+        <p class="mt-3 text-sm text-slate-500">
+          장바구니에서 주문할 상품을 먼저 선택해 주세요.
+        </p>
+        <button
+          class="mt-6 inline-flex rounded-xl bg-brand-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+          @click="router.push('/cart')"
+        >
+          장바구니로 이동
+        </button>
+      </div>
 
-          <!-- 왼쪽 — 배송 정보 입력 -->
-          <div class="space-y-4 lg:col-span-2">
-
-            <!-- 주문 상품 목록 -->
-            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 class="mb-4 text-base font-bold text-slate-800">주문 상품</h2>
-              <ul class="divide-y divide-slate-100">
-                <li
-                  v-for="item in checkedItems"
-                  :key="item.cartItemId"
-                  class="flex items-start gap-4 py-3"
-                >
-                  <div class="flex-1 min-w-0">
-                    <p class="font-medium text-slate-800 line-clamp-1">{{ item.title }}</p>
-                    <p class="mt-0.5 text-sm text-slate-500">{{ item.author }}</p>
-                  </div>
-                  <div class="shrink-0 text-right text-sm">
-                    <p class="text-slate-500">{{ item.quantity }}권</p>
-                    <p class="mt-0.5 font-semibold text-slate-800">{{ item.itemTotal?.toLocaleString() }}원</p>
-                  </div>
-                </li>
-              </ul>
-            </section>
-
-            <!-- 배송지 정보 -->
-            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 class="mb-4 text-base font-bold text-slate-800">배송 정보</h2>
-              <div class="space-y-3">
-
-                <!-- 수령인 -->
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">수령인 <span class="text-rose-500">*</span></label>
-                  <input
-                    v-model="form.receiverName"
-                    type="text"
-                    placeholder="수령인 이름"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-800 focus:ring-2 focus:ring-brand-800/10"
-                  />
-                </div>
-
-                <!-- 연락처 -->
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">연락처 <span class="text-rose-500">*</span></label>
-                  <input
-                    v-model="form.receiverPhone"
-                    type="tel"
-                    placeholder="010-0000-0000"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-800 focus:ring-2 focus:ring-brand-800/10"
-                  />
-                </div>
-
-                <!-- 우편번호 -->
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">우편번호 <span class="text-rose-500">*</span></label>
-                  <input
-                    v-model="form.deliveryZipCode"
-                    type="text"
-                    placeholder="12345"
-                    maxlength="5"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-800 focus:ring-2 focus:ring-brand-800/10"
-                  />
-                </div>
-
-                <!-- 주소 -->
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">주소 <span class="text-rose-500">*</span></label>
-                  <input
-                    v-model="form.deliveryAddress"
-                    type="text"
-                    placeholder="도로명 주소"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-800 focus:ring-2 focus:ring-brand-800/10"
-                  />
-                </div>
-
-                <!-- 상세 주소 -->
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">상세 주소</label>
-                  <input
-                    v-model="form.deliveryAddressDetail"
-                    type="text"
-                    placeholder="동/호수 등 상세 주소"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-800 focus:ring-2 focus:ring-brand-800/10"
-                  />
-                </div>
-
-                <!-- 배송 메모 -->
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">배송 메모</label>
-                  <input
-                    v-model="form.deliveryMemo"
-                    type="text"
-                    placeholder="배송 시 요청사항 (선택)"
-                    class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-brand-800 focus:ring-2 focus:ring-brand-800/10"
-                  />
-                </div>
-
-              </div>
-            </section>
-
-          </div>
-
-          <!-- 오른쪽 — 결제 요약 -->
-          <div class="lg:col-span-1">
-            <div class="sticky top-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 class="mb-4 text-base font-bold text-slate-800">결제 금액</h2>
-
-              <dl class="space-y-2 text-sm">
-                <div class="flex justify-between text-slate-500">
-                  <dt>상품 금액</dt>
-                  <dd>{{ cartStore.checkedTotal.toLocaleString() }}원</dd>
-                </div>
-                <div class="flex justify-between text-slate-500">
-                  <dt>배송비</dt>
-                  <dd>무료</dd>
-                </div>
-                <div class="my-2 border-t border-slate-100" />
-                <div class="flex justify-between text-base font-bold text-brand-800">
-                  <dt>최종 결제</dt>
-                  <dd>{{ cartStore.checkedTotal.toLocaleString() }}원</dd>
-                </div>
-              </dl>
-
-              <button
-                class="mt-6 w-full rounded-xl bg-accent-500 py-3 font-bold text-white transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
-                :disabled="submitting || !isFormValid"
-                @click="submitOrder"
-              >
-                {{ submitting ? '처리 중...' : '결제하기' }}
-              </button>
-
-              <p v-if="!isFormValid" class="mt-2 text-center text-xs text-rose-400">
-                필수 항목을 모두 입력해주세요
-              </p>
+      <div v-else class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div class="space-y-6">
+          <section class="surface-panel rounded-[2rem] p-6">
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-slate-900">주문 상품</h2>
+              <span class="text-sm text-slate-500">{{ checkedItems.length }}건</span>
             </div>
-          </div>
 
+            <ul class="divide-y divide-slate-100">
+              <li
+                v-for="item in checkedItems"
+                :key="item.cartItemId"
+                class="flex items-start justify-between gap-4 py-4"
+              >
+                <div class="min-w-0">
+                  <p class="truncate text-base font-semibold text-slate-900">{{ item.title }}</p>
+                  <p class="mt-1 text-sm text-slate-500">{{ item.author }}</p>
+                </div>
+                <div class="shrink-0 text-right">
+                  <p class="text-sm text-slate-500">{{ item.quantity }}권</p>
+                  <p class="mt-1 font-semibold text-slate-900">
+                    {{ formatPrice(item.itemTotal) }}원
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="surface-panel rounded-[2rem] p-6">
+            <div class="mb-5">
+              <h2 class="text-lg font-semibold text-slate-900">배송 정보</h2>
+              <p class="mt-1 text-sm text-slate-500">실제 수령하실 정보를 입력해 주세요.</p>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="space-y-2">
+                <span class="text-sm font-medium text-slate-700">수령인</span>
+                <input
+                  v-model.trim="form.receiverName"
+                  type="text"
+                  placeholder="예: 홍길동"
+                  class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-brand-700 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+
+              <label class="space-y-2">
+                <span class="text-sm font-medium text-slate-700">연락처</span>
+                <input
+                  v-model.trim="form.receiverPhone"
+                  type="tel"
+                  placeholder="예: 010-1234-5678"
+                  class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-brand-700 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+
+              <label class="space-y-2 md:col-span-2">
+                <span class="text-sm font-medium text-slate-700">우편번호</span>
+                <input
+                  v-model.trim="form.deliveryZipCode"
+                  type="text"
+                  maxlength="5"
+                  placeholder="예: 12345"
+                  class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-brand-700 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+
+              <label class="space-y-2 md:col-span-2">
+                <span class="text-sm font-medium text-slate-700">주소</span>
+                <input
+                  v-model.trim="form.deliveryAddress"
+                  type="text"
+                  placeholder="기본 주소를 입력해 주세요"
+                  class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-brand-700 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+
+              <label class="space-y-2 md:col-span-2">
+                <span class="text-sm font-medium text-slate-700">상세 주소</span>
+                <input
+                  v-model.trim="form.deliveryAddressDetail"
+                  type="text"
+                  placeholder="상세 주소를 입력해 주세요"
+                  class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-brand-700 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+
+              <label class="space-y-2 md:col-span-2">
+                <span class="text-sm font-medium text-slate-700">배송 메모</span>
+                <input
+                  v-model.trim="form.deliveryMemo"
+                  type="text"
+                  placeholder="예: 문 앞에 놓아 주세요"
+                  class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-brand-700 focus:ring-4 focus:ring-brand-100"
+                />
+              </label>
+            </div>
+          </section>
         </div>
-      </template>
 
+        <aside class="xl:pt-1">
+          <div class="surface-panel sticky top-28 rounded-[2rem] p-6">
+            <h2 class="text-lg font-semibold text-slate-900">결제 금액</h2>
+
+            <dl class="mt-5 space-y-3 text-sm">
+              <div class="flex items-center justify-between text-slate-500">
+                <dt>상품 금액</dt>
+                <dd>{{ formatPrice(cartStore.checkedTotal) }}원</dd>
+              </div>
+              <div class="flex items-center justify-between text-slate-500">
+                <dt>배송비</dt>
+                <dd>무료</dd>
+              </div>
+              <div class="border-t border-slate-100 pt-3">
+                <div class="flex items-center justify-between text-base font-semibold text-slate-900">
+                  <dt>최종 결제 금액</dt>
+                  <dd class="text-brand-800">{{ formatPrice(cartStore.checkedTotal) }}원</dd>
+                </div>
+              </div>
+            </dl>
+
+            <button
+              class="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-accent-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+              :disabled="submitting || !isFormValid"
+              @click="submitOrder"
+            >
+              {{ submitting ? '주문 생성 중...' : '주문 생성 후 결제하기' }}
+            </button>
+
+            <p v-if="!isFormValid" class="mt-3 text-center text-xs text-rose-500">
+              필수 항목을 모두 입력해야 주문을 진행할 수 있습니다.
+            </p>
+          </div>
+        </aside>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import { useOrderStore } from '@/store/order'
 import { orderApi } from '@/api/order'
 
-const router     = useRouter()
-const cartStore  = useCartStore()
+const router = useRouter()
+const cartStore = useCartStore()
 const orderStore = useOrderStore()
 
-// 장바구니에서 체크된 항목
-const checkedItems = computed(() => cartStore.items.filter(i => i.isChecked))
-
 const form = ref({
-  receiverName:          '',
-  receiverPhone:         '',
-  deliveryZipCode:       '',
-  deliveryAddress:       '',
+  receiverName: '',
+  receiverPhone: '',
+  deliveryZipCode: '',
+  deliveryAddress: '',
   deliveryAddressDetail: '',
-  deliveryMemo:          '',
+  deliveryMemo: '',
 })
 
 const submitting = ref(false)
 
-// 필수 입력값 검증
+const checkedItems = computed(() => cartStore.items.filter((item) => item.isChecked))
+
 const isFormValid = computed(() =>
-  form.value.receiverName.trim() &&
-  form.value.receiverPhone.trim() &&
-  form.value.deliveryZipCode.trim() &&
-  form.value.deliveryAddress.trim()
+  form.value.receiverName &&
+  form.value.receiverPhone &&
+  form.value.deliveryZipCode &&
+  form.value.deliveryAddress,
 )
 
-// ── 주문 생성 + 결제 화면 이동 ────────────────────────────────────────────────
+onMounted(async () => {
+  if (!cartStore.items.length) {
+    await cartStore.fetchCart()
+  }
+})
+
+function formatPrice(value) {
+  return Number(value || 0).toLocaleString()
+}
+
 async function submitOrder() {
-  if (!isFormValid.value || submitting.value) return
+  if (!isFormValid.value || submitting.value) {
+    return
+  }
 
   submitting.value = true
+
   try {
-    // POST /api/order → { orderId, finalPrice, itemName }
     const { data } = await orderApi.create({
-      cartItemIds:           checkedItems.value.map(i => i.cartItemId),
-      receiverName:          form.value.receiverName,
-      receiverPhone:         form.value.receiverPhone,
-      deliveryZipCode:       form.value.deliveryZipCode,
-      deliveryAddress:       form.value.deliveryAddress,
+      cartItemIds: checkedItems.value.map((item) => item.cartItemId),
+      receiverName: form.value.receiverName,
+      receiverPhone: form.value.receiverPhone,
+      deliveryZipCode: form.value.deliveryZipCode,
+      deliveryAddress: form.value.deliveryAddress,
       deliveryAddressDetail: form.value.deliveryAddressDetail,
-      deliveryMemo:          form.value.deliveryMemo,
+      deliveryMemo: form.value.deliveryMemo,
     })
 
-    // 결제 정보 store에 저장 → PaymentView에서 사용
     orderStore.setOrder(data.orderId, data.finalPrice, data.itemName)
-
-    // 결제 화면으로 이동
     router.push('/payment')
-  } catch (e) {
-    alert('주문 생성에 실패했습니다.')
-    console.error(e)
+  } catch (error) {
+    console.error('주문 생성 실패', error)
+    alert('주문 생성 중 문제가 발생했습니다. 입력 정보를 다시 확인해 주세요.')
   } finally {
     submitting.value = false
   }

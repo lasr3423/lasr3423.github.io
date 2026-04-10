@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/order/payment/fail"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers("/api/oauth/**").permitAll()
                         // [수정] review/qna GET도 비로그인 허용 (상품 상세 페이지에서 탭으로 표시)
                         .requestMatchers(HttpMethod.GET,

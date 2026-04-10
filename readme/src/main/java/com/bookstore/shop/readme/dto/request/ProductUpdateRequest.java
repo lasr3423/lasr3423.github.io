@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public record ProductUpdateRequest(
         String title,
         String author,
+        String isbn,
         String description,
         int price,
         BigDecimal discountRate,

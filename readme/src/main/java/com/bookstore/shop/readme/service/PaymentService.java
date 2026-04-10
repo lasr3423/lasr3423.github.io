@@ -40,6 +40,7 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
         // 2. provider 문자열로 해당 Gateway 구현체 선택 (전략 패턴 실행부)
+        request.setMemberId(memberId);
         PaymentGateway gateway = resolveGateway(request.getProvider());
 
         // 3. PG사에 결제 준비 API 호출 → tid 또는 paymentId + 결제창 URL 발급

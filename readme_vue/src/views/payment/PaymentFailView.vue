@@ -1,37 +1,68 @@
 <template>
-  <section class="mx-auto max-w-xl rounded-[2rem] border border-rose-200 bg-white p-8 text-center shadow-sm">
-    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-2xl text-rose-600">
-      !
+  <section class="page-section">
+    <div class="mx-auto max-w-xl">
+      <div class="surface-panel rounded-[2rem] p-10 text-center">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-2xl text-rose-600">
+          !
+        </div>
+        <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-rose-600">결제 실패</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+          결제가 완료되지 않았습니다
+        </h1>
+        <p class="mt-3 text-sm leading-6 text-slate-500">
+          {{ failureMessage }}
+        </p>
+
+        <div class="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left">
+          <p class="text-xs font-semibold text-slate-500">오류 코드</p>
+          <p class="mt-1 text-sm font-medium text-slate-800">{{ failureCode }}</p>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <button
+            class="rounded-xl bg-brand-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
+            @click="router.push('/payment')"
+          >
+            다시 결제하기
+          </button>
+          <button
+            class="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            @click="router.push('/cart')"
+          >
+            장바구니로 이동
+          </button>
+        </div>
+      </div>
     </div>
-    <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-rose-600">결제 실패</p>
-    <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">장바구니로 돌아갑니다</h1>
-    <p class="mt-3 text-sm leading-6 text-slate-500">
-      결제 실패 정보를 저장하고 다시 시도할 수 있도록 장바구니로 이동합니다.
-    </p>
   </section>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from '@/api/axios';
+import { computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { paymentApi } from '@/api/payment'
 
-const route  = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
+
+const failureCode = computed(() => String(route.query.code || 'UNKNOWN'))
+const failureMessage = computed(() => String(route.query.message || '결제 처리 중 문제가 발생했습니다.'))
 
 onMounted(async () => {
-  const { orderId, code, message } = route.query;
+  const orderId = Number(String(route.query.orderId || '').replace('ORDER-', ''))
+
+  if (!orderId) {
+    return
+  }
 
   try {
-    await axios.post('/api/order/payment/fail', {
-      orderId: Number(orderId),
-      code,
-      message,
-    });
-  } catch (e) {
-    console.error('결제 실패 처리 오류', e);
-  } finally {
-    router.push('/cart');
+    await paymentApi.fail({
+      orderId,
+      code: failureCode.value,
+      message: failureMessage.value,
+    })
+  } catch (error) {
+    console.error('결제 실패 후처리 실패', error)
   }
-});
+})
 </script>

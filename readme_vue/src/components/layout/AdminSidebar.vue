@@ -1,5 +1,5 @@
 <template>
-  <aside class="hidden w-60 shrink-0 lg:block">
+  <aside class="hidden w-64 shrink-0 xl:block">
     <div class="sticky top-24 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <div class="border-b border-slate-200 px-5 py-4 text-sm font-semibold tracking-[0.2em] text-brand-800">
         관리자 메뉴

@@ -1,41 +1,124 @@
 <template>
-  <section class="mx-auto max-w-xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">
-      ✓
+  <section class="page-section">
+    <div class="mx-auto max-w-xl">
+      <div class="surface-panel rounded-[2rem] p-10 text-center">
+        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">
+          ✓
+        </div>
+        <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 처리 중</p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+          결제 결과를 확인하고 있습니다
+        </h1>
+        <p class="mt-3 text-sm leading-6 text-slate-500">
+          승인 정보를 확인한 뒤 주문 내역으로 이동합니다.
+        </p>
+      </div>
     </div>
-    <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 완료</p>
-    <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">주문을 확인하고 있습니다</h1>
-    <p class="mt-3 text-sm leading-6 text-slate-500">
-      결제 결과를 확인한 뒤 주문 내역으로 이동합니다. 잠시만 기다려주세요.
-    </p>
   </section>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from '@/api/axios';
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { paymentApi } from '@/api/payment'
+import { useOrderStore } from '@/store/order'
 
-const route  = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
+const orderStore = useOrderStore()
+
+function readPaymentMeta(orderId) {
+  const raw = sessionStorage.getItem(`payment-meta-${orderId}`)
+  return raw ? JSON.parse(raw) : null
+}
+
+function clearPaymentMeta(orderId) {
+  sessionStorage.removeItem(`payment-meta-${orderId}`)
+}
 
 onMounted(async () => {
-  const { paymentKey, orderId, amount } = route.query;
-
-  // Toss에서 돌아온 orderId는 "ORDER-0000000001" 형식
-  // 백엔드는 DB PK(숫자)를 받아야 하므로 접두사를 제거하고 Number로 변환
-  const numericOrderId = Number(String(orderId).replace('ORDER-', ''))
+  const provider = String(route.query.provider || 'TOSS').toUpperCase()
 
   try {
-    await axios.post('/api/order/payment/confirm', {
+    if (provider === 'KAKAO') {
+      const orderId = Number(route.query.orderId)
+      const pgToken = String(route.query.pg_token || '')
+      const meta = readPaymentMeta(orderId)
+
+      if (!orderId || !pgToken || !meta?.tid) {
+        throw new Error('카카오 결제 승인 정보가 부족합니다.')
+      }
+
+      await paymentApi.approve({
+        orderId,
+        provider: 'KAKAO',
+        tid: meta.tid,
+        pgToken,
+      })
+
+      clearPaymentMeta(orderId)
+      orderStore.clearOrder()
+      router.replace('/mypage/payment')
+      return
+    }
+
+    if (provider === 'NAVER') {
+      const orderId = Number(route.query.orderId)
+      const resultCode = String(route.query.resultCode || '')
+      const paymentId = String(route.query.paymentId || '')
+      const meta = readPaymentMeta(orderId)
+
+      if (resultCode && resultCode !== 'Success') {
+        throw new Error('네이버페이 승인 결과가 성공이 아닙니다.')
+      }
+
+      if (!orderId || !(paymentId || meta?.paymentId)) {
+        throw new Error('네이버페이 승인 정보가 부족합니다.')
+      }
+
+      await paymentApi.approve({
+        orderId,
+        provider: 'NAVER',
+        paymentId: paymentId || meta.paymentId,
+        resultCode: resultCode || 'Success',
+      })
+
+      clearPaymentMeta(orderId)
+      orderStore.clearOrder()
+      router.replace('/mypage/payment')
+      return
+    }
+
+    const paymentKey = String(route.query.paymentKey || '')
+    const amount = Number(route.query.amount || 0)
+    const orderIdText = String(route.query.orderId || '')
+    const numericOrderId = Number(orderIdText.replace('ORDER-', ''))
+
+    if (!paymentKey || !numericOrderId || !amount) {
+      throw new Error('토스 결제 승인 정보가 부족합니다.')
+    }
+
+    await paymentApi.confirm({
       paymentKey,
       orderId: numericOrderId,
-      amount:  Number(amount),
-    });
-    router.push('/mypage/order');
-  } catch (e) {
-    console.error('결제 확인 실패', e);
-    router.push('/payment/fail');
+      amount,
+    })
+
+    clearPaymentMeta(numericOrderId)
+    orderStore.clearOrder()
+    router.replace('/mypage/payment')
+  } catch (error) {
+    console.error('결제 승인 실패', error)
+    const orderId = route.query.orderId ? String(route.query.orderId) : ''
+    router.replace({
+      path: '/payment/fail',
+      query: {
+        provider,
+        orderId,
+        code: 'CONFIRM_FAILED',
+        message: '결제 승인 처리 중 문제가 발생했습니다.',
+      },
+    })
   }
-});
+})
 </script>

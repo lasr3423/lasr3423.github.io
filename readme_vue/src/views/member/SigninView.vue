@@ -4,7 +4,7 @@
       <p class="text-sm font-semibold uppercase tracking-[0.24em] text-brand-700">Login</p>
       <h1 class="text-3xl font-bold tracking-tight text-slate-900">ReadMe 로그인</h1>
       <p class="text-sm leading-6 text-slate-500">
-        이메일 계정으로 로그인하거나 소셜 로그인을 이용해 빠르게 시작해보세요.
+        이메일 계정으로 로그인하거나 소셜 로그인을 통해 빠르게 시작해 보세요.
       </p>
     </div>
 
@@ -26,7 +26,7 @@
           v-model="password"
           class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
           type="password"
-          placeholder="비밀번호를 입력하세요"
+          placeholder="비밀번호를 입력해 주세요"
           required
         >
       </label>
@@ -75,45 +75,53 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '@/store/auth';
-import { authApi } from '@/api/auth';
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+import { authApi } from '@/api/auth'
 
-const router = useRouter();
-const route = useRoute();
-const authStore = useAuthStore();
-const email = ref('');
-const password = ref('');
-const loading = ref(false);
-const errorMsg = ref('');
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+const email = ref('')
+const password = ref('')
+const loading = ref(false)
+const errorMsg = ref('')
+
+function resolvePostLoginPath() {
+  const redirect = route.query.redirect
+  if (typeof redirect === 'string' && redirect) {
+    return redirect
+  }
+
+  return authStore.isAdmin ? '/admin' : '/'
+}
 
 async function handleSignin() {
   try {
-    loading.value = true;
-    errorMsg.value = '';
-    await authStore.signin(email.value, password.value);
-    const redirect = route.query.redirect || '/';
-    router.push(redirect);
-  } catch (e) {
-    errorMsg.value = e.response?.data?.message || '로그인에 실패했습니다.';
+    loading.value = true
+    errorMsg.value = ''
+    await authStore.signin(email.value, password.value)
+    router.push(resolvePostLoginPath())
+  } catch (error) {
+    errorMsg.value = error.response?.data?.message || '로그인에 실패했습니다.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 function handleGoogleLogin() {
-  sessionStorage.setItem('redirect', route.query.redirect || '/');
-  window.location.href = 'http://localhost:8202/oauth2/authorization/google';
+  sessionStorage.setItem('redirect', typeof route.query.redirect === 'string' ? route.query.redirect : '')
+  window.location.href = 'http://localhost:8202/oauth2/authorization/google'
 }
 
 async function handleKakaoLogin() {
   try {
-    sessionStorage.setItem('redirect', route.query.redirect || '/');
-    const { data } = await authApi.getKakaoAuthUrl();
-    window.location.href = data.authUrl;
-  } catch (e) {
-    errorMsg.value = '현재 카카오 로그인은 사용할 수 없습니다.';
+    sessionStorage.setItem('redirect', typeof route.query.redirect === 'string' ? route.query.redirect : '')
+    const { data } = await authApi.getKakaoAuthUrl()
+    window.location.href = data.authUrl
+  } catch (error) {
+    errorMsg.value = '현재 카카오 로그인은 사용할 수 없습니다.'
   }
 }
 </script>

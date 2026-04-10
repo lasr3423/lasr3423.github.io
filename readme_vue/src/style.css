@@ -74,6 +74,34 @@
 }
 
 @layer components {
+  .app-shell {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 1440px;
+    padding-inline: 1rem;
+  }
+
+  .app-main-grid {
+    margin-inline: auto;
+    display: flex;
+    width: 100%;
+    max-width: 1440px;
+    flex: 1;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding-inline: 1rem;
+    padding-block: 1.5rem;
+  }
+
+  .content-stack {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .page-section {
+    @apply rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8;
+  }
+
   .surface-panel {
     @apply rounded-[2rem] border border-slate-200 bg-white shadow-sm;
   }
@@ -88,5 +116,32 @@
 
   .section-title {
     @apply text-2xl font-bold tracking-tight text-slate-900;
+  }
+}
+
+@media (min-width: 640px) {
+  @layer components {
+    .app-shell,
+    .app-main-grid {
+      padding-inline: 1.5rem;
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  @layer components {
+    .app-shell,
+    .app-main-grid {
+      padding-inline: 2rem;
+    }
+
+    .app-main-grid {
+      gap: 2rem;
+      padding-block: 2rem;
+    }
+
+    .content-stack {
+      padding-bottom: 2.5rem;
+    }
   }
 }

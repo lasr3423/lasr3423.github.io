@@ -8,6 +8,7 @@ public record ProductAdminResponse(
         Long id,
         String title,
         String author,
+        String isbn,
         int price,
         BigDecimal discountRate,
         int salePrice,
@@ -19,7 +20,7 @@ public record ProductAdminResponse(
 ) {
     public ProductAdminResponse(Product p) {
         this(
-                p.getId(), p.getTitle(), p.getAuthor(),
+                p.getId(), p.getTitle(), p.getAuthor(), p.getIsbn(),
                 p.getPrice(), p.getDiscountRate(), p.getSalePrice(),
                 p.getStock(), p.getSalesCount(), p.getViewCount(),
                 p.getProductStatus().name(), p.getThumbnail()

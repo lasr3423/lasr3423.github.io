@@ -7,6 +7,7 @@ public record ProductCreateRequest(
         Long categorySubId,
         String title,
         String author,
+        String isbn,
         String description,
         int price,
         BigDecimal discountRate,
