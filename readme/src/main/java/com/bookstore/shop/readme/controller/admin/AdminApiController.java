@@ -277,9 +277,11 @@ public class AdminApiController {
 
     @GetMapping("/reviews")
     public ResponseEntity<Page<ReviewResponse>> getAdminReviews(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String searchType,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return adminService.getAdminReviews(pageable);
+        return adminService.getAdminReviews(keyword, searchType, pageable);
     }
 
     @GetMapping("/reviews/{reviewId}")

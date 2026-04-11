@@ -4,12 +4,12 @@
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">상품 등록</h1>
       <p class="mt-3 text-sm leading-6 text-slate-500">
-        ISBN으로 카카오 도서 검색 결과를 불러오거나, 직접 이미지를 업로드해서 상품 정보를 등록할 수 있어요.
+        카테고리 이름을 기준으로 상품을 분류하고, 필요하면 이 화면 안에서 새 카테고리를 바로 추가할 수 있습니다.
       </p>
     </section>
 
     <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-      <form class="max-w-3xl space-y-6" @submit.prevent="handleSubmit">
+      <form class="max-w-4xl space-y-6" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <label class="block space-y-2 sm:col-span-2">
             <span class="text-sm font-medium text-slate-700">도서명 *</span>
@@ -17,8 +17,8 @@
               v-model="form.title"
               type="text"
               required
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
           </label>
 
           <label class="block space-y-2">
@@ -27,8 +27,8 @@
               v-model="form.author"
               type="text"
               required
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
           </label>
 
           <div class="space-y-2">
@@ -38,8 +38,8 @@
                 v-model="form.isbn"
                 type="text"
                 placeholder="978..."
-                class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-              />
+                class="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+              >
               <button
                 type="button"
                 :disabled="isbnLoading"
@@ -49,39 +49,35 @@
                 {{ isbnLoading ? '조회 중...' : 'ISBN 조회' }}
               </button>
             </div>
-            <p class="text-xs text-slate-500">카카오 도서 검색 API로 책 제목, 저자, 표지 이미지를 채워요.</p>
           </div>
 
           <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700">대표 이미지 업로드</span>
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
-              @change="handleFileChange"
-              class="block w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-brand-800 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700"
-            />
+            <span class="text-sm font-medium text-slate-700">대분류 *</span>
+            <select
+              v-model="form.categoryTopId"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
+              <option :value="null">대분류 선택</option>
+              <option v-for="category in categories" :key="category.id" :value="category.id">
+                {{ category.name }}
+              </option>
+            </select>
           </label>
 
-          <div class="space-y-3 sm:col-span-2">
-            <div class="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                :disabled="!selectedFile || uploadLoading"
-                class="rounded-2xl bg-accent-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-400 disabled:cursor-not-allowed disabled:bg-slate-300"
-                @click="uploadThumbnail"
-              >
-                {{ uploadLoading ? '이미지 업로드 중...' : '이미지 업로드' }}
-              </button>
-              <span class="text-sm text-slate-500">
-                {{ form.thumbnail || '업로드 또는 ISBN 조회 결과가 여기에 반영돼요.' }}
-              </span>
-            </div>
-
-            <div v-if="previewUrl" class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
-              <p class="mb-3 text-sm font-medium text-slate-700">대표 이미지 미리보기</p>
-              <img :src="previewUrl" alt="대표 이미지 미리보기" class="h-56 w-40 rounded-2xl object-cover shadow-sm" />
-            </div>
-          </div>
+          <label class="block space-y-2">
+            <span class="text-sm font-medium text-slate-700">소분류 *</span>
+            <select
+              v-model="form.categorySubId"
+              required
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
+              <option :value="null">소분류 선택</option>
+              <option v-for="subCategory in availableSubCategories" :key="subCategory.id" :value="subCategory.id">
+                {{ subCategory.name }}
+              </option>
+            </select>
+          </label>
 
           <label class="block space-y-2">
             <span class="text-sm font-medium text-slate-700">정가(원) *</span>
@@ -90,8 +86,8 @@
               type="number"
               min="0"
               required
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
           </label>
 
           <label class="block space-y-2">
@@ -102,8 +98,8 @@
               min="0"
               max="100"
               step="0.1"
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
           </label>
 
           <label class="block space-y-2">
@@ -113,30 +109,8 @@
               type="number"
               min="0"
               required
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
-          </label>
-
-          <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700">상위 카테고리 ID *</span>
-            <input
-              v-model.number="form.categoryTopId"
-              type="number"
-              min="1"
-              required
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
-          </label>
-
-          <label class="block space-y-2">
-            <span class="text-sm font-medium text-slate-700">하위 카테고리 ID *</span>
-            <input
-              v-model.number="form.categorySubId"
-              type="number"
-              min="1"
-              required
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
-            />
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
           </label>
 
           <label class="block space-y-2 sm:col-span-2">
@@ -144,9 +118,44 @@
             <textarea
               v-model="form.description"
               rows="5"
-              class="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400 focus:bg-white focus:ring-4 focus:ring-brand-100"
+              class="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
             ></textarea>
           </label>
+
+          <label class="block space-y-2 sm:col-span-2">
+            <span class="text-sm font-medium text-slate-700">대표 이미지 경로</span>
+            <input
+              v-model="form.thumbnail"
+              type="text"
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-brand-400"
+            >
+          </label>
+
+          <label class="block space-y-2 sm:col-span-2">
+            <span class="text-sm font-medium text-slate-700">대표 이미지 업로드</span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+              @change="handleFileChange"
+              class="block w-full rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-brand-800 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700"
+            >
+          </label>
+        </div>
+
+        <div class="space-y-3">
+          <button
+            type="button"
+            :disabled="!selectedFile || uploadLoading"
+            class="rounded-2xl bg-accent-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-accent-400 disabled:cursor-not-allowed disabled:bg-slate-300"
+            @click="uploadThumbnail"
+          >
+            {{ uploadLoading ? '이미지 업로드 중...' : '이미지 업로드' }}
+          </button>
+
+          <div v-if="previewUrl" class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+            <p class="mb-3 text-sm font-medium text-slate-700">대표 이미지 미리보기</p>
+            <img :src="previewUrl" alt="대표 이미지 미리보기" class="h-56 w-40 rounded-2xl object-cover shadow-sm">
+          </div>
         </div>
 
         <div class="rounded-2xl bg-brand-50 px-5 py-4 text-sm">
@@ -176,19 +185,20 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { adminApi } from '@/api/admin';
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { adminApi } from '@/api/admin'
 
-const router = useRouter();
+const router = useRouter()
 
-const loading = ref(false);
-const uploadLoading = ref(false);
-const isbnLoading = ref(false);
-const errorMsg = ref('');
-const successMsg = ref('');
-const selectedFile = ref(null);
-const previewUrl = ref('');
+const loading = ref(false)
+const uploadLoading = ref(false)
+const isbnLoading = ref(false)
+const errorMsg = ref('')
+const successMsg = ref('')
+const selectedFile = ref(null)
+const previewUrl = ref('')
+const categories = ref([])
 
 const form = ref({
   title: '',
@@ -201,88 +211,124 @@ const form = ref({
   stock: 0,
   categoryTopId: null,
   categorySubId: null,
-});
+})
+
+const availableSubCategories = computed(() =>
+  categories.value.find((category) => category.id === form.value.categoryTopId)?.subCategories || []
+)
 
 const previewSalePrice = computed(() => {
-  const rate = Number(form.value.discountRate || 0);
-  return Math.floor(Number(form.value.price || 0) * (1 - rate / 100));
-});
+  const rate = Number(form.value.discountRate || 0)
+  return Math.floor(Number(form.value.price || 0) * (1 - rate / 100))
+})
 
-function handleFileChange(event) {
-  const [file] = event.target.files || [];
-  selectedFile.value = file || null;
-  errorMsg.value = '';
+function handleCategoriesUpdated(updatedCategories) {
+  categories.value = updatedCategories
 
-  if (!selectedFile.value) {
-    previewUrl.value = '';
-    return;
+  const selectedTop = categories.value.find((category) => category.id === form.value.categoryTopId)
+  if (!selectedTop) {
+    form.value.categoryTopId = null
+    form.value.categorySubId = null
+    return
   }
 
-  previewUrl.value = URL.createObjectURL(selectedFile.value);
+  const matchedSub = selectedTop.subCategories?.some((subCategory) => subCategory.id === form.value.categorySubId)
+  if (!matchedSub) {
+    form.value.categorySubId = null
+  }
+}
+
+async function loadCategories() {
+  try {
+    const { data } = await adminApi.getCategories()
+    handleCategoriesUpdated(data || [])
+  } catch (error) {
+    errorMsg.value = error.response?.data?.message || '카테고리 목록을 불러오지 못했습니다.'
+  }
+}
+
+function handleFileChange(event) {
+  const [file] = event.target.files || []
+  selectedFile.value = file || null
+  errorMsg.value = ''
+
+  if (!selectedFile.value) {
+    previewUrl.value = ''
+    return
+  }
+
+  previewUrl.value = URL.createObjectURL(selectedFile.value)
 }
 
 async function lookupIsbn() {
   if (!form.value.isbn?.trim()) {
-    errorMsg.value = 'ISBN을 먼저 입력해 주세요.';
-    return;
+    errorMsg.value = 'ISBN을 먼저 입력해 주세요.'
+    return
   }
 
   try {
-    isbnLoading.value = true;
-    errorMsg.value = '';
-    successMsg.value = '';
+    isbnLoading.value = true
+    errorMsg.value = ''
+    successMsg.value = ''
 
-    const { data } = await adminApi.lookupBookByIsbn(form.value.isbn.trim());
-    form.value.isbn = data.isbn || form.value.isbn;
-    form.value.title = data.title || form.value.title;
-    form.value.author = data.author || form.value.author;
-    form.value.thumbnail = data.thumbnail || form.value.thumbnail;
-    previewUrl.value = data.thumbnail || previewUrl.value;
-    successMsg.value = '카카오 도서 검색 결과를 불러왔어요.';
+    const { data } = await adminApi.lookupBookByIsbn(form.value.isbn.trim())
+    form.value.isbn = data.isbn || form.value.isbn
+    form.value.title = data.title || form.value.title
+    form.value.author = data.author || form.value.author
+    form.value.thumbnail = data.thumbnail || form.value.thumbnail
+    previewUrl.value = data.thumbnail || previewUrl.value
+    successMsg.value = '도서 검색 결과를 불러왔습니다.'
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || 'ISBN 조회에 실패했어요.';
+    errorMsg.value = error.response?.data?.message || 'ISBN 조회에 실패했습니다.'
   } finally {
-    isbnLoading.value = false;
+    isbnLoading.value = false
   }
 }
 
 async function uploadThumbnail() {
   if (!selectedFile.value) {
-    errorMsg.value = '업로드할 이미지 파일을 선택해 주세요.';
-    return;
+    errorMsg.value = '업로드할 이미지 파일을 선택해 주세요.'
+    return
   }
 
   try {
-    uploadLoading.value = true;
-    errorMsg.value = '';
+    uploadLoading.value = true
+    errorMsg.value = ''
 
-    const formData = new FormData();
-    formData.append('file', selectedFile.value);
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
 
-    const { data } = await adminApi.uploadProductThumbnail(formData);
-    form.value.thumbnail = data.storedPath;
-    previewUrl.value = data.accessUrl;
-    successMsg.value = '대표 이미지가 업로드되었어요.';
+    const { data } = await adminApi.uploadProductThumbnail(formData)
+    form.value.thumbnail = data.storedPath
+    previewUrl.value = data.accessUrl
+    successMsg.value = '대표 이미지가 업로드되었습니다.'
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || '이미지 업로드에 실패했어요.';
+    errorMsg.value = error.response?.data?.message || '이미지 업로드에 실패했습니다.'
   } finally {
-    uploadLoading.value = false;
+    uploadLoading.value = false
   }
 }
 
 async function handleSubmit() {
-  try {
-    loading.value = true;
-    errorMsg.value = '';
-    successMsg.value = '';
+  if (!form.value.categoryTopId || !form.value.categorySubId) {
+    errorMsg.value = '대분류와 소분류를 모두 선택해 주세요.'
+    return
+  }
 
-    await adminApi.createProduct(form.value);
-    successMsg.value = '상품이 등록되었어요.';
-    setTimeout(() => router.push('/admin/product/list'), 1000);
+  try {
+    loading.value = true
+    errorMsg.value = ''
+    successMsg.value = ''
+
+    await adminApi.createProduct(form.value)
+    successMsg.value = '상품을 등록했습니다.'
+    setTimeout(() => router.push('/admin/product/list'), 700)
   } catch (error) {
-    errorMsg.value = error.response?.data?.message || '상품 등록에 실패했어요.';
+    errorMsg.value = error.response?.data?.message || '상품 등록에 실패했습니다.'
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
+
+onMounted(loadCategories)
 </script>

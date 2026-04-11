@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카테고리 관리 - 테이블형</title>
+  <style>
+    :root {
+      --bg: #f6f8fc;
+      --panel: #fff;
+      --line: #d8deea;
+      --text: #1f2a44;
+      --muted: #6b7488;
+      --brand: #1f3a6d;
+      --brand-soft: #e7eefc;
+      --accent: #ff8c42;
+      --row: #fafcff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 32px 24px 60px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+    }
+    .header { padding: 28px 32px; display: flex; justify-content: space-between; gap: 20px; align-items: end; }
+    .eyebrow {
+      display: inline-flex; padding: 7px 12px; border-radius: 999px;
+      background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    }
+    h1 { margin: 14px 0 8px; font-size: 34px; }
+    .desc { color: var(--muted); }
+    .btn {
+      border: 0; border-radius: 16px; padding: 14px 18px; font-weight: 700; cursor: pointer;
+    }
+    .btn.primary { background: var(--brand); color: #fff; }
+    .btn.secondary { background: #fff; border: 1px solid var(--line); color: var(--text); }
+    .toolbar {
+      margin-top: 20px; padding: 24px 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    }
+    .input {
+      min-width: 320px; flex: 1; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #f9fbff;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #f8fafc; color: var(--muted); font-size: 13px; }
+    th, td { padding: 18px 20px; border-top: 1px solid #edf1f7; vertical-align: top; text-align: left; }
+    tbody tr:hover { background: var(--row); }
+    .sub-list { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 8px; border: 1px solid #dbe4f3; background: #fff; border-radius: 999px; padding: 8px 12px; font-size: 13px;
+    }
+    .actions { display: flex; gap: 8px; justify-content: end; }
+    .mini { padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-size: 12px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <div class="header">
+        <div>
+          <span class="eyebrow">Example 01</span>
+          <h1>카테고리 관리 - 테이블형</h1>
+          <p class="desc">회원, 주문, 공지 관리와 가장 비슷한 형식입니다. 체크박스와 일괄 작업에 강합니다.</p>
+        </div>
+        <div class="actions">
+          <button class="btn secondary">선택 항목 수정</button>
+          <button class="btn primary">카테고리 등록</button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input class="input" placeholder="대분류 또는 소분류 이름으로 검색" />
+        <button class="btn secondary">검색</button>
+        <button class="btn secondary">새로고침</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:72px;">선택</th>
+              <th style="width:240px;">대분류</th>
+              <th>소분류</th>
+              <th style="width:120px;">개수</th>
+              <th style="width:220px; text-align:right;">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <strong>국내도서</strong><br />
+                <span style="color:#8a94a8; font-size:12px;">ID 1</span>
+              </td>
+              <td>
+                <div class="sub-list">
+                  <label class="chip"><input type="checkbox" /> 소설</label>
+                  <label class="chip"><input type="checkbox" /> 시/에세이</label>
+                  <label class="chip"><input type="checkbox" /> 경제경영</label>
+                  <label class="chip"><input type="checkbox" /> 인문</label>
+                </div>
+              </td>
+              <td>4개</td>
+              <td>
+                <div class="actions">
+                  <button class="mini">대분류 수정</button>
+                  <button class="mini">소분류 추가</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <strong>외국도서</strong><br />
+                <span style="color:#8a94a8; font-size:12px;">ID 2</span>
+              </td>
+              <td>
+                <div class="sub-list">
+                  <label class="chip"><input type="checkbox" /> 문학</label>
+                  <label class="chip"><input type="checkbox" /> 예술</label>
+                  <label class="chip"><input type="checkbox" /> 아동</label>
+                </div>
+              </td>
+              <td>3개</td>
+              <td>
+                <div class="actions">
+                  <button class="mini">대분류 수정</button>
+                  <button class="mini">소분류 추가</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><input type="checkbox" /></td>
+              <td>
+                <strong>eBook</strong><br />
+                <span style="color:#8a94a8; font-size:12px;">ID 3</span>
+              </td>
+              <td>
+                <div class="sub-list">
+                  <label class="chip"><input type="checkbox" /> IT 모바일</label>
+                  <label class="chip"><input type="checkbox" /> 자기계발</label>
+                </div>
+              </td>
+              <td>2개</td>
+              <td>
+                <div class="actions">
+                  <button class="mini">대분류 수정</button>
+                  <button class="mini">소분류 추가</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

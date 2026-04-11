@@ -325,8 +325,28 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public ResponseEntity<Page<ReviewResponse>> getAdminReviews(Pageable pageable) {
-        return ResponseEntity.ok(reviewRepository.findAllByDeletedAtIsNull(pageable).map(ReviewResponse::new));
+    public ResponseEntity<Page<ReviewResponse>> getAdminReviews(String keyword, String searchType, Pageable pageable) {
+        String normalizedKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        String normalizedSearchType = (searchType == null || searchType.isBlank()) ? "reviewTitle" : searchType.trim();
+
+        Page<Review> reviewPage;
+
+        if (normalizedKeyword == null) {
+            reviewPage = reviewRepository.findAllByDeletedAtIsNull(pageable);
+        } else {
+            reviewPage = switch (normalizedSearchType) {
+                case "productTitle" ->
+                        reviewRepository.findAllByDeletedAtIsNullAndProduct_TitleContainingIgnoreCase(normalizedKeyword, pageable);
+                case "memberName" ->
+                        reviewRepository.findAllByDeletedAtIsNullAndMember_NameContainingIgnoreCase(normalizedKeyword, pageable);
+                case "reviewTitle" ->
+                        reviewRepository.findAllByDeletedAtIsNullAndContentContainingIgnoreCase(normalizedKeyword, pageable);
+                default ->
+                        reviewRepository.findAllByDeletedAtIsNullAndContentContainingIgnoreCase(normalizedKeyword, pageable);
+            };
+        }
+
+        return ResponseEntity.ok(reviewPage.map(ReviewResponse::new));
     }
 
     @Transactional(readOnly = true)

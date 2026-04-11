@@ -32,6 +32,12 @@ export const adminApi = {
   getPayment: (id) => api.get(`/api/admin/payments/${id}`),
 
   getCategories: () => api.get('/api/admin/categories'),
+  createCategoryTop: (data) => api.post('/api/admin/categories/top', data),
+  createCategorySub: (data) => api.post('/api/admin/categories/sub', data),
+  updateCategoryTop: (id, data) => api.put(`/api/admin/categories/top/${id}`, data),
+  updateCategorySub: (id, data) => api.put(`/api/admin/categories/sub/${id}`, data),
+  deleteCategoryTop: (id) => api.delete(`/api/admin/categories/top/${id}`),
+  deleteCategorySub: (id) => api.delete(`/api/admin/categories/sub/${id}`),
 
   getAdminNotices: (params) => api.get('/api/admin/notices', { params }),
   getAdminNotice: (id) => api.get(`/api/admin/notices/${id}`),

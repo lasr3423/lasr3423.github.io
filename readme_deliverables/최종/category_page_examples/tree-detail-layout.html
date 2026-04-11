@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카테고리 관리 - 트리 + 상세 패널</title>
+  <style>
+    :root {
+      --bg: #f5f7fc; --panel: #fff; --line: #d9dfeb; --text: #1f2a44;
+      --muted: #6f7890; --brand: #213a70; --brand-soft: #e9effd;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans KR", "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 32px 24px 60px; }
+    .shell { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 20px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 14px 28px rgba(15,23,42,.06); }
+    .pane-head { padding: 24px 24px 16px; border-bottom: 1px solid #eef2f8; }
+    .eyebrow { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h1, h2 { margin: 14px 0 8px; }
+    p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .search { margin-top: 14px; width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #f9fbff; }
+    .tree { padding: 18px; }
+    .node {
+      border: 1px solid #ebeff6; border-radius: 20px; background: #fbfcfe; padding: 14px 16px; margin-bottom: 12px;
+    }
+    .node-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 700; }
+    .subs { margin-top: 12px; display: grid; gap: 8px; padding-left: 12px; }
+    .sub {
+      display: flex; align-items: center; justify-content: space-between; padding: 10px 12px;
+      border-radius: 14px; background: #fff; border: 1px solid #e4ebf6;
+    }
+    .detail { padding: 28px; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    label span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+    input, select {
+      width: 100%; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #f9fbff;
+    }
+    .actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn { border-radius: 16px; padding: 14px 18px; font-weight: 700; border: 0; cursor: pointer; }
+    .btn.primary { background: var(--brand); color: #fff; }
+    .btn.secondary { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="shell">
+      <aside class="panel">
+        <div class="pane-head">
+          <span class="eyebrow">Example 03</span>
+          <h1>카테고리 트리</h1>
+          <p>대분류와 소분류를 좌측 계층 트리로 빠르게 탐색합니다.</p>
+          <input class="search" placeholder="카테고리 검색" />
+        </div>
+        <div class="tree">
+          <div class="node">
+            <div class="node-title">
+              <label><input type="checkbox" /> 국내도서</label>
+              <button>+</button>
+            </div>
+            <div class="subs">
+              <div class="sub"><label><input type="checkbox" /> 소설</label><button>선택</button></div>
+              <div class="sub"><label><input type="checkbox" /> 인문</label><button>선택</button></div>
+              <div class="sub"><label><input type="checkbox" /> 경제경영</label><button>선택</button></div>
+            </div>
+          </div>
+          <div class="node">
+            <div class="node-title">
+              <label><input type="checkbox" /> 외국도서</label>
+              <button>+</button>
+            </div>
+            <div class="subs">
+              <div class="sub"><label><input type="checkbox" /> 문학</label><button>선택</button></div>
+              <div class="sub"><label><input type="checkbox" /> 예술</label><button>선택</button></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="detail">
+          <span class="eyebrow">Detail Panel</span>
+          <h2>선택한 카테고리 수정</h2>
+          <p>좌측에서 선택한 대분류나 소분류 정보를 우측 패널에서 수정하는 방식입니다.</p>
+
+          <div class="grid" style="margin-top:24px;">
+            <label>
+              <span>카테고리 유형</span>
+              <select>
+                <option>소분류</option>
+                <option>대분류</option>
+              </select>
+            </label>
+            <label>
+              <span>기준 대분류</span>
+              <select>
+                <option>국내도서</option>
+                <option>외국도서</option>
+              </select>
+            </label>
+            <label>
+              <span>카테고리 이름</span>
+              <input value="소설" />
+            </label>
+            <label>
+              <span>정렬 순서</span>
+              <input type="number" value="1" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button class="btn secondary">삭제</button>
+            <button class="btn secondary">초기화</button>
+            <button class="btn primary">저장</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

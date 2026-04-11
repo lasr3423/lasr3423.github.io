@@ -34,6 +34,10 @@ const router = createRouter({
           component: () => import('@/views/board/NoticeListView.vue')
         },
         {
+          path: 'notice/:noticeId',
+          component: () => import('@/views/board/NoticeDetailView.vue')
+        },
+        {
           path: 'qna',
           component: () => import('@/views/board/QnaListView.vue')
         },
@@ -173,6 +177,7 @@ const router = createRouter({
         { path: 'payment/list',   component: () => import('@/views/admin/payment/PaymentListView.vue') },
         // 상품 관리
         { path: 'product/list',   component: () => import('@/views/admin/product/ProductListView.vue') },
+        { path: 'product/edit/:productId', component: () => import('@/views/admin/product/ProductEditView.vue') },
         { path: 'product/stock',  component: () => import('@/views/admin/product/ProductStockView.vue') },
         { path: 'product/insert', component: () => import('@/views/admin/product/ProductInsertView.vue') },
         // 게시글 관리

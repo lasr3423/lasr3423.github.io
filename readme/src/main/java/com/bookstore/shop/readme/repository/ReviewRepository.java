@@ -15,4 +15,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // 관리자 전체 리뷰 목록 (삭제 제외)
     Page<Review> findAllByDeletedAtIsNull(Pageable pageable);
+
+    Page<Review> findAllByDeletedAtIsNullAndProduct_TitleContainingIgnoreCase(String keyword, Pageable pageable);
+
+    Page<Review> findAllByDeletedAtIsNullAndContentContainingIgnoreCase(String keyword, Pageable pageable);
+
+    Page<Review> findAllByDeletedAtIsNullAndMember_NameContainingIgnoreCase(String keyword, Pageable pageable);
 }
