@@ -26,6 +26,7 @@ public class ReviewService {
     private final ProductRepository        productRepository;
     private final ReviewImageRepository    reviewImageRepository;
     private final ReviewReactionRepository reviewReactionRepository;
+    private final OrderItemRepository      orderItemRepository;
 
     // ── 특정 상품 리뷰 목록 (hits 증가 없는 목록 조회) ───────────────────────
     @Transactional(readOnly = true)
@@ -70,6 +71,14 @@ public class ReviewService {
                         ReviewImage.builder().review(review).imageUrl(url).build());
             }
         }
+
+        // 주문 상품 리뷰 완료 표시
+        if (req.orderItemId() != null) {
+            orderItemRepository.findById(req.orderItemId()).ifPresent(item -> {
+                item.setReviewed(true);
+            });
+        }
+
         return ResponseEntity.status(201).body(review.getId());
     }
 

@@ -11,30 +11,30 @@
     <div v-else-if="categories.length > 0" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <section
         v-for="top in categories"
-        :key="top.topId"
+        :key="top.id"
         class="rounded-[2rem] border border-slate-200 bg-white shadow-sm"
       >
         <!-- 대분류 헤더 -->
         <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div>
-            <p class="font-bold text-slate-800">{{ top.topName }}</p>
-            <p class="text-xs text-slate-400">ID: {{ top.topId }}</p>
+            <p class="font-bold text-slate-800">{{ top.name }}</p>
+            <p class="text-xs text-slate-400">ID: {{ top.id }}</p>
           </div>
           <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-800">
-            {{ top.subs?.length ?? 0 }}개 소분류
+            {{ top.subCategories?.length ?? 0 }}개 소분류
           </span>
         </div>
         <!-- 소분류 목록 -->
         <ul class="divide-y divide-slate-50 px-6 py-2">
           <li
-            v-for="sub in top.subs"
-            :key="sub.subId"
+            v-for="sub in top.subCategories"
+            :key="sub.id"
             class="flex items-center justify-between py-2.5 text-sm"
           >
-            <span class="text-slate-700">{{ sub.subName }}</span>
-            <span class="text-xs text-slate-400">ID: {{ sub.subId }}</span>
+            <span class="text-slate-700">{{ sub.name }}</span>
+            <span class="text-xs text-slate-400">ID: {{ sub.id }}</span>
           </li>
-          <li v-if="!top.subs?.length" class="py-3 text-xs text-slate-400">소분류 없음</li>
+          <li v-if="!top.subCategories?.length" class="py-3 text-xs text-slate-400">소분류 없음</li>
         </ul>
       </section>
     </div>

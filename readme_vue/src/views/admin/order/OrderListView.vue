@@ -9,11 +9,52 @@
       <div v-if="loading" class="flex items-center justify-center py-16 text-sm text-slate-400">불러오는 중...</div>
 
       <template v-else-if="orders.length > 0">
+        <div class="flex flex-col gap-3 border-b border-slate-100 px-6 py-4 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-3">
+            <input
+              type="checkbox"
+              class="h-4 w-4 rounded border-slate-300 text-brand-700"
+              :checked="isAllChecked"
+              :indeterminate.prop="isSomeChecked"
+              @change="toggleAll"
+            >
+            <span class="text-sm text-slate-500">
+              {{ checkedIds.size > 0 ? `${checkedIds.size}건 선택됨` : `전체 ${orders.length}건` }}
+            </span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <select
+              v-model="bulkStatus"
+              class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+            >
+              <option value="">일괄 상태 선택</option>
+              <option
+                v-for="option in statusOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
+              </option>
+            </select>
+            <button
+              class="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:bg-slate-300"
+              :disabled="checkedIds.size === 0 || !bulkStatus || bulkUpdating"
+              @click="handleBulkStatusChange"
+            >
+              {{ bulkUpdating ? '변경 중...' : '선택 주문 상태 변경' }}
+            </button>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead class="border-b border-slate-200 bg-slate-50">
               <tr>
+                <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">선택</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문번호</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문 회원</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문 도서</th>
                 <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">결제금액</th>
                 <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">현재 상태</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문일</th>
@@ -21,8 +62,18 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="order in orders" :key="order.id" class="transition hover:bg-slate-50">
+              <tr v-for="order in orders" :key="order.orderId" class="transition hover:bg-slate-50">
+                <td class="px-6 py-4 text-center">
+                  <input
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-slate-300 text-brand-700"
+                    :checked="checkedIds.has(order.orderId)"
+                    @change="toggleItem(order.orderId)"
+                  >
+                </td>
                 <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ order.number }}</td>
+                <td class="px-6 py-4 text-slate-700">{{ order.memberName || '-' }}</td>
+                <td class="px-6 py-4 text-slate-700">{{ order.itemSummary || '-' }}</td>
                 <td class="px-6 py-4 text-right font-semibold text-slate-900">{{ order.finalPrice.toLocaleString() }}원</td>
                 <td class="px-6 py-4 text-center">
                   <span :class="statusClass(order.orderStatus)" class="rounded-full px-3 py-1 text-xs font-semibold">
@@ -33,11 +84,14 @@
                 <td class="px-6 py-4 text-right">
                   <select :value="order.orderStatus"
                     class="rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-xs"
-                    @change="handleStatusChange(order.id, $event.target.value)">
-                    <option value="PENDING">결제대기</option>
-                    <option value="PAYED">결제완료</option>
-                    <option value="APPROVAL">배송중</option>
-                    <option value="CANCELED">취소</option>
+                    @change="handleStatusChange(order.orderId, $event.target.value)">
+                    <option
+                      v-for="option in statusOptions"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
                   </select>
                 </td>
               </tr>
@@ -60,16 +114,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { adminApi } from '@/api/admin';
 
 const orders = ref([]);
 const loading = ref(true);
 const page = ref(0);
 const totalPages = ref(1);
+const bulkStatus = ref('');
+const bulkUpdating = ref(false);
+const checkedIds = ref(new Set());
 
-const statusLabel = (s) => ({ PENDING: '결제대기', PAYED: '결제완료', APPROVAL: '배송중', CANCELED: '취소' }[s] ?? s);
+const statusOptions = [
+  { value: 'PAYMENT_PENDING', label: '결제 진행 중' },
+  { value: 'PENDING', label: '승인 대기' },
+  { value: 'PAYED', label: '결제 완료(구)' },
+  { value: 'APPROVAL', label: '배송 준비' },
+  { value: 'CANCELED', label: '취소' },
+];
+
+const statusLabel = (s) => ({
+  PAYMENT_PENDING: '결제 진행 중',
+  PENDING: '승인 대기',
+  PAYED: '결제 완료(구)',
+  APPROVAL: '배송 준비',
+  CANCELED: '취소'
+}[s] ?? s);
 const statusClass = (s) => ({
+  PAYMENT_PENDING: 'bg-amber-50 text-amber-700',
   PENDING:  'bg-yellow-50 text-yellow-700',
   PAYED:    'bg-green-50 text-green-700',
   APPROVAL: 'bg-brand-50 text-brand-700',
@@ -77,12 +149,16 @@ const statusClass = (s) => ({
 }[s] ?? 'bg-slate-100 text-slate-600');
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ko-KR') : '-';
 
+const isAllChecked = computed(() => orders.value.length > 0 && checkedIds.value.size === orders.value.length);
+const isSomeChecked = computed(() => checkedIds.value.size > 0 && checkedIds.value.size < orders.value.length);
+
 async function fetchOrders() {
   try {
     loading.value = true;
     const { data } = await adminApi.getOrders({ page: page.value, size: 20 });
     orders.value = data.content;
     totalPages.value = data.totalPages || 1;
+    checkedIds.value = new Set();
   } catch (e) {
     console.error('주문 목록 로드 실패:', e);
   } finally {
@@ -93,9 +169,40 @@ async function fetchOrders() {
 async function handleStatusChange(id, status) {
   try {
     await adminApi.updateOrderStatus(id, status);
-    fetchOrders();
+    await fetchOrders();
   } catch (e) {
     alert(e.response?.data?.message || '상태 변경 실패');
+  }
+}
+
+function toggleAll(event) {
+  if (event.target.checked) {
+    checkedIds.value = new Set(orders.value.map((order) => order.orderId));
+    return;
+  }
+  checkedIds.value = new Set();
+}
+
+function toggleItem(orderId) {
+  const next = new Set(checkedIds.value);
+  next.has(orderId) ? next.delete(orderId) : next.add(orderId);
+  checkedIds.value = next;
+}
+
+async function handleBulkStatusChange() {
+  if (checkedIds.value.size === 0 || !bulkStatus.value) return;
+
+  bulkUpdating.value = true;
+  try {
+    const orderIds = [...checkedIds.value];
+    await adminApi.updateOrderStatuses(orderIds, bulkStatus.value);
+    alert(`${orderIds.length}건의 주문 상태를 변경했습니다.`);
+    bulkStatus.value = '';
+    await fetchOrders();
+  } catch (e) {
+    alert(e.response?.data?.message || '일괄 상태 변경 실패');
+  } finally {
+    bulkUpdating.value = false;
   }
 }
 

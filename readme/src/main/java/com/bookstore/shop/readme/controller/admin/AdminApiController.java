@@ -1,6 +1,7 @@
 package com.bookstore.shop.readme.controller.admin;
 
 import com.bookstore.shop.readme.dto.request.AdminQnAAnswerRequest;
+import com.bookstore.shop.readme.dto.request.AdminOrderBulkStatusRequest;
 import com.bookstore.shop.readme.dto.request.CategoryCreateRequest;
 import com.bookstore.shop.readme.dto.request.DeliveryUpdateRequest;
 import com.bookstore.shop.readme.dto.request.NoticeCreateRequest;
@@ -122,6 +123,11 @@ public class AdminApiController {
     @PatchMapping("/orders/{orderId}/status")
     public ResponseEntity<String> updateOrderStatus(@PathVariable Long orderId, @RequestParam String status) {
         return orderService.updateOrderStatus(orderId, status);
+    }
+
+    @PatchMapping("/orders/status/bulk")
+    public ResponseEntity<String> updateOrderStatuses(@RequestBody AdminOrderBulkStatusRequest request) {
+        return orderService.updateOrderStatuses(request);
     }
 
     @GetMapping("/orders/pending-approval")

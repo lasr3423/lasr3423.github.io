@@ -90,6 +90,14 @@
           >
             결제하기
           </button>
+          <!-- 배송 완료 → 리뷰 작성 (상세 페이지로 이동) -->
+          <button
+            v-if="order.orderStatus === 'DELIVERED'"
+            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            @click="goDetail(order.orderId)"
+          >
+            리뷰 작성하기 ★
+          </button>
           <button
             v-if="canCancel(order.orderStatus)"
             class="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"

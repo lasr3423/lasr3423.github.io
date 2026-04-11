@@ -56,6 +56,7 @@ public class OrderDetailResponse {
     @Getter
     public static class OrderItemDto {
         private final Long orderItemId;
+        private final Long productId;            // 리뷰 작성 시 필요
         // ⚠️ OrderItem 엔티티의 상품명 필드는 "productTitle" — "productName" 아님
         private final String productTitle;
         // ⚠️ OrderItem 엔티티의 저자 필드는 "productAuthor"
@@ -65,14 +66,17 @@ public class OrderDetailResponse {
         private final int quantity;
         // ⚠️ OrderItem 엔티티의 소계 필드는 "itemTotal"
         private final int itemTotal;
+        private final boolean isReviewed;        // 리뷰 작성 여부
 
         public OrderItemDto(OrderItem item) {
             this.orderItemId = item.getId();
+            this.productId = item.getProduct() != null ? item.getProduct().getId() : null;
             this.productTitle = item.getProductTitle();
             this.productAuthor = item.getProductAuthor();
             this.salePrice = item.getSalePrice();
             this.quantity = item.getQuantity();
             this.itemTotal = item.getItemTotal();
+            this.isReviewed = item.isReviewed();
         }
     }
 }

@@ -36,6 +36,7 @@ public class AdminService {
     private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
     private final KakaoBookSearchService kakaoBookSearchService;
+    private final OrderService orderService;
 
     @Transactional(readOnly = true)
     public ResponseEntity<DashboardResponse> getDashboard() {
@@ -236,10 +237,7 @@ public class AdminService {
     @Transactional(readOnly = true)
     public ResponseEntity<Page<OrderListResponse>> getOrdersByStatus(String status, Pageable pageable) {
         OrderStatus orderStatus = OrderStatus.valueOf(status);
-        return ResponseEntity.ok(
-                orderRepository.findAllByOrderStatus(orderStatus, pageable)
-                        .map(OrderListResponse::new)
-        );
+        return orderService.getOrdersByStatus(orderStatus, pageable);
     }
 
     @Transactional(readOnly = true)

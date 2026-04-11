@@ -22,6 +22,7 @@ export const adminApi = {
   getOrders: (params) => api.get('/api/admin/orders', { params }),
   getOrder: (id) => api.get(`/api/admin/orders/${id}`),
   updateOrderStatus: (id, status) => api.patch(`/api/admin/orders/${id}/status`, null, { params: { status } }),
+  updateOrderStatuses: (orderIds, status) => api.patch('/api/admin/orders/status/bulk', { orderIds, status }),
   getPendingApprovalOrders: (params) => api.get('/api/admin/orders/pending-approval', { params }),
 
   getDeliveries: (params) => api.get('/api/admin/deliveries', { params }),
