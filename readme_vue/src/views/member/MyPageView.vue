@@ -64,9 +64,11 @@ const loading = ref(true);
 
 const menuCards = [
   { to: '/mypage/order',    icon: '📦', title: '주문 내역',     desc: '나의 주문 목록을 확인하세요' },
+  { to: '/mypage/payment',  icon: '💳', title: '결제 내역',     desc: '결제 기록을 확인하세요' },
+  { to: '/mypage/qna',      icon: '💬', title: '내 문의 (QnA)', desc: '내가 작성한 문의를 확인하세요' },
+  { to: '/mypage/review',   icon: '⭐', title: '내 리뷰',       desc: '내가 남긴 상품 리뷰를 관리하세요' },
   { to: '/mypage/edit',     icon: '✏️', title: '정보 수정',     desc: '이름, 연락처, 주소를 변경하세요' },
   { to: '/mypage/password', icon: '🔒', title: '비밀번호 변경', desc: '현재 비밀번호를 변경하세요' },
-  { to: '/mypage/payment',  icon: '💳', title: '결제 내역',     desc: '결제 기록을 확인하세요' },
   { to: '/cart',            icon: '🛒', title: '장바구니',      desc: '담아둔 상품을 확인하세요' },
   { to: '/mypage/withdraw', icon: '⚠️', title: '회원 탈퇴',     desc: '계정을 삭제합니다' },
 ];

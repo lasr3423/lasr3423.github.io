@@ -58,7 +58,16 @@ onMounted(async () => {
 
       clearPaymentMeta(orderId)
       orderStore.clearOrder()
-      router.replace('/mypage/payment')
+      router.replace({
+        path: '/payment/complete',
+        query: {
+          orderId,
+          amount: meta.amount,
+          itemName: meta.itemName || '도서 주문',
+          provider: 'KAKAO',
+          approvedAt: new Date().toISOString(),
+        },
+      })
       return
     }
 
@@ -85,7 +94,16 @@ onMounted(async () => {
 
       clearPaymentMeta(orderId)
       orderStore.clearOrder()
-      router.replace('/mypage/payment')
+      router.replace({
+        path: '/payment/complete',
+        query: {
+          orderId,
+          amount: meta?.amount,
+          itemName: meta?.itemName || '도서 주문',
+          provider: 'NAVER',
+          approvedAt: new Date().toISOString(),
+        },
+      })
       return
     }
 
@@ -98,6 +116,8 @@ onMounted(async () => {
       throw new Error('토스 결제 승인 정보가 부족합니다.')
     }
 
+    const tossMeta = readPaymentMeta(numericOrderId)
+
     await paymentApi.confirm({
       paymentKey,
       orderId: numericOrderId,
@@ -106,7 +126,16 @@ onMounted(async () => {
 
     clearPaymentMeta(numericOrderId)
     orderStore.clearOrder()
-    router.replace('/mypage/payment')
+    router.replace({
+      path: '/payment/complete',
+      query: {
+        orderId: numericOrderId,
+        amount,
+        itemName: tossMeta?.itemName || '도서 주문',
+        provider: 'TOSS',
+        approvedAt: new Date().toISOString(),
+      },
+    })
   } catch (error) {
     console.error('결제 승인 실패', error)
     const orderId = route.query.orderId ? String(route.query.orderId) : ''

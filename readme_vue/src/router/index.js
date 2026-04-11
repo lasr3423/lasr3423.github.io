@@ -64,6 +64,10 @@ const router = createRouter({
           path: 'payment/fail',
           component: () => import('@/views/payment/PaymentFailView.vue')
         },
+        {
+          path: 'payment/complete',
+          component: () => import('@/views/payment/PaymentCompleteView.vue')
+        },
       ]
     },
 
@@ -128,6 +132,22 @@ const router = createRouter({
         {
           path: 'withdraw',
           component: () => import('@/views/member/MyWithdrawView.vue')
+        },
+        {
+          path: 'qna',
+          component: () => import('@/views/member/MyQnaView.vue')
+        },
+        {
+          path: 'qna/detail/:id',
+          component: () => import('@/views/member/MyQnaDetailView.vue')
+        },
+        {
+          path: 'review',
+          component: () => import('@/views/member/MyReviewView.vue')
+        },
+        {
+          path: 'review/detail/:id',
+          component: () => import('@/views/member/MyReviewDetailView.vue')
         },
       ]
     },

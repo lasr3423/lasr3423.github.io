@@ -8,6 +8,7 @@ import com.bookstore.shop.readme.domain.OrderStatus;
 import com.bookstore.shop.readme.domain.Product;
 import com.bookstore.shop.readme.domain.Member;
 import com.bookstore.shop.readme.dto.request.OrderCreateRequest;
+import com.bookstore.shop.readme.dto.request.AdminOrderBulkStatusRequest;
 import com.bookstore.shop.readme.dto.response.OrderCreateResponse;
 import com.bookstore.shop.readme.dto.response.OrderDetailResponse;
 import com.bookstore.shop.readme.dto.response.OrderListResponse;
@@ -25,7 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -60,7 +65,7 @@ public class OrderService {
         Order order = Order.builder()
                 .member(member)
                 .number(UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase())
-                .orderStatus(OrderStatus.PENDING)
+                .orderStatus(OrderStatus.PAYMENT_PENDING) // 결제 완료 전 초기 상태 (30분 초과 시 자동 취소)
                 .totalPrice(totalPrice)
                 .discountAmount(discountAmount)
                 .finalPrice(finalPrice)
@@ -89,8 +94,6 @@ public class OrderService {
             orderItemRepository.save(orderItem);
         }
 
-        cartItemRepository.deleteAll(cartItems);
-
         String itemName = cartItems.get(0).getProduct().getTitle()
                 + (cartItems.size() > 1 ? " 외 " + (cartItems.size() - 1) + "건" : "");
 
@@ -114,9 +117,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<Page<OrderListResponse>> getMyOrders(Long memberId, Pageable pageable) {
-        return ResponseEntity.ok(
-                orderRepository.findByMemberId(memberId, pageable).map(OrderListResponse::new)
-        );
+        return ResponseEntity.ok(buildOrderListResponsePage(orderRepository.findByMemberId(memberId, pageable)));
     }
 
     @Transactional(readOnly = true)
@@ -129,7 +130,12 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<Page<OrderListResponse>> getAllOrders(Pageable pageable) {
-        return ResponseEntity.ok(orderRepository.findAll(pageable).map(OrderListResponse::new));
+        return ResponseEntity.ok(buildOrderListResponsePage(orderRepository.findAll(pageable)));
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<OrderListResponse>> getOrdersByStatus(OrderStatus status, Pageable pageable) {
+        return ResponseEntity.ok(buildOrderListResponsePage(orderRepository.findAllByOrderStatus(status, pageable)));
     }
 
     @Transactional(readOnly = true)
@@ -146,17 +152,28 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
         OrderStatus nextStatus = parseOrderStatus(status);
-        validateAdminStatusTransition(order.getOrderStatus(), nextStatus);
-
-        order.setOrderStatus(nextStatus);
-        if (nextStatus == OrderStatus.APPROVAL) {
-            ensureReadyDelivery(order);
-        }
-        if (nextStatus == OrderStatus.CANCELED && order.getCancelledAt() == null) {
-            order.setCancelledAt(LocalDateTime.now());
-        }
+        applyOrderStatusChange(order, nextStatus);
 
         return ResponseEntity.ok("주문 상태가 변경되었습니다.");
+    }
+
+    @Transactional
+    public ResponseEntity<String> updateOrderStatuses(AdminOrderBulkStatusRequest request) {
+        if (request == null || request.orderIds() == null || request.orderIds().isEmpty()) {
+            throw new RuntimeException("상태를 변경할 주문을 선택해 주세요.");
+        }
+
+        OrderStatus nextStatus = parseOrderStatus(request.status());
+        List<Order> orders = orderRepository.findAllById(request.orderIds());
+        if (orders.size() != request.orderIds().size()) {
+            throw new RuntimeException("일부 주문을 찾을 수 없습니다.");
+        }
+
+        for (Order order : orders) {
+            applyOrderStatusChange(order, nextStatus);
+        }
+
+        return ResponseEntity.ok(orders.size() + "건의 주문 상태가 변경되었습니다.");
     }
 
     @Transactional
@@ -191,18 +208,32 @@ public class OrderService {
         }
 
         switch (currentStatus) {
-            case PENDING -> {
+            case PAYMENT_PENDING -> {
+                // 결제 미완료 주문: 취소만 가능
                 if (nextStatus != OrderStatus.CANCELED) {
-                    throw new RuntimeException("결제 전 주문은 취소만 가능합니다.");
+                    throw new RuntimeException("결제 진행 중인 주문은 취소만 가능합니다.");
                 }
             }
-            case PAYED -> {
+            case PENDING, PAYED -> {
+                // 결제 완료 주문: 승인 또는 취소만 가능
                 if (nextStatus != OrderStatus.APPROVAL && nextStatus != OrderStatus.CANCELED) {
                     throw new RuntimeException("결제 완료 주문은 승인 또는 취소만 가능합니다.");
                 }
             }
             case APPROVAL -> throw new RuntimeException("이미 승인된 주문은 상태를 되돌릴 수 없습니다.");
             case CANCELED -> throw new RuntimeException("이미 취소된 주문은 상태를 변경할 수 없습니다.");
+        }
+    }
+
+    private void applyOrderStatusChange(Order order, OrderStatus nextStatus) {
+        validateAdminStatusTransition(order.getOrderStatus(), nextStatus);
+
+        order.setOrderStatus(nextStatus);
+        if (nextStatus == OrderStatus.APPROVAL) {
+            ensureReadyDelivery(order);
+        }
+        if (nextStatus == OrderStatus.CANCELED && order.getCancelledAt() == null) {
+            order.setCancelledAt(LocalDateTime.now());
         }
     }
 
@@ -215,5 +246,30 @@ public class OrderService {
         delivery.setOrder(order);
         delivery.setDeliveryStatus(DeliveryStatus.READY);
         deliveryRepository.save(delivery);
+    }
+
+    private Page<OrderListResponse> buildOrderListResponsePage(Page<Order> ordersPage) {
+        List<Long> orderIds = ordersPage.getContent().stream().map(Order::getId).toList();
+        Map<Long, List<OrderItem>> itemsByOrderId = new HashMap<>();
+
+        if (!orderIds.isEmpty()) {
+            for (OrderItem item : orderItemRepository.findByOrderIdIn(orderIds)) {
+                itemsByOrderId.computeIfAbsent(item.getOrder().getId(), ignored -> new ArrayList<>()).add(item);
+            }
+        }
+
+        return ordersPage.map(order -> new OrderListResponse(order, buildItemSummary(itemsByOrderId.get(order.getId()))));
+    }
+
+    private String buildItemSummary(List<OrderItem> items) {
+        if (items == null || items.isEmpty()) {
+            return "주문 상품 정보 없음";
+        }
+
+        items.sort(Comparator.comparing(OrderItem::getId));
+        OrderItem first = items.get(0);
+        return items.size() == 1
+                ? first.getProductTitle()
+                : first.getProductTitle() + " 외 " + (items.size() - 1) + "건";
     }
 }

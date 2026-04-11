@@ -82,6 +82,22 @@
           >
             주문 상세 보기
           </button>
+          <!-- 결제 미완료 주문 → 결제창으로 이동 -->
+          <button
+            v-if="order.orderStatus === 'PAYMENT_PENDING'"
+            class="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700"
+            @click="resumePayment(order)"
+          >
+            결제하기
+          </button>
+          <!-- 배송 완료 → 리뷰 작성 (상세 페이지로 이동) -->
+          <button
+            v-if="order.orderStatus === 'DELIVERED'"
+            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            @click="goDetail(order.orderId)"
+          >
+            리뷰 작성하기 ★
+          </button>
           <button
             v-if="canCancel(order.orderStatus)"
             class="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
@@ -107,17 +123,19 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { memberApi } from '@/api/member'
 import { orderApi } from '@/api/order'
+import { useOrderStore } from '@/store/order'
 
 const router = useRouter()
+const orderStore = useOrderStore()
 const orders = ref([])
 const loading = ref(false)
 
 const summary = computed(() => {
   const base = { total: orders.value.length, pending: 0, shipping: 0, done: 0 }
   for (const order of orders.value) {
-    if (order.orderStatus === 'PENDING' || order.orderStatus === 'PAYED') base.pending += 1
-    else if (order.orderStatus === 'APPROVAL' || order.orderStatus === 'DELIVERING') base.shipping += 1
-    else if (order.orderStatus === 'DELIVERED' || order.orderStatus === 'CANCELED') base.done += 1
+    if (['PAYMENT_PENDING', 'PENDING', 'PAYED'].includes(order.orderStatus)) base.pending += 1
+    else if (['APPROVAL', 'DELIVERING'].includes(order.orderStatus)) base.shipping += 1
+    else if (['DELIVERED', 'CANCELED'].includes(order.orderStatus)) base.done += 1
   }
   return base
 })
@@ -139,7 +157,17 @@ function goDetail(orderId) {
 }
 
 function canCancel(status) {
-  return status === 'PENDING' || status === 'PAYED'
+  return status === 'PAYMENT_PENDING' || status === 'PENDING' || status === 'PAYED'
+}
+
+// PAYMENT_PENDING 주문 → 결제창 재진입
+function resumePayment(order) {
+  orderStore.setOrder(
+    order.orderId,
+    order.finalPrice,
+    '주문번호 ' + order.orderNumber,
+  )
+  router.push('/payment')
 }
 
 async function cancelOrder(orderId) {
@@ -176,7 +204,8 @@ function formatDateTime(value) {
 
 function statusLabel(status) {
   return {
-    PENDING: '결제 대기',
+    PAYMENT_PENDING: '결제 대기',
+    PENDING: '결제 완료',
     PAYED: '결제 완료',
     APPROVAL: '배송 준비',
     DELIVERING: '배송 중',
@@ -187,7 +216,8 @@ function statusLabel(status) {
 
 function statusDescription(status) {
   return {
-    PENDING: '결제를 진행하기 전 상태입니다.',
+    PAYMENT_PENDING: '결제가 아직 완료되지 않았습니다. 30분 내 결제를 완료해 주세요.',
+    PENDING: '결제가 완료되어 출고를 기다리고 있습니다.',
     PAYED: '결제가 완료되어 출고를 기다리고 있습니다.',
     APPROVAL: '출고 준비가 진행 중입니다.',
     DELIVERING: '상품이 배송 중입니다.',
@@ -198,7 +228,8 @@ function statusDescription(status) {
 
 function nextStepLabel(status) {
   return {
-    PENDING: '결제 진행',
+    PAYMENT_PENDING: '결제하기 버튼으로 결제 진행',
+    PENDING: '관리자 승인 대기',
     PAYED: '관리자 승인 대기',
     APPROVAL: '송장 등록 후 배송 시작',
     DELIVERING: '상품 수령 확인',
@@ -209,7 +240,8 @@ function nextStepLabel(status) {
 
 function statusClass(status) {
   return {
-    PENDING: 'bg-amber-50 text-amber-600',
+    PAYMENT_PENDING: 'bg-orange-50 text-orange-600',
+    PENDING: 'bg-blue-50 text-blue-600',
     PAYED: 'bg-blue-50 text-blue-600',
     APPROVAL: 'bg-violet-50 text-violet-600',
     DELIVERING: 'bg-sky-50 text-sky-600',

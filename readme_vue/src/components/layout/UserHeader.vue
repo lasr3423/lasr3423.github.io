@@ -46,9 +46,9 @@
         </router-link>
         <router-link
           class="text-sm font-semibold text-slate-700 transition hover:text-brand-800"
-          to="/mypage"
+          :to="dashboardLink.to"
         >
-          마이페이지
+          {{ dashboardLink.label }}
         </router-link>
         <router-link
           class="relative text-sm font-medium text-slate-600 transition hover:text-brand-800"
@@ -92,6 +92,9 @@ const cartStore = useCartStore();
 
 const searchKeyword = ref('');
 const searchType = ref('title');
+const dashboardLink = authStore.isAdmin
+  ? { label: '대시보드', to: '/admin' }
+  : { label: '마이페이지', to: '/mypage' };
 
 const primaryMenus = [
   { label: '베스트셀러', to: '/product?sort=bestseller' },

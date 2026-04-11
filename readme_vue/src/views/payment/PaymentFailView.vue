@@ -49,6 +49,13 @@ const failureCode = computed(() => String(route.query.code || 'UNKNOWN'))
 const failureMessage = computed(() => String(route.query.message || '결제 처리 중 문제가 발생했습니다.'))
 
 onMounted(async () => {
+  // 취소 코드인 경우 별도 처리 없이 장바구니로 즉시 이동
+  const code = failureCode.value
+  if (code === 'CANCELED' || code === 'PAY_PROCESS_CANCELED' || code === 'USER_CANCEL') {
+    router.replace('/cart')
+    return
+  }
+
   const orderId = Number(String(route.query.orderId || '').replace('ORDER-', ''))
 
   if (!orderId) {

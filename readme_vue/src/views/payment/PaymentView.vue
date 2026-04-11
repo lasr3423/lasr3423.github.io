@@ -281,7 +281,7 @@ async function startPayment() {
       itemName: orderStore.itemName || '도서 주문',
       amount: orderStore.finalPrice,
       approvalUrl: `${origin}/payment/success?provider=KAKAO&orderId=${orderId}`,
-      cancelUrl: `${origin}/payment/fail?provider=KAKAO&orderId=${orderId}&code=CANCELED&message=${encodeURIComponent('결제가 취소되었습니다.')}`,
+      cancelUrl: `${origin}/cart`,
       failUrl: `${origin}/payment/fail?provider=KAKAO&orderId=${orderId}&code=FAILED&message=${encodeURIComponent('결제 승인에 실패했습니다.')}`,
     })
 
@@ -289,6 +289,7 @@ async function startPayment() {
       provider,
       tid: data.tid || null,
       amount: orderStore.finalPrice,
+      itemName: orderStore.itemName || '도서 주문',
     })
 
     const redirectUrl = data.redirectPcUrl || data.redirectMobileUrl || data.redirectUrl
@@ -325,7 +326,7 @@ async function requestNaverPayment() {
       itemName: orderStore.itemName || '도서 주문',
       amount: orderStore.finalPrice,
       approvalUrl: `${origin}/payment/success?provider=NAVER&orderId=${orderId}`,
-      cancelUrl: `${origin}/payment/fail?provider=NAVER&orderId=${orderId}&code=CANCELED&message=${encodeURIComponent('결제가 취소되었습니다.')}`,
+      cancelUrl: `${origin}/cart`,
       failUrl: `${origin}/payment/fail?provider=NAVER&orderId=${orderId}&code=FAILED&message=${encodeURIComponent('결제 승인에 실패했습니다.')}`,
     })
 
@@ -333,6 +334,7 @@ async function requestNaverPayment() {
       provider: 'NAVER',
       paymentId: data.paymentId || String(orderId),
       amount: orderStore.finalPrice,
+      itemName: orderStore.itemName || '도서 주문',
     })
 
     const naverPay = await loadNaverPaySdk()
@@ -365,7 +367,7 @@ async function requestNaverPayment() {
   }
 }
 
-function requestTossPayment() {
+async function requestTossPayment() {
   const clientKey = 'test_ck_AQ92ymxN34vmXlbmObdPrajRKXvd'
   const tossPayments = window.TossPayments(clientKey)
   const tossOrderId = buildTossOrderId(orderStore.orderId)
@@ -373,15 +375,24 @@ function requestTossPayment() {
   persistPaymentMeta(orderStore.orderId, {
     provider: 'TOSS',
     amount: orderStore.finalPrice,
+    itemName: orderStore.itemName || '도서 주문',
   })
 
-  tossPayments.requestPayment('카드', {
-    amount: orderStore.finalPrice,
-    orderId: tossOrderId,
-    orderName: orderStore.itemName || '도서 주문',
-    customerName: customerName.value,
-    successUrl: `${window.location.origin}/payment/success?provider=TOSS`,
-    failUrl: `${window.location.origin}/payment/fail?provider=TOSS&orderId=${orderStore.orderId}`,
-  })
+  try {
+    await tossPayments.requestPayment('카드', {
+      amount: orderStore.finalPrice,
+      orderId: tossOrderId,
+      orderName: orderStore.itemName || '도서 주문',
+      customerName: customerName.value,
+      successUrl: `${window.location.origin}/payment/success?provider=TOSS`,
+      failUrl: `${window.location.origin}/payment/fail?provider=TOSS&orderId=${orderStore.orderId}`,
+    })
+  } catch (error) {
+    // 사용자가 결제창을 닫거나 뒤로가기 한 경우 → 장바구니로 이동
+    if (error?.code === 'PAY_PROCESS_CANCELED' || error?.code === 'USER_CANCEL') {
+      router.push('/cart')
+    }
+    // 그 외 오류는 무시 (failUrl로 이미 리다이렉트되므로)
+  }
 }
 </script>

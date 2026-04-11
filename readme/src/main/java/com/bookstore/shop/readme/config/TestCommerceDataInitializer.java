@@ -6,6 +6,7 @@ import com.bookstore.shop.readme.service.KakaoBookSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -22,6 +23,7 @@ import java.util.Set;
 
 @Component
 @org.springframework.core.annotation.Order(2)
+@ConditionalOnProperty(name = "seed.product-topup.enabled", havingValue = "false", matchIfMissing = true)
 @RequiredArgsConstructor
 public class TestCommerceDataInitializer implements CommandLineRunner {
 
