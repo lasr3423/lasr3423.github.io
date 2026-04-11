@@ -3,7 +3,7 @@
     <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">주문 승인 처리</h1>
-      <p class="mt-1 text-sm text-slate-400">결제 완료(PAYED) 상태의 주문을 배송 준비(APPROVAL)로 승인합니다.</p>
+      <p class="mt-1 text-sm text-slate-400">결제 완료(PENDING) 상태의 주문을 배송 준비(APPROVAL)로 승인합니다.</p>
     </section>
 
     <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
@@ -26,7 +26,7 @@
                 <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ order.number }}</td>
                 <td class="px-6 py-4 text-right font-semibold text-slate-900">{{ order.finalPrice?.toLocaleString() }}원</td>
                 <td class="px-6 py-4 text-center">
-                  <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">결제완료</span>
+                  <span class="rounded-full bg-yellow-50 px-3 py-1 text-xs font-semibold text-yellow-700">승인 대기</span>
                 </td>
                 <td class="px-6 py-4 text-slate-500">{{ formatDate(order.orderAt) }}</td>
                 <td class="px-6 py-4 text-center">

@@ -204,49 +204,49 @@ function formatDateTime(value) {
 
 function statusLabel(status) {
   return {
-    PAYMENT_PENDING: '결제 대기',
-    PENDING: '결제 완료',
-    PAYED: '결제 완료',
-    APPROVAL: '배송 준비',
+    PAYMENT_PENDING: '결제 진행 중',
+    PENDING:    '승인 대기',
+    PAYED:      '승인 대기',
+    APPROVAL:   '배송 준비',
     DELIVERING: '배송 중',
-    DELIVERED: '배송 완료',
-    CANCELED: '주문 취소',
+    DELIVERED:  '배송 완료',
+    CANCELED:   '주문 취소',
   }[status] || status
 }
 
 function statusDescription(status) {
   return {
     PAYMENT_PENDING: '결제가 아직 완료되지 않았습니다. 30분 내 결제를 완료해 주세요.',
-    PENDING: '결제가 완료되어 출고를 기다리고 있습니다.',
-    PAYED: '결제가 완료되어 출고를 기다리고 있습니다.',
-    APPROVAL: '출고 준비가 진행 중입니다.',
+    PENDING:    '결제가 완료되어 관리자 승인을 기다리고 있습니다.',
+    PAYED:      '결제가 완료되어 관리자 승인을 기다리고 있습니다.',
+    APPROVAL:   '관리자가 승인했습니다. 곧 배송이 시작됩니다.',
     DELIVERING: '상품이 배송 중입니다.',
-    DELIVERED: '상품 수령을 기다리는 상태입니다.',
-    CANCELED: '주문이 취소되었습니다.',
+    DELIVERED:  '배송이 완료되었습니다.',
+    CANCELED:   '주문이 취소되었습니다.',
   }[status] || status
 }
 
 function nextStepLabel(status) {
   return {
     PAYMENT_PENDING: '결제하기 버튼으로 결제 진행',
-    PENDING: '관리자 승인 대기',
-    PAYED: '관리자 승인 대기',
-    APPROVAL: '송장 등록 후 배송 시작',
-    DELIVERING: '상품 수령 확인',
-    DELIVERED: '리뷰 작성 가능',
-    CANCELED: '취소 완료',
+    PENDING:    '관리자 승인 대기',
+    PAYED:      '관리자 승인 대기',
+    APPROVAL:   '배송 출발 예정',
+    DELIVERING: '배송사 배송 중',
+    DELIVERED:  '리뷰 작성 가능',
+    CANCELED:   '취소 완료',
   }[status] || '-'
 }
 
 function statusClass(status) {
   return {
     PAYMENT_PENDING: 'bg-orange-50 text-orange-600',
-    PENDING: 'bg-blue-50 text-blue-600',
-    PAYED: 'bg-blue-50 text-blue-600',
-    APPROVAL: 'bg-violet-50 text-violet-600',
+    PENDING:    'bg-yellow-50 text-yellow-600',
+    PAYED:      'bg-yellow-50 text-yellow-600',
+    APPROVAL:   'bg-violet-50 text-violet-600',
     DELIVERING: 'bg-sky-50 text-sky-600',
-    DELIVERED: 'bg-emerald-50 text-emerald-600',
-    CANCELED: 'bg-rose-50 text-rose-600',
+    DELIVERED:  'bg-emerald-50 text-emerald-600',
+    CANCELED:   'bg-rose-50 text-rose-600',
   }[status] || 'bg-slate-100 text-slate-500'
 }
 

@@ -5,6 +5,23 @@
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">주문 관리</h1>
     </section>
 
+    <!-- 상태 필터 -->
+    <section class="rounded-[2rem] border border-slate-200 bg-white px-6 py-4 shadow-sm">
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="f in filterOptions"
+          :key="f.value"
+          class="rounded-full border px-4 py-1.5 text-xs font-semibold transition"
+          :class="selectedFilter === f.value
+            ? 'border-brand-800 bg-brand-800 text-white'
+            : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:text-brand-700'"
+          @click="applyFilter(f.value)"
+        >
+          {{ f.label }}
+        </button>
+      </div>
+    </section>
+
     <section class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
       <div v-if="loading" class="flex items-center justify-center py-16 text-sm text-slate-400">불러오는 중...</div>
 
@@ -24,25 +41,13 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
-            <select
-              v-model="bulkStatus"
-              class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-            >
-              <option value="">일괄 상태 선택</option>
-              <option
-                v-for="option in statusOptions"
-                :key="option.value"
-                :value="option.value"
-              >
-                {{ option.label }}
-              </option>
-            </select>
             <button
+              v-if="selectedFilter === 'PENDING'"
               class="rounded-xl bg-brand-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:bg-slate-300"
-              :disabled="checkedIds.size === 0 || !bulkStatus || bulkUpdating"
+              :disabled="checkedIds.size === 0 || bulkUpdating"
               @click="handleBulkStatusChange"
             >
-              {{ bulkUpdating ? '변경 중...' : '선택 주문 상태 변경' }}
+              {{ bulkUpdating ? '승인 중...' : `선택 주문 일괄 승인 (${checkedIds.size})` }}
             </button>
           </div>
         </div>
@@ -82,11 +87,18 @@
                 </td>
                 <td class="px-6 py-4 text-slate-500">{{ formatDate(order.orderAt) }}</td>
                 <td class="px-6 py-4 text-right">
-                  <select :value="order.orderStatus"
-                    class="rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-xs"
-                    @change="handleStatusChange(order.orderId, $event.target.value)">
+                  <select
+                    class="w-28 rounded-xl border px-2 py-1.5 text-xs"
+                    :class="nextStatusOptions(order.orderStatus).length === 0
+                      ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400'
+                      : 'border-slate-200 bg-white text-slate-700 cursor-pointer'"
+                    :disabled="nextStatusOptions(order.orderStatus).length === 0"
+                    :value="order.orderStatus"
+                    @change="handleStatusChange(order.orderId, $event.target.value)"
+                  >
+                    <option :value="order.orderStatus" disabled>{{ statusLabel(order.orderStatus) }}</option>
                     <option
-                      v-for="option in statusOptions"
+                      v-for="option in nextStatusOptions(order.orderStatus)"
                       :key="option.value"
                       :value="option.value"
                     >
@@ -121,41 +133,79 @@ const orders = ref([]);
 const loading = ref(true);
 const page = ref(0);
 const totalPages = ref(1);
-const bulkStatus = ref('');
 const bulkUpdating = ref(false);
 const checkedIds = ref(new Set());
+const selectedFilter = ref('');
 
+const filterOptions = [
+  { value: '',                label: '전체' },
+  { value: 'PAYMENT_PENDING', label: '결제 진행 중' },
+  { value: 'PENDING',         label: '승인 대기' },
+  { value: 'APPROVAL',        label: '배송 준비' },
+  { value: 'DELIVERING',      label: '배송 중' },
+  { value: 'DELIVERED',       label: '배송 완료' },
+  { value: 'CANCELED',        label: '취소' },
+];
+
+// 전체 상태 순서 정의 (드롭다운용)
 const statusOptions = [
   { value: 'PAYMENT_PENDING', label: '결제 진행 중' },
-  { value: 'PENDING', label: '승인 대기' },
-  { value: 'PAYED', label: '결제 완료(구)' },
-  { value: 'APPROVAL', label: '배송 준비' },
-  { value: 'CANCELED', label: '취소' },
+  { value: 'PENDING',         label: '승인 대기' },
+  { value: 'APPROVAL',        label: '배송 준비' },
+  { value: 'DELIVERING',      label: '배송 중' },
+  { value: 'DELIVERED',       label: '배송 완료' },
+  { value: 'CANCELED',        label: '취소' },
 ];
+
+function nextStatusOptions(currentStatus) {
+  const order = ['PAYMENT_PENDING', 'PENDING', 'APPROVAL', 'DELIVERING', 'DELIVERED'];
+  const currentIdx = order.indexOf(currentStatus);
+
+  if (currentStatus === 'DELIVERED' || currentStatus === 'CANCELED') return [];
+
+  return statusOptions.filter((opt) => {
+    if (opt.value === 'CANCELED') return true;
+    return order.indexOf(opt.value) > currentIdx;
+  });
+}
 
 const statusLabel = (s) => ({
   PAYMENT_PENDING: '결제 진행 중',
-  PENDING: '승인 대기',
-  PAYED: '결제 완료(구)',
-  APPROVAL: '배송 준비',
-  CANCELED: '취소'
+  PENDING:    '승인 대기',
+  PAYED:      '승인 대기(구)',
+  APPROVAL:   '배송 준비',
+  DELIVERING: '배송 중',
+  DELIVERED:  '배송 완료',
+  CANCELED:   '취소',
 }[s] ?? s);
+
 const statusClass = (s) => ({
   PAYMENT_PENDING: 'bg-amber-50 text-amber-700',
-  PENDING:  'bg-yellow-50 text-yellow-700',
-  PAYED:    'bg-green-50 text-green-700',
-  APPROVAL: 'bg-brand-50 text-brand-700',
-  CANCELED: 'bg-rose-50 text-rose-700',
+  PENDING:    'bg-yellow-50 text-yellow-700',
+  PAYED:      'bg-yellow-50 text-yellow-700',
+  APPROVAL:   'bg-brand-50 text-brand-700',
+  DELIVERING: 'bg-sky-50 text-sky-700',
+  DELIVERED:  'bg-emerald-50 text-emerald-700',
+  CANCELED:   'bg-rose-50 text-rose-700',
 }[s] ?? 'bg-slate-100 text-slate-600');
+
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ko-KR') : '-';
 
 const isAllChecked = computed(() => orders.value.length > 0 && checkedIds.value.size === orders.value.length);
 const isSomeChecked = computed(() => checkedIds.value.size > 0 && checkedIds.value.size < orders.value.length);
 
+function applyFilter(status) {
+  selectedFilter.value = status;
+  page.value = 0;
+  fetchOrders();
+}
+
 async function fetchOrders() {
   try {
     loading.value = true;
-    const { data } = await adminApi.getOrders({ page: page.value, size: 20 });
+    const params = { page: page.value, size: 20 };
+    if (selectedFilter.value) params.status = selectedFilter.value;
+    const { data } = await adminApi.getOrders(params);
     orders.value = data.content;
     totalPages.value = data.totalPages || 1;
     checkedIds.value = new Set();
@@ -190,17 +240,17 @@ function toggleItem(orderId) {
 }
 
 async function handleBulkStatusChange() {
-  if (checkedIds.value.size === 0 || !bulkStatus.value) return;
+  if (checkedIds.value.size === 0) return;
+  if (!confirm(`선택한 ${checkedIds.value.size}건을 배송 준비(승인) 상태로 변경하시겠습니까?`)) return;
 
   bulkUpdating.value = true;
   try {
     const orderIds = [...checkedIds.value];
-    await adminApi.updateOrderStatuses(orderIds, bulkStatus.value);
-    alert(`${orderIds.length}건의 주문 상태를 변경했습니다.`);
-    bulkStatus.value = '';
+    await adminApi.updateOrderStatuses(orderIds, 'APPROVAL');
+    alert(`${orderIds.length}건이 승인되었습니다.`);
     await fetchOrders();
   } catch (e) {
-    alert(e.response?.data?.message || '일괄 상태 변경 실패');
+    alert(e.response?.data?.message || '일괄 승인 실패');
   } finally {
     bulkUpdating.value = false;
   }
