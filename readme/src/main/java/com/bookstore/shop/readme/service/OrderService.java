@@ -202,6 +202,16 @@ public class OrderService {
         }
     }
 
+    /**
+     * 관리자 주문 상태 전환 규칙
+     *
+     * PAYMENT_PENDING → CANCELED
+     * PENDING / PAYED → APPROVAL, CANCELED
+     * APPROVAL        → DELIVERING, CANCELED
+     * DELIVERING      → DELIVERED
+     * DELIVERED       → (변경 불가)
+     * CANCELED        → (변경 불가)
+     */
     private void validateAdminStatusTransition(OrderStatus currentStatus, OrderStatus nextStatus) {
         if (currentStatus == nextStatus) {
             return;
@@ -215,13 +225,25 @@ public class OrderService {
                 }
             }
             case PENDING, PAYED -> {
-                // 결제 완료 주문: 승인 또는 취소만 가능
+                // 결제 완료 대기: 관리자 승인 또는 취소만 가능
                 if (nextStatus != OrderStatus.APPROVAL && nextStatus != OrderStatus.CANCELED) {
-                    throw new RuntimeException("결제 완료 주문은 승인 또는 취소만 가능합니다.");
+                    throw new RuntimeException("결제 완료 주문은 승인(APPROVAL) 또는 취소(CANCELED)만 가능합니다.");
                 }
             }
-            case APPROVAL -> throw new RuntimeException("이미 승인된 주문은 상태를 되돌릴 수 없습니다.");
-            case CANCELED -> throw new RuntimeException("이미 취소된 주문은 상태를 변경할 수 없습니다.");
+            case APPROVAL -> {
+                // 승인 완료: 배송 시작 또는 취소만 가능
+                if (nextStatus != OrderStatus.DELIVERING && nextStatus != OrderStatus.CANCELED) {
+                    throw new RuntimeException("승인된 주문은 배송 시작(DELIVERING) 또는 취소(CANCELED)만 가능합니다.");
+                }
+            }
+            case DELIVERING -> {
+                // 배송 중: 배송 완료만 가능
+                if (nextStatus != OrderStatus.DELIVERED) {
+                    throw new RuntimeException("배송 중인 주문은 배송 완료(DELIVERED)로만 변경 가능합니다.");
+                }
+            }
+            case DELIVERED -> throw new RuntimeException("이미 배송 완료된 주문은 상태를 변경할 수 없습니다.");
+            case CANCELED  -> throw new RuntimeException("이미 취소된 주문은 상태를 변경할 수 없습니다.");
         }
     }
 

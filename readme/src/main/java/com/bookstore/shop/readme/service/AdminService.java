@@ -234,6 +234,15 @@ public class AdminService {
         return ResponseEntity.ok("재고가 " + stock + "개로 변경되었습니다.");
     }
 
+    @Transactional
+    public ResponseEntity<String> updateProductStatus(Long productId, String status) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다."));
+        ProductStatus next = ProductStatus.valueOf(status);
+        product.setProductStatus(next);
+        return ResponseEntity.ok("상품 상태가 변경되었습니다.");
+    }
+
     @Transactional(readOnly = true)
     public ResponseEntity<Page<OrderListResponse>> getOrdersByStatus(String status, Pageable pageable) {
         OrderStatus orderStatus = OrderStatus.valueOf(status);

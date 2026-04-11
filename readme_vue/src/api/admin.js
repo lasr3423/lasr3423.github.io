@@ -15,6 +15,7 @@ export const adminApi = {
   updateProduct: (id, data) => api.put(`/api/admin/products/${id}`, data),
   deleteProduct: (id) => api.delete(`/api/admin/products/${id}`),
   updateStock: (id, stock) => api.patch(`/api/admin/products/${id}/stock`, null, { params: { stock } }),
+  updateProductStatus: (id, status) => api.patch(`/api/admin/products/${id}/status`, null, { params: { status } }),
   uploadProductThumbnail: (formData) => api.post('/api/admin/uploads/products', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),

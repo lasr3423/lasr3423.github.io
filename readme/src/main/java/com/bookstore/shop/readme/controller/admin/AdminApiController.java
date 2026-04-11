@@ -1,5 +1,6 @@
 package com.bookstore.shop.readme.controller.admin;
 
+import com.bookstore.shop.readme.domain.OrderStatus;
 import com.bookstore.shop.readme.dto.request.AdminQnAAnswerRequest;
 import com.bookstore.shop.readme.dto.request.AdminOrderBulkStatusRequest;
 import com.bookstore.shop.readme.dto.request.CategoryCreateRequest;
@@ -108,10 +109,19 @@ public class AdminApiController {
         return adminService.updateStock(productId, stock);
     }
 
+    @PatchMapping("/products/{productId}/status")
+    public ResponseEntity<String> updateProductStatus(@PathVariable Long productId, @RequestParam String status) {
+        return adminService.updateProductStatus(productId, status);
+    }
+
     @GetMapping("/orders")
     public ResponseEntity<Page<OrderListResponse>> getAllOrders(
+            @RequestParam(required = false) String status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
+        if (status != null && !status.isBlank()) {
+            return orderService.getOrdersByStatus(OrderStatus.valueOf(status), pageable);
+        }
         return orderService.getAllOrders(pageable);
     }
 
@@ -134,7 +144,7 @@ public class AdminApiController {
     public ResponseEntity<Page<OrderListResponse>> getPendingApprovalOrders(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return adminService.getOrdersByStatus("PAYED", pageable);
+        return adminService.getOrdersByStatus("PENDING", pageable);
     }
 
     @GetMapping("/deliveries")

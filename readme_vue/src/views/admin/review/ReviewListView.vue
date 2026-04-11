@@ -50,93 +50,88 @@
       <div v-else-if="errorMessage" class="p-12 text-center text-sm text-rose-500">{{ errorMessage }}</div>
 
       <template v-else-if="reviews.length > 0">
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[1180px] table-fixed text-sm">
-            <colgroup>
-              <col class="w-[56px]">
-              <col class="w-[32%]">
-              <col class="w-[22%]">
-              <col class="w-[12%]">
-              <col class="w-[10%]">
-              <col class="w-[14%]">
-              <col class="w-[10%]">
-            </colgroup>
-            <thead class="bg-slate-50 text-slate-500">
-              <tr>
-                <th class="px-4 py-4 text-center font-semibold">
-                  <input
-                    type="checkbox"
-                    :checked="allChecked"
-                    class="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-400"
-                    @change="toggleAll"
-                  >
-                </th>
-                <th class="px-5 py-4 text-left font-semibold">리뷰 내용</th>
-                <th class="px-5 py-4 text-left font-semibold">상품 제목</th>
-                <th class="px-5 py-4 text-left font-semibold">작성자</th>
-                <th class="px-5 py-4 text-center font-semibold">평점</th>
-                <th class="px-5 py-4 text-left font-semibold">작성일</th>
-                <th class="px-5 py-4 text-right font-semibold">관리</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="review in reviews" :key="review.reviewId" class="transition hover:bg-slate-50">
-                <td class="px-4 py-5 text-center align-top">
-                  <input
-                    type="checkbox"
-                    :checked="selectedIds.includes(review.reviewId)"
-                    class="h-4 w-4 rounded border-slate-300 text-brand-700 focus:ring-brand-400"
-                    @change="toggleOne(review.reviewId)"
-                  >
-                </td>
-                <td class="px-5 py-5 align-top">
-                  <button class="block w-full text-left" @click="openDetail(review.reviewId)">
-                    <p class="line-clamp-1 text-base font-semibold text-slate-900">{{ reviewTitle(review) }}</p>
-                    <p class="mt-2 line-clamp-3 break-words text-sm leading-6 text-slate-500">
-                      {{ review.content }}
-                    </p>
-                  </button>
-                </td>
-                <td class="px-5 py-5 align-top">
-                  <p class="break-words font-medium leading-6 text-slate-800">
-                    {{ review.productTitle || `상품 #${review.productId}` }}
-                  </p>
-                  <p class="mt-2 text-xs text-slate-400">상품 ID {{ review.productId }}</p>
-                </td>
-                <td class="px-5 py-5 align-top">
-                  <p class="font-medium text-slate-800">{{ review.memberName }}</p>
-                  <p class="mt-2 text-xs text-slate-400">회원 ID {{ review.memberId }}</p>
-                </td>
-                <td class="px-5 py-5 text-center align-top">
-                  <span class="text-amber-400">{{ renderStars(review.rating) }}</span>
-                  <p class="mt-2 text-xs font-medium text-slate-500">{{ review.rating }} / 5</p>
-                </td>
-                <td class="px-5 py-5 align-top text-slate-500">
-                  <p>{{ formatDate(review.createdAt) }}</p>
-                  <p class="mt-2 text-xs">{{ formatTime(review.createdAt) }}</p>
-                </td>
-                <td class="px-5 py-5 align-top">
-                  <div class="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      class="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                      @click="openDetail(review.reviewId)"
-                    >
-                      상세
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-xl bg-rose-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-600"
-                      @click="handleDelete(review.reviewId)"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="w-full text-sm">
+          <thead class="border-b border-slate-200 bg-slate-50 text-slate-500">
+            <tr>
+              <th class="w-10 px-4 py-4 text-center font-semibold">
+                <input
+                  type="checkbox"
+                  :checked="allChecked"
+                  class="h-4 w-4 rounded border-slate-300"
+                  @change="toggleAll"
+                >
+              </th>
+              <th class="w-16 px-5 py-4 text-center font-semibold">ID</th>
+              <th class="w-48 px-5 py-4 text-center font-semibold">상품명</th>
+              <th class="px-5 py-4 text-center font-semibold">리뷰내용</th>
+              <th class="w-28 px-5 py-4 text-center font-semibold">작성자</th>
+              <th class="w-28 px-5 py-4 text-center font-semibold">평점</th>
+              <th class="w-32 px-5 py-4 text-center font-semibold">작성일</th>
+              <th class="w-28 px-5 py-4 text-center font-semibold">관리</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="review in reviews" :key="review.reviewId" class="transition hover:bg-slate-50">
+              <!-- 체크박스 -->
+              <td class="px-4 py-4 text-center">
+                <input
+                  type="checkbox"
+                  :checked="selectedIds.includes(review.reviewId)"
+                  class="h-4 w-4 rounded border-slate-300"
+                  @change="toggleOne(review.reviewId)"
+                >
+              </td>
+
+              <!-- ID -->
+              <td class="px-5 py-4 text-center text-xs text-slate-400">
+                {{ review.reviewId }}
+              </td>
+
+              <!-- 상품명 -->
+              <td class="px-5 py-4 text-center">
+                <p class="font-medium text-slate-900 line-clamp-1">
+                  {{ review.productTitle || `상품 #${review.productId}` }}
+                </p>
+              </td>
+
+              <!-- 리뷰내용 (10자 맛보기) -->
+              <td class="px-5 py-4 text-center text-slate-600">
+                {{ review.content ? review.content.slice(0, 10) + (review.content.length > 10 ? '…' : '') : '-' }}
+              </td>
+
+              <!-- 작성자 -->
+              <td class="px-5 py-4 text-center text-slate-800">
+                {{ review.memberName }}
+              </td>
+
+              <!-- 평점 -->
+              <td class="px-5 py-4 text-center">
+                <span class="text-amber-400 text-base">{{ renderStars(review.rating) }}</span>
+              </td>
+
+              <!-- 작성일 -->
+              <td class="px-5 py-4 text-center text-slate-500">
+                {{ formatDate(review.createdAt) }}
+              </td>
+
+              <!-- 관리 -->
+              <td class="px-5 py-4 text-center">
+                <div class="inline-flex gap-2">
+                  <button
+                    type="button"
+                    class="whitespace-nowrap rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                    @click="openDetail(review.reviewId)"
+                  >상세</button>
+                  <button
+                    type="button"
+                    class="whitespace-nowrap rounded-xl bg-rose-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600"
+                    @click="handleDelete(review.reviewId)"
+                  >삭제</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         <div class="flex items-center justify-center gap-2 border-t border-slate-100 p-4">
           <button
