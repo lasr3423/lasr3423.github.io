@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카테고리 관리 - 아코디언형</title>
+  <style>
+    :root {
+      --bg: #f5f7fc; --panel: #fff; --line: #d9dfeb; --text: #1f2a44;
+      --muted: #6f7890; --brand: #213a70; --brand-soft: #e9effd; --accent: #ff8f44;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans KR", "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 60px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 14px 30px rgba(15,23,42,.06); }
+    .top { padding: 28px 32px; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .eyebrow { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+    h1 { margin: 14px 0 8px; font-size: 34px; }
+    p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .toolbar { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .input, .btn {
+      border-radius: 16px; padding: 14px 16px; font-size: 14px;
+    }
+    .input { border: 1px solid var(--line); background: #f9fbff; min-width: 320px; flex: 1; }
+    .btn { border: 0; font-weight: 700; cursor: pointer; }
+    .btn.primary { background: var(--brand); color: #fff; }
+    .btn.secondary { background: #fff; border: 1px solid var(--line); color: var(--text); }
+    .stack { margin-top: 24px; display: grid; gap: 16px; }
+    details {
+      background: #fff; border: 1px solid var(--line); border-radius: 24px; overflow: hidden;
+    }
+    summary {
+      list-style: none; cursor: pointer; padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    .left { display: flex; align-items: center; gap: 16px; }
+    .count { padding: 8px 12px; border-radius: 999px; background: #fff3eb; color: #c75b12; font-weight: 700; font-size: 12px; }
+    .body { border-top: 1px solid #eef2f8; padding: 18px 24px 24px; }
+    .sub-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px;
+      border: 1px solid #e9eef6; border-radius: 18px; background: #fbfcfe; margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="panel">
+      <div class="top">
+        <div>
+          <span class="eyebrow">Example 02</span>
+          <h1>카테고리 관리 - 아코디언형</h1>
+          <p>대분류를 중심으로 접고 펼쳐서 관리하는 구조입니다. 카테고리 계층이 잘 보이고 화면이 단정합니다.</p>
+          <div class="toolbar">
+            <input class="input" placeholder="카테고리 검색" />
+            <button class="btn secondary">선택 수정</button>
+            <button class="btn primary">대분류 등록</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <details open>
+        <summary>
+          <div class="left">
+            <input type="checkbox" />
+            <div>
+              <strong>국내도서</strong>
+              <p>ID 1 · 가장 많이 사용하는 기본 카테고리</p>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count">소분류 4개</span>
+            <button class="btn secondary">소분류 추가</button>
+          </div>
+        </summary>
+        <div class="body">
+          <div class="sub-row">
+            <label><input type="checkbox" /> 소설</label>
+            <button class="btn secondary">수정</button>
+          </div>
+          <div class="sub-row">
+            <label><input type="checkbox" /> 경제경영</label>
+            <button class="btn secondary">수정</button>
+          </div>
+          <div class="sub-row">
+            <label><input type="checkbox" /> 자기계발</label>
+            <button class="btn secondary">수정</button>
+          </div>
+          <div class="sub-row">
+            <label><input type="checkbox" /> 인문</label>
+            <button class="btn secondary">수정</button>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <div class="left">
+            <input type="checkbox" />
+            <div>
+              <strong>외국도서</strong>
+              <p>ID 2 · 해외 도서 상품을 묶는 그룹</p>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="count">소분류 3개</span>
+            <button class="btn secondary">소분류 추가</button>
+          </div>
+        </summary>
+        <div class="body">
+          <div class="sub-row">
+            <label><input type="checkbox" /> 문학</label>
+            <button class="btn secondary">수정</button>
+          </div>
+          <div class="sub-row">
+            <label><input type="checkbox" /> 예술</label>
+            <button class="btn secondary">수정</button>
+          </div>
+          <div class="sub-row">
+            <label><input type="checkbox" /> 아동</label>
+            <button class="btn secondary">수정</button>
+          </div>
+        </div>
+      </details>
+    </section>
+  </div>
+</body>
+</html>

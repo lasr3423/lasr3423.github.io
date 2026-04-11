@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카테고리 관리 - 카드형</title>
+  <style>
+    :root {
+      --bg: #f5f7fc; --panel: #fff; --line: #d9dfeb; --text: #1f2a44;
+      --muted: #6f7890; --brand: #213a70; --brand-soft: #e9effd; --accent-soft: #fff1e6; --accent: #d66c21;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans KR", "Segoe UI", sans-serif; background: linear-gradient(180deg, #fafdff 0%, var(--bg) 100%); color: var(--text); }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 60px; }
+    .hero, .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 14px 32px rgba(15,23,42,.06);
+    }
+    .hero { padding: 28px 32px; }
+    .eyebrow { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 14px 0 8px; font-size: 34px; }
+    p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .toolbar { margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .toolbar input { flex: 1; min-width: 280px; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #f9fbff; }
+    .btn { border: 0; border-radius: 16px; padding: 14px 18px; font-weight: 700; cursor: pointer; }
+    .btn.primary { background: var(--brand); color: #fff; }
+    .btn.secondary { background: #fff; border: 1px solid var(--line); color: var(--text); }
+    .grid { margin-top: 24px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card { padding: 22px; }
+    .title-row { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+    .badge { display: inline-flex; padding: 8px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; }
+    .sub-list { margin-top: 18px; display: grid; gap: 10px; }
+    .sub-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      border: 1px solid #e7ecf6; border-radius: 18px; padding: 12px 14px; background: #fbfcff;
+    }
+    .footer { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <span class="eyebrow">Example 04</span>
+      <h1>카테고리 관리 - 카드형 그룹 관리</h1>
+      <p>시각적으로 가장 보기 쉬운 구성입니다. 발표나 시연용 화면으로도 인상이 좋습니다.</p>
+      <div class="toolbar">
+        <input placeholder="카테고리 검색" />
+        <button class="btn secondary">선택 수정</button>
+        <button class="btn primary">카테고리 등록</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="title-row">
+          <div>
+            <label><input type="checkbox" /> <strong>국내도서</strong></label>
+            <p style="margin-top:8px;">가장 기본이 되는 메인 카테고리입니다.</p>
+          </div>
+          <span class="badge">소분류 4개</span>
+        </div>
+        <div class="sub-list">
+          <div class="sub-item"><label><input type="checkbox" /> 소설</label><button class="btn secondary">수정</button></div>
+          <div class="sub-item"><label><input type="checkbox" /> 시/에세이</label><button class="btn secondary">수정</button></div>
+          <div class="sub-item"><label><input type="checkbox" /> 경제경영</label><button class="btn secondary">수정</button></div>
+          <div class="sub-item"><label><input type="checkbox" /> 인문</label><button class="btn secondary">수정</button></div>
+        </div>
+        <div class="footer">
+          <button class="btn secondary">대분류 수정</button>
+          <button class="btn primary">소분류 추가</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="title-row">
+          <div>
+            <label><input type="checkbox" /> <strong>외국도서</strong></label>
+            <p style="margin-top:8px;">해외 도서를 묶는 별도 카테고리 그룹입니다.</p>
+          </div>
+          <span class="badge">소분류 3개</span>
+        </div>
+        <div class="sub-list">
+          <div class="sub-item"><label><input type="checkbox" /> 문학</label><button class="btn secondary">수정</button></div>
+          <div class="sub-item"><label><input type="checkbox" /> 예술</label><button class="btn secondary">수정</button></div>
+          <div class="sub-item"><label><input type="checkbox" /> 아동</label><button class="btn secondary">수정</button></div>
+        </div>
+        <div class="footer">
+          <button class="btn secondary">대분류 수정</button>
+          <button class="btn primary">소분류 추가</button>
+        </div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>
