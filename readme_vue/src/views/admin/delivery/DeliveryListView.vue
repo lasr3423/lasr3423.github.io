@@ -50,10 +50,19 @@
                 </td>
                 <td class="px-6 py-4 text-xs text-slate-500">{{ formatDate(d.shippedAt) }}</td>
                 <td class="px-6 py-4 text-right">
-                  <button @click="openEdit(d)"
-                    class="rounded-xl bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100">
-                    수정
-                  </button>
+                  <div class="flex justify-end gap-2">
+                    <button
+                      v-if="d.deliveryStatus === 'READY'"
+                      @click="markAsShipped(d)"
+                      class="rounded-xl bg-brand-800 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-700"
+                    >
+                      출고 처리
+                    </button>
+                    <button @click="openEdit(d)"
+                      class="rounded-xl bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-100">
+                      수정
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -153,7 +162,40 @@ function openEdit(d) {
   editForm.value = { courier: d.courier || '', trackingNumber: d.trackingNumber || '', deliveryStatus: d.deliveryStatus };
 }
 
+async function markAsShipped(delivery) {
+  const courier = delivery.courier?.trim()
+  const trackingNumber = delivery.trackingNumber?.trim()
+
+  if (!courier || !trackingNumber) {
+    alert('택배사와 운송장 번호를 먼저 입력해야 출고 처리할 수 있습니다.')
+    openEdit(delivery)
+    return
+  }
+
+  if (!confirm('이 배송 건을 출고 처리하고 배송중으로 변경하시겠습니까?')) return
+
+  try {
+    await adminApi.updateDelivery(delivery.id, {
+      courier,
+      trackingNumber,
+      deliveryStatus: 'SHIPPED',
+    })
+    fetchDeliveries()
+  } catch (e) {
+    alert(e.response?.data?.message || '출고 처리 실패')
+  }
+}
+
 async function handleUpdate() {
+  const nextStatus = editForm.value.deliveryStatus
+  const courier = editForm.value.courier?.trim()
+  const trackingNumber = editForm.value.trackingNumber?.trim()
+
+  if ((nextStatus === 'SHIPPED' || nextStatus === 'DELIVERED') && (!courier || !trackingNumber)) {
+    alert('택배사와 운송장 번호를 먼저 입력해야 배송중 또는 배송완료로 변경할 수 있습니다.')
+    return
+  }
+
   try {
     updating.value = true;
     await adminApi.updateDelivery(editTarget.value.id, editForm.value);
