@@ -14,8 +14,8 @@ public record DashboardResponse(
 
         // 주문/매출 현황
         long totalOrders,            // 전체 주문 수
-        long pendingOrders,          // PENDING 상태 (미승인 주문)
-        long payedOrders,            // PAYED 상태 (결제 완료, 승인 대기)
+        long pendingOrders,          // PAYMENT_PENDING 상태 (결제 진행 중 주문)
+        long payedOrders,            // 실결제 완료 + 승인 대기 주문 수 (PENDING/PAYED 호환)
         long todayOrders,            // REQ-A-006: 오늘 주문 수
         long todaySales,             // REQ-A-006: 오늘 매출 합계
         long monthOrders,            // REQ-A-006: 이번 달 주문 수

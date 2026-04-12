@@ -3,6 +3,7 @@ package com.bookstore.shop.readme.dto.response;
 import com.bookstore.shop.readme.domain.Order;
 import com.bookstore.shop.readme.domain.OrderItem;
 import com.bookstore.shop.readme.domain.OrderStatus;
+import com.bookstore.shop.readme.domain.Payment;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -26,12 +27,17 @@ public class OrderDetailResponse {
     private final String deliveryMemo;
     private final LocalDateTime orderAt;
     private final LocalDateTime cancelledAt;     // 취소 시각 (취소 전: null)
+    private final Integer paidAmount;
+    private final Integer refundedAmount;
+    private final Integer returnFee;
+    private final String paymentStatus;
+    private final String cancelReason;
 
     // 주문 상품 목록 — 내부 DTO로 반환
     private final List<OrderItemDto> orderItems;
 
     // 엔티티 + 주문항목 목록 받아서 변환
-    public OrderDetailResponse(Order order, List<OrderItem> items) {
+    public OrderDetailResponse(Order order, List<OrderItem> items, Payment payment) {
         this.orderId = order.getId();
         this.number = order.getNumber();
         this.totalPrice = order.getTotalPrice();
@@ -46,6 +52,11 @@ public class OrderDetailResponse {
         this.deliveryMemo = order.getDeliveryMemo();
         this.orderAt = order.getOrderAt();
         this.cancelledAt = order.getCancelledAt();
+        this.paidAmount = payment != null ? payment.getAmount() : null;
+        this.refundedAmount = payment != null ? payment.getRefundedAmount() : null;
+        this.returnFee = payment != null ? payment.getReturnFee() : null;
+        this.paymentStatus = payment != null && payment.getPaymentStatus() != null ? payment.getPaymentStatus().name() : null;
+        this.cancelReason = payment != null ? payment.getCancelReason() : null;
         // List<OrderItem> → List<OrderItemDto> 변환
         this.orderItems = items.stream()
                 .map(OrderItemDto::new)

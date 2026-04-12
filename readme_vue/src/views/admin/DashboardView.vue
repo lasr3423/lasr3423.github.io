@@ -290,7 +290,7 @@ const orderSegments = computed(() => {
 
   return [
     {
-      label: '결제 대기',
+      label: '결제 진행 중',
       value: pending,
       percent: Math.round((pending / base) * 100),
       color: '#f59e0b',
@@ -402,18 +402,24 @@ function formatDate(value) {
 
 function orderStatusLabel(status) {
   return {
-    PENDING: '결제 대기',
-    PAYED: '승인 대기',
-    APPROVAL: '배송 중',
+    PAYMENT_PENDING: '결제 진행 중',
+    PENDING: '승인 대기',
+    PAYED: '승인 대기(구)',
+    APPROVAL: '배송 준비',
+    DELIVERING: '배송 중',
+    DELIVERED: '배송 완료',
     CANCELED: '취소',
   }[status] || status
 }
 
 function orderStatusClass(status) {
   return {
-    PENDING: 'bg-amber-50 text-amber-700',
+    PAYMENT_PENDING: 'bg-amber-50 text-amber-700',
+    PENDING: 'bg-yellow-50 text-yellow-700',
     PAYED: 'bg-blue-50 text-blue-700',
     APPROVAL: 'bg-emerald-50 text-emerald-700',
+    DELIVERING: 'bg-sky-50 text-sky-700',
+    DELIVERED: 'bg-violet-50 text-violet-700',
     CANCELED: 'bg-rose-50 text-rose-700',
   }[status] || 'bg-slate-100 text-slate-600'
 }

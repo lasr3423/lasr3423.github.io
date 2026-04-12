@@ -29,13 +29,37 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // [신규] 관리자 - 특정 상태 주문 목록 (승인 대기 페이지 등에서 사용)
     Page<Order> findAllByOrderStatus(OrderStatus orderStatus, Pageable pageable);
 
+    @Query("""
+           SELECT o FROM Order o
+           WHERE o.orderStatus IN ('PENDING', 'PAYED')
+             AND o.cancelledAt IS NULL
+             AND EXISTS (
+                 SELECT 1 FROM Payment p
+                 WHERE p.order = o
+                   AND p.paymentStatus = 'PAID'
+             )
+           """)
+    Page<Order> findPendingApprovalOrders(Pageable pageable);
+
+    @Query("""
+           SELECT COUNT(o) FROM Order o
+           WHERE o.orderStatus IN ('PENDING', 'PAYED')
+             AND o.cancelledAt IS NULL
+             AND EXISTS (
+                 SELECT 1 FROM Payment p
+                 WHERE p.order = o
+                   AND p.paymentStatus = 'PAID'
+             )
+           """)
+    long countPendingApprovalOrders();
+
     // 대시보드 — 기간별 주문 수
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
     // 대시보드 — 기간별 매출 합계 (finalPrice 합산, PAYED/APPROVAL 상태만)
     @Query("SELECT COALESCE(SUM(o.finalPrice), 0) FROM Order o " +
            "WHERE o.createdAt BETWEEN :start AND :end " +
-           "AND o.orderStatus IN ('PAYED', 'APPROVAL')")
+           "AND o.orderStatus IN ('PENDING', 'PAYED', 'APPROVAL', 'DELIVERING', 'DELIVERED')")
     long sumFinalPriceBetween(@Param("start") LocalDateTime start,
                               @Param("end") LocalDateTime end);
 

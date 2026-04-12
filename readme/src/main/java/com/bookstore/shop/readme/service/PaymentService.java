@@ -25,8 +25,6 @@ public class PaymentService {
     // Repository: DB 접근 계층
     private final PaymentRepository  paymentRepository;
     private final OrderRepository    orderRepository;
-    private final DeliveryRepository deliveryRepository;
-
     private final CartRepository     cartRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderItemRepository orderItemRepository;
@@ -104,10 +102,7 @@ public class PaymentService {
         order.setOrderStatus(OrderStatus.PENDING);
         orderRepository.save(order);
 
-        // 7. 배송 레코드 자동 생성
-        createDeliveryIfAbsent(order);
-
-        // 8. 결제 성공 확정 후 장바구니 아이템 삭제
+        // 7. 결제 성공 확정 후 장바구니 아이템 삭제
         //    주문에 포함된 상품들만 골라서 삭제 (다른 세션 장바구니에 영향 없음)
         clearOrderedCartItems(order.getId(), memberId);
     }
@@ -151,9 +146,6 @@ public class PaymentService {
         order.setOrderStatus(OrderStatus.PENDING);
         orderRepository.save(order);
 
-        // 8. 배송 레코드 자동 생성 — REQ-D-001
-        createDeliveryIfAbsent(order);
-
         clearOrderedCartItems(order.getId(), memberId);
     }
 
@@ -173,18 +165,42 @@ public class PaymentService {
     // ─── 결제 취소 / 환불 ─────────────────────────────────────────────────
 
     @Transactional
-    public void cancelPayment(Long orderId, String cancelReason) {
+    public void cancelPayment(Long orderId, String cancelReason, Integer cancelAmount) {
 
         // 1. Payment 레코드 조회 — provider, paymentKey/pgTid 가져오기
         Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new RuntimeException("결제 정보를 찾을 수 없습니다."));
+
+        if (payment.getPaymentStatus() == PaymentStatus.CANCELLED) {
+            return;
+        }
+
+        if (payment.getPaymentStatus() == PaymentStatus.READY) {
+            payment.setPaymentStatus(PaymentStatus.CANCELLED);
+            payment.setCancelReason(cancelReason);
+            payment.setRefundedAmount(0);
+            payment.setReturnFee(0);
+            payment.setCancelledAt(LocalDateTime.now());
+            paymentRepository.save(payment);
+            return;
+        }
+
+        if (payment.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new RuntimeException("취소 가능한 결제 상태가 아닙니다.");
+        }
+
+        int requestedCancelAmount = cancelAmount != null ? cancelAmount : payment.getAmount();
+        if (requestedCancelAmount < 0 || requestedCancelAmount > payment.getAmount()) {
+            throw new RuntimeException("취소 금액이 올바르지 않습니다.");
+        }
+        int returnFee = Math.max(payment.getAmount() - requestedCancelAmount, 0);
 
         // 2. PG사별 취소 파라미터 빌드 (모든 PG사 정보를 하나의 DTO에 담음)
         PaymentCancelRequest cancelRequest = PaymentCancelRequest.builder()
                 .paymentKey(payment.getPaymentKey()) // 토스 취소 API URL path variable
                 .tid(payment.getPgTid())             // 카카오 취소 body "tid"
                 .paymentId(payment.getPgTid())       // 네이버 취소 body "paymentId"
-                .cancelAmount(payment.getAmount())   // 전액 취소
+                .cancelAmount(requestedCancelAmount) // 부분 취소 포함
                 .cancelReason(cancelReason)          // 사용자 입력 취소 사유
                 .provider(payment.getPaymentProvider().name()) // "TOSS" / "KAKAO" / "NAVER"
                 .build();
@@ -196,6 +212,8 @@ public class PaymentService {
         // 4. 취소 완료 상태로 업데이트
         payment.setPaymentStatus(PaymentStatus.CANCELLED);
         payment.setCancelReason(cancelReason);
+        payment.setRefundedAmount(requestedCancelAmount);
+        payment.setReturnFee(returnFee);
         payment.setCancelledAt(LocalDateTime.now()); // 취소 완료 시각 기록
         paymentRepository.save(payment);
     }
@@ -254,18 +272,6 @@ public class PaymentService {
         };
     }
 
-    // 배송 레코드 자동 생성 — REQ-D-001
-    // 결제 완료 시 호출 (confirmToss / approvePayment 양쪽에서 사용)
-    // 중복 생성 방지: 이미 delivery 레코드가 있으면 생성하지 않음
-    private void createDeliveryIfAbsent(Order order) {
-        boolean alreadyExists = deliveryRepository.findByOrderId(order.getId()).isPresent();
-        if (!alreadyExists) {
-            Delivery delivery = new Delivery();
-            delivery.setOrder(order);
-            delivery.setDeliveryStatus(DeliveryStatus.READY);  // 초기 상태: 배송 준비
-            deliveryRepository.save(delivery);
-        }
-    }
     /**
      * 결제 완료된 주문의 상품에 해당하는 장바구니 아이템만 삭제
      *

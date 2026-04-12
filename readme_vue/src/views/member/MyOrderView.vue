@@ -101,7 +101,7 @@
           <button
             v-if="canCancel(order.orderStatus)"
             class="rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
-            @click="cancelOrder(order.orderId)"
+            @click="cancelOrder(order)"
           >
             주문 취소
           </button>
@@ -157,7 +157,7 @@ function goDetail(orderId) {
 }
 
 function canCancel(status) {
-  return status === 'PAYMENT_PENDING' || status === 'PENDING' || status === 'PAYED'
+  return ['PAYMENT_PENDING', 'PENDING', 'PAYED', 'APPROVAL', 'DELIVERING'].includes(status)
 }
 
 // PAYMENT_PENDING 주문 → 결제창 재진입
@@ -170,14 +170,31 @@ function resumePayment(order) {
   router.push('/payment')
 }
 
-async function cancelOrder(orderId) {
-  if (!confirm('이 주문을 취소하시겠습니까?')) return
+function cancelConfirmMessage(status) {
+  if (status === 'DELIVERING') {
+    return '배송이 이미 출발한 주문입니다. 반품비 6,000원이 차감된 후 환불됩니다. 취소하시겠습니까?'
+  }
+  if (status === 'APPROVAL') {
+    return '배송 준비 중인 주문입니다. 아직 출고 전이므로 정상 환불 처리됩니다. 취소하시겠습니까?'
+  }
+  if (status === 'PAYMENT_PENDING') {
+    return '결제 진행 중인 주문입니다. 주문을 취소하시겠습니까?'
+  }
+  return '이 주문을 취소하면 결제가 환불 처리됩니다. 취소하시겠습니까?'
+}
+
+async function cancelOrder(order) {
+  if (!confirm(cancelConfirmMessage(order.orderStatus))) return
   try {
-    await orderApi.cancel(orderId, '고객 요청')
+    await orderApi.cancel(order.orderId, '고객 요청')
     await fetchOrders()
-    alert('주문이 취소되었습니다.')
+    if (order.orderStatus === 'DELIVERING') {
+      alert('주문이 취소되었습니다. 반품비 6,000원이 차감된 후 환불 처리됩니다.')
+    } else {
+      alert('주문이 취소되었습니다.')
+    }
   } catch (error) {
-    alert('주문 취소 중 문제가 발생했습니다.')
+    alert(error.response?.data?.message || '주문 취소 중 문제가 발생했습니다.')
     console.error(error)
   }
 }

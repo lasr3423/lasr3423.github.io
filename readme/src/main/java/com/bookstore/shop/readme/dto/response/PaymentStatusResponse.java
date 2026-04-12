@@ -14,6 +14,8 @@ public class PaymentStatusResponse {
     private final String paymentProvider;
     private final String paymentStatus;
     private final int amount;
+    private final Integer refundedAmount;
+    private final Integer returnFee;
     private final String method;
     private final String pgTid;
     private final String paymentKey;
@@ -34,6 +36,8 @@ public class PaymentStatusResponse {
         this.paymentProvider = payment.getPaymentProvider() != null ? payment.getPaymentProvider().name() : null;
         this.paymentStatus = payment.getPaymentStatus() != null ? payment.getPaymentStatus().name() : null;
         this.amount = payment.getAmount();
+        this.refundedAmount = payment.getRefundedAmount();
+        this.returnFee = payment.getReturnFee();
         this.method = payment.getMethod();
         this.pgTid = payment.getPgTid();
         this.paymentKey = payment.getPaymentKey();

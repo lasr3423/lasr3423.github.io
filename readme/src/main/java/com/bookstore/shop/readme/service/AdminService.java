@@ -53,8 +53,8 @@ public class AdminService {
         long lowStockProducts = productRepository.countByStockLessThanAndProductStatus(10, ProductStatus.ACTIVATE);
 
         long totalOrders = orderRepository.count();
-        long pendingOrders = orderRepository.countByOrderStatus(OrderStatus.PENDING);
-        long payedOrders = orderRepository.countByOrderStatus(OrderStatus.PAYED);
+        long pendingOrders = orderRepository.countByOrderStatus(OrderStatus.PAYMENT_PENDING);
+        long payedOrders = orderRepository.countPendingApprovalOrders();
         long todayOrders = orderRepository.countByCreatedAtBetween(todayStart, todayEnd);
         long todaySales = orderRepository.sumFinalPriceBetween(todayStart, todayEnd);
         long monthOrders = orderRepository.countByCreatedAtBetween(monthStart, todayEnd);
@@ -196,9 +196,15 @@ public class AdminService {
         return ResponseEntity.ok(result);
     }
 
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<OrderListResponse>> getPendingApprovalOrders(Pageable pageable) {
+        return ResponseEntity.ok(orderRepository.findPendingApprovalOrders(pageable).map(OrderListResponse::new));
+    }
+
     public ResponseEntity<DeliveryResponse> updateDelivery(Long deliveryId, DeliveryUpdateRequest req) {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new RuntimeException("배송 정보를 찾을 수 없습니다."));
+        Order order = delivery.getOrder();
 
         if (req.courier() != null) {
             delivery.setCourier(req.courier());
@@ -215,8 +221,28 @@ public class AdminService {
             if (deliveryStatus == DeliveryStatus.DELIVERED && delivery.getDeliveredAt() == null) {
                 delivery.setDeliveredAt(LocalDateTime.now());
             }
+            syncOrderStatusWithDelivery(order, deliveryStatus);
         }
         return ResponseEntity.ok(new DeliveryResponse(delivery));
+    }
+
+    private void syncOrderStatusWithDelivery(Order order, DeliveryStatus deliveryStatus) {
+        if (order == null || order.getOrderStatus() == OrderStatus.CANCELED) {
+            return;
+        }
+
+        switch (deliveryStatus) {
+            case READY -> {
+                if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+                    order.setOrderStatus(OrderStatus.APPROVAL);
+                }
+            }
+            case SHIPPED, IN_TRANSIT -> order.setOrderStatus(OrderStatus.DELIVERING);
+            case DELIVERED -> order.setOrderStatus(OrderStatus.DELIVERED);
+            case FAILED -> {
+                // 배송 실패는 현재 별도 주문 상태를 두지 않아 기존 주문 상태를 유지합니다.
+            }
+        }
     }
 
     public ResponseEntity<String> updateStock(Long productId, int stock) {

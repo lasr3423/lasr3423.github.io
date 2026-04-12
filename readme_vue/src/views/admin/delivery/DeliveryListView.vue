@@ -27,6 +27,8 @@
             <thead class="border-b border-slate-200 bg-slate-50">
               <tr>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">배송 ID</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문번호</th>
+                <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문회원</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">택배사</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">운송장 번호</th>
                 <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">상태</th>
@@ -37,6 +39,8 @@
             <tbody class="divide-y divide-slate-100">
               <tr v-for="d in deliveries" :key="d.id" class="transition hover:bg-slate-50">
                 <td class="px-6 py-4 text-xs text-slate-400">{{ d.id }}</td>
+                <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ d.orderNumber || `#${d.orderId}` }}</td>
+                <td class="px-6 py-4 text-slate-700">{{ d.memberName || '-' }}</td>
                 <td class="px-6 py-4 text-slate-700">{{ d.courier || '-' }}</td>
                 <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ d.trackingNumber || '-' }}</td>
                 <td class="px-6 py-4 text-center">

@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 public record DeliveryResponse(
         Long id,
         Long orderId,
+        String orderNumber,
+        String memberName,
         String courier,
         String trackingNumber,
         String deliveryStatus,
@@ -17,6 +19,8 @@ public record DeliveryResponse(
         this(
                 d.getId(),
                 d.getOrder().getId(),
+                d.getOrder().getNumber(),
+                d.getOrder().getMember() != null ? d.getOrder().getMember().getName() : null,
                 d.getCourier(),
                 d.getTrackingNumber(),
                 d.getDeliveryStatus().name(),

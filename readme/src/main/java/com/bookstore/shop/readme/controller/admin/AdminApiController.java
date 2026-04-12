@@ -144,7 +144,7 @@ public class AdminApiController {
     public ResponseEntity<Page<OrderListResponse>> getPendingApprovalOrders(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return adminService.getOrdersByStatus("PENDING", pageable);
+        return adminService.getPendingApprovalOrders(pageable);
     }
 
     @GetMapping("/deliveries")

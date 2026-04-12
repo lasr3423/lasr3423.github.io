@@ -34,7 +34,9 @@
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">결제 ID</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">주문번호</th>
                 <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">결제수단</th>
-                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">금액</th>
+                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">원결제금액</th>
+                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">반품비</th>
+                <th class="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">실환불금액</th>
                 <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">상태</th>
                 <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">결제일시</th>
               </tr>
@@ -45,6 +47,12 @@
                 <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ p.orderNumber }}</td>
                 <td class="px-6 py-4 text-center text-xs text-slate-500">{{ p.paymentProvider ?? '-' }}</td>
                 <td class="px-6 py-4 text-right font-semibold text-slate-900">{{ p.amount?.toLocaleString() }}원</td>
+                <td class="px-6 py-4 text-right text-sm" :class="p.returnFee ? 'font-semibold text-rose-600' : 'text-slate-400'">
+                  {{ p.returnFee != null ? `${p.returnFee.toLocaleString()}원` : '-' }}
+                </td>
+                <td class="px-6 py-4 text-right text-sm" :class="p.refundedAmount != null ? 'font-semibold text-emerald-700' : 'text-slate-400'">
+                  {{ p.refundedAmount != null ? `${p.refundedAmount.toLocaleString()}원` : '-' }}
+                </td>
                 <td class="px-6 py-4 text-center">
                   <span :class="statusClass(p.paymentStatus)" class="rounded-full px-3 py-1 text-xs font-semibold">
                     {{ statusLabel(p.paymentStatus) }}

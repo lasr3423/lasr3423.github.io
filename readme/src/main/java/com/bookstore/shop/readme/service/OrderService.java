@@ -5,6 +5,8 @@ import com.bookstore.shop.readme.domain.DeliveryStatus;
 import com.bookstore.shop.readme.domain.Order;
 import com.bookstore.shop.readme.domain.OrderItem;
 import com.bookstore.shop.readme.domain.OrderStatus;
+import com.bookstore.shop.readme.domain.Payment;
+import com.bookstore.shop.readme.domain.PaymentStatus;
 import com.bookstore.shop.readme.domain.Product;
 import com.bookstore.shop.readme.domain.Member;
 import com.bookstore.shop.readme.dto.request.OrderCreateRequest;
@@ -18,6 +20,7 @@ import com.bookstore.shop.readme.repository.DeliveryRepository;
 import com.bookstore.shop.readme.repository.MemberRepository;
 import com.bookstore.shop.readme.repository.OrderItemRepository;
 import com.bookstore.shop.readme.repository.OrderRepository;
+import com.bookstore.shop.readme.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +45,11 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final MemberRepository memberRepository;
     private final DeliveryRepository deliveryRepository;
+    private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+
+    private static final int EXCHANGE_FEE = 3000;
+    private static final int RETURN_FEE = 6000;
 
     @Transactional
     public OrderCreateResponse createOrder(OrderCreateRequest request, Long memberId) {
@@ -112,7 +119,8 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
-        return new OrderDetailResponse(order, items);
+        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        return new OrderDetailResponse(order, items, payment);
     }
 
     @Transactional(readOnly = true)
@@ -125,7 +133,8 @@ public class OrderService {
         Order order = orderRepository.findByIdAndMemberId(orderId, memberId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
-        return ResponseEntity.ok(new OrderDetailResponse(order, items));
+        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        return ResponseEntity.ok(new OrderDetailResponse(order, items, payment));
     }
 
     @Transactional(readOnly = true)
@@ -143,7 +152,8 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
         List<OrderItem> items = orderItemRepository.findByOrderId(orderId);
-        return ResponseEntity.ok(new OrderDetailResponse(order, items));
+        Payment payment = paymentRepository.findByOrderId(orderId).orElse(null);
+        return ResponseEntity.ok(new OrderDetailResponse(order, items, payment));
     }
 
     @Transactional
@@ -185,9 +195,20 @@ public class OrderService {
             throw new RuntimeException("이미 취소된 주문입니다.");
         }
 
-        if (order.getOrderStatus() == OrderStatus.PAYED) {
-            paymentService.cancelPayment(orderId, cancelReason);
+        if (order.getOrderStatus() == OrderStatus.DELIVERED) {
+            throw new RuntimeException("배송 완료된 주문은 주문 취소가 불가능합니다.");
         }
+
+        boolean shippingStarted = hasShippingStarted(orderId, order.getOrderStatus());
+        int returnFee = shippingStarted ? RETURN_FEE : 0;
+
+        paymentRepository.findByOrderId(orderId).ifPresent(payment -> {
+            if (payment.getPaymentStatus() == PaymentStatus.PAID || payment.getPaymentStatus() == PaymentStatus.READY) {
+                int refundAmount = Math.max(payment.getAmount() - returnFee, 0);
+                String detailedCancelReason = buildCancelReason(cancelReason, returnFee, refundAmount, payment.getAmount());
+                paymentService.cancelPayment(orderId, detailedCancelReason, refundAmount);
+            }
+        });
 
         order.setOrderStatus(OrderStatus.CANCELED);
         order.setCancelledAt(LocalDateTime.now());
@@ -268,6 +289,32 @@ public class OrderService {
         delivery.setOrder(order);
         delivery.setDeliveryStatus(DeliveryStatus.READY);
         deliveryRepository.save(delivery);
+    }
+
+    private boolean hasShippingStarted(Long orderId, OrderStatus orderStatus) {
+        if (orderStatus == OrderStatus.DELIVERING) {
+            return true;
+        }
+
+        return deliveryRepository.findByOrderId(orderId)
+                .map(delivery -> delivery.getDeliveryStatus() == DeliveryStatus.SHIPPED
+                        || delivery.getDeliveryStatus() == DeliveryStatus.IN_TRANSIT
+                        || delivery.getDeliveryStatus() == DeliveryStatus.DELIVERED)
+                .orElse(false);
+    }
+
+    private String buildCancelReason(String baseReason, int returnFee, int refundAmount, int originalAmount) {
+        if (returnFee <= 0) {
+            return baseReason;
+        }
+
+        return String.format(
+                "%s (배송 출발 후 취소: 반품비 %,d원 차감, 환불 %,d원 / 교환비 기준 %,d원)",
+                baseReason,
+                returnFee,
+                refundAmount,
+                EXCHANGE_FEE
+        );
     }
 
     private Page<OrderListResponse> buildOrderListResponsePage(Page<Order> ordersPage) {
