@@ -24,6 +24,7 @@
               <p class="text-sm font-semibold uppercase tracking-[0.18em] text-brand-700">Detail</p>
               <h1 class="text-3xl font-bold tracking-tight text-slate-900 lg:text-4xl">{{ product.title }}</h1>
               <p class="text-base text-slate-500">{{ product.author }}</p>
+              <p class="text-sm leading-6 text-slate-500">도서 정보와 가격, 재고 상태를 확인하고 바로 장바구니에 담아보세요.</p>
             </div>
 
             <div class="surface-soft p-5">

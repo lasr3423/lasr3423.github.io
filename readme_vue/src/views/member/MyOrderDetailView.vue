@@ -23,7 +23,7 @@
           <div>
             <p class="point-chip">주문 상세</p>
             <h1 class="section-title mt-3">주문번호 {{ order.number }}</h1>
-            <p class="mt-2 text-sm text-slate-500">{{ formatDateTime(order.orderAt) }}</p>
+            <p class="mt-2 text-sm text-slate-500">주문 시각과 결제 금액, 배송 진행 현황을 자세히 확인할 수 있어요.</p>
           </div>
           <div class="text-left lg:text-right">
             <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold" :class="statusClass(order.orderStatus)">

@@ -16,7 +16,13 @@ export const useProductStore = defineStore('product', () => {
   const loading = ref(false);
   const error = ref(null);
 
-  async function fetchProducts(page = 0, topId = selectedTopId.value, subId = selectedSubId.value, nextKeyword = keyword.value) {
+  async function fetchProducts(
+    page = 0,
+    topId = selectedTopId.value,
+    subId = selectedSubId.value,
+    nextKeyword = keyword.value,
+    options = {},
+  ) {
     selectedTopId.value = topId ?? null;
     selectedSubId.value = subId ?? null;
     keyword.value = nextKeyword?.trim?.() ?? '';
@@ -25,10 +31,12 @@ export const useProductStore = defineStore('product', () => {
     error.value = null;
 
     try {
+      const sortField = options.sortField || 'createdAt';
+      const sortDirection = options.sortDirection || 'desc';
       const params = {
         page,
         size: pageSize.value,
-        sort: 'createdAt,desc',
+        sort: `${sortField},${sortDirection}`,
       };
 
       if (selectedTopId.value !== null) params.categoryTopId = selectedTopId.value;

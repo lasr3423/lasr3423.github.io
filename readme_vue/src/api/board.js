@@ -18,6 +18,7 @@ export const qnaApi = {
 };
 
 export const reviewApi = {
+  getRecent: (params) => api.get('/api/review/recent', { params }),
   getList: (params) => api.get('/api/review', { params }),
   getDetail: (reviewId) => api.get(`/api/review/${reviewId}`),
   create: (data) => api.post('/api/review', data),

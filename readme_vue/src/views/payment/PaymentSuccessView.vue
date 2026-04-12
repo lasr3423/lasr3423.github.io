@@ -5,12 +5,12 @@
         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">
           ✓
         </div>
-        <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 처리 중</p>
+        <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 완료</p>
         <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-          결제 결과를 확인하고 있습니다
+          결제가 정상적으로 완료되었습니다
         </h1>
         <p class="mt-3 text-sm leading-6 text-slate-500">
-          승인 정보를 확인한 뒤 주문 내역으로 이동합니다.
+          주문과 결제 상태를 모두 반영한 뒤 상세 내역을 확인할 수 있어요.
         </p>
       </div>
     </div>
