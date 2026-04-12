@@ -53,8 +53,8 @@ public class AdminService {
         long lowStockProducts = productRepository.countByStockLessThanAndProductStatus(10, ProductStatus.ACTIVATE);
 
         long totalOrders = orderRepository.count();
-        long pendingOrders = orderRepository.countByOrderStatus(OrderStatus.PENDING);
-        long payedOrders = orderRepository.countByOrderStatus(OrderStatus.PAYED);
+        long pendingOrders = orderRepository.countByOrderStatus(OrderStatus.PAYMENT_PENDING);
+        long payedOrders = orderRepository.countPendingApprovalOrders();
         long todayOrders = orderRepository.countByCreatedAtBetween(todayStart, todayEnd);
         long todaySales = orderRepository.sumFinalPriceBetween(todayStart, todayEnd);
         long monthOrders = orderRepository.countByCreatedAtBetween(monthStart, todayEnd);
@@ -196,27 +196,71 @@ public class AdminService {
         return ResponseEntity.ok(result);
     }
 
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<OrderListResponse>> getPendingApprovalOrders(Pageable pageable) {
+        return ResponseEntity.ok(orderRepository.findPendingApprovalOrders(pageable).map(OrderListResponse::new));
+    }
+
     public ResponseEntity<DeliveryResponse> updateDelivery(Long deliveryId, DeliveryUpdateRequest req) {
         Delivery delivery = deliveryRepository.findById(deliveryId)
                 .orElseThrow(() -> new RuntimeException("배송 정보를 찾을 수 없습니다."));
+        Order order = delivery.getOrder();
+        DeliveryStatus nextStatus = req.deliveryStatus() != null
+                ? DeliveryStatus.valueOf(req.deliveryStatus())
+                : delivery.getDeliveryStatus();
+        String nextCourier = req.courier() != null
+                ? req.courier().trim()
+                : delivery.getCourier();
+
+        String nextTrackingNumber = req.trackingNumber() != null
+                ? req.trackingNumber().trim()
+                : delivery.getTrackingNumber();
+
+        validateShippingInfoBeforeDispatch(nextStatus, nextCourier, nextTrackingNumber);
 
         if (req.courier() != null) {
-            delivery.setCourier(req.courier());
+            delivery.setCourier(nextCourier);
         }
         if (req.trackingNumber() != null) {
-            delivery.setTrackingNumber(req.trackingNumber());
+            delivery.setTrackingNumber(nextTrackingNumber);
         }
         if (req.deliveryStatus() != null) {
-            DeliveryStatus deliveryStatus = DeliveryStatus.valueOf(req.deliveryStatus());
-            delivery.setDeliveryStatus(deliveryStatus);
-            if (deliveryStatus == DeliveryStatus.SHIPPED && delivery.getShippedAt() == null) {
+            delivery.setDeliveryStatus(nextStatus);
+            if (nextStatus == DeliveryStatus.SHIPPED && delivery.getShippedAt() == null) {
                 delivery.setShippedAt(LocalDateTime.now());
             }
-            if (deliveryStatus == DeliveryStatus.DELIVERED && delivery.getDeliveredAt() == null) {
+            if (nextStatus == DeliveryStatus.DELIVERED && delivery.getDeliveredAt() == null) {
                 delivery.setDeliveredAt(LocalDateTime.now());
             }
+            syncOrderStatusWithDelivery(order, nextStatus);
         }
         return ResponseEntity.ok(new DeliveryResponse(delivery));
+    }
+
+    private void validateShippingInfoBeforeDispatch(DeliveryStatus nextStatus, String courier, String trackingNumber) {
+        if ((nextStatus == DeliveryStatus.SHIPPED || nextStatus == DeliveryStatus.IN_TRANSIT || nextStatus == DeliveryStatus.DELIVERED)
+                && (courier == null || courier.isBlank() || trackingNumber == null || trackingNumber.isBlank())) {
+            throw new RuntimeException("택배사와 운송장 번호를 먼저 입력해야 배송중 또는 배송완료로 변경할 수 있습니다.");
+        }
+    }
+
+    private void syncOrderStatusWithDelivery(Order order, DeliveryStatus deliveryStatus) {
+        if (order == null || order.getOrderStatus() == OrderStatus.CANCELED) {
+            return;
+        }
+
+        switch (deliveryStatus) {
+            case READY -> {
+                if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+                    order.setOrderStatus(OrderStatus.APPROVAL);
+                }
+            }
+            case SHIPPED, IN_TRANSIT -> order.setOrderStatus(OrderStatus.DELIVERING);
+            case DELIVERED -> order.setOrderStatus(OrderStatus.DELIVERED);
+            case FAILED -> {
+                // 배송 실패는 현재 별도 주문 상태를 두지 않아 기존 주문 상태를 유지합니다.
+            }
+        }
     }
 
     public ResponseEntity<String> updateStock(Long productId, int stock) {

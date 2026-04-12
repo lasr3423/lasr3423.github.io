@@ -84,6 +84,9 @@ public class TossPaymentGateway implements PaymentGateway {
         // 취소 사유 필수 — 부분취소 시 cancelAmount도 body에 추가
         Map<String, Object> body = new HashMap<>();
         body.put("cancelReason", request.getCancelReason());
+        if (request.getCancelAmount() != null) {
+            body.put("cancelAmount", request.getCancelAmount());
+        }
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 

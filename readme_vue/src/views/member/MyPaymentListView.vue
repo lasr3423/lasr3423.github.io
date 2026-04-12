@@ -85,6 +85,18 @@
               {{ payment.pgTid || payment.paymentKey || '-' }}
             </dd>
           </div>
+          <div v-if="payment.paymentStatus === 'CANCELLED'">
+            <dt class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">원결제 금액</dt>
+            <dd class="mt-1 font-medium text-slate-800">{{ formatPrice(payment.amount) }}원</dd>
+          </div>
+          <div v-if="payment.paymentStatus === 'CANCELLED' && payment.returnFee != null">
+            <dt class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">반품비 차감</dt>
+            <dd class="mt-1 font-medium text-rose-600">-{{ formatPrice(payment.returnFee) }}원</dd>
+          </div>
+          <div v-if="payment.paymentStatus === 'CANCELLED' && payment.refundedAmount != null">
+            <dt class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">실환불 금액</dt>
+            <dd class="mt-1 font-medium text-emerald-700">{{ formatPrice(payment.refundedAmount) }}원</dd>
+          </div>
           <div v-if="payment.cancelledAt">
             <dt class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">취소 시각</dt>
             <dd class="mt-1 font-medium text-slate-800">{{ formatDateTime(payment.cancelledAt) }}</dd>

@@ -30,6 +30,12 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private int amount;
 
+    @Column(name = "refunded_amount")
+    private Integer refundedAmount;
+
+    @Column(name = "return_fee")
+    private Integer returnFee;
+
     @Column(length = 100)
     private String pgTid;
 
