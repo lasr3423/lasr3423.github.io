@@ -53,8 +53,11 @@
               <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-600">
                 {{ providerLabel(payment.paymentProvider) }}
               </span>
-              <span v-if="payment.method" class="rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700">
-                {{ payment.method }}
+              <span
+                v-if="payment.method && payment.paymentProvider !== 'BANK_TRANSFER'"
+                class="rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700"
+              >
+                {{ methodLabel(payment.method) }}
               </span>
               <span v-if="payment.memberEmail">{{ payment.memberEmail }}</span>
             </div>
@@ -188,10 +191,20 @@ function statusClass(status) {
 
 function providerLabel(provider) {
   return {
-    TOSS: '토스페이먼츠',
+    BANK_TRANSFER: '계좌이체',
+    TOSS: '토스',
     KAKAO: '카카오페이',
     NAVER: '네이버페이',
   }[provider] || provider || '결제 수단 미정'
+}
+
+function methodLabel(method) {
+  return {
+    CARD: '카드',
+    TRANSFER: '계좌이체',
+    EASY_PAY: '간편결제',
+    TOSSPAY: '토스페이',
+  }[method] || method
 }
 
 function formatPrice(value) {

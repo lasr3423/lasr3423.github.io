@@ -8,13 +8,13 @@
         <div class="relative max-w-2xl space-y-5">
           <span class="point-chip !bg-white/10 !text-brand-100">봄 시즌 큐레이션</span>
           <h1 class="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl">
-            지금 읽기 좋은 책을
+            이달의 도서를
             <br>
             ReadMe에서 만나보세요
           </h1>
           <p class="max-w-xl text-sm leading-7 text-brand-100 md:text-base">
-            베스트셀러, 신간도서, 이벤트 도서를 한 번에 비교하고
-            주문부터 배송 조회까지 편하게 이어지는 온라인 서점 경험을 제공합니다.
+            베스트셀러와 신간, 이벤트 도서를 둘러보고
+            주문부터 배송 조회까지 한곳에서 이용하실 수 있습니다.
           </p>
           <div class="flex flex-wrap gap-3 pt-2">
             <router-link
@@ -38,20 +38,20 @@
           <span class="point-chip">이번 주 이벤트</span>
           <h2 class="mt-4 text-xl font-bold text-slate-900">첫 구매 회원 10% 할인</h2>
           <p class="mt-2 text-sm leading-6 text-slate-500">
-            회원가입 후 첫 주문에서 사용할 수 있는 웰컴 쿠폰과 추천 도서를 함께 확인해보세요.
+            회원가입 후 첫 주문에 사용할 수 있는 할인 혜택을 확인해 보세요.
           </p>
           <router-link class="mt-5 inline-flex text-sm font-semibold text-brand-800 hover:text-accent-500" to="/signup">
-            지금 혜택 보기
+            혜택 안내
           </router-link>
         </article>
 
         <article class="overflow-hidden rounded-[2rem] border border-accent-100 bg-gradient-to-br from-accent-50 to-white p-6 shadow-sm">
-          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">MD 추천 포인트</p>
-          <h2 class="mt-4 text-xl font-bold text-slate-900">큐레이션으로 빠르게 선택</h2>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">도서 안내</p>
+          <h2 class="mt-4 text-xl font-bold text-slate-900">카테고리별 도서 안내</h2>
           <ul class="mt-4 space-y-3 text-sm text-slate-600">
-            <li>베스트셀러와 신간을 한 화면에서 비교</li>
-            <li>카테고리별 추천 도서 바로 이동</li>
-            <li>주문 후 배송 상태까지 간편 조회</li>
+            <li>베스트셀러와 신간 도서 확인</li>
+            <li>카테고리별 도서 바로가기</li>
+            <li>주문 후 배송 상태 조회</li>
           </ul>
         </article>
       </aside>
@@ -162,9 +162,9 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const servicePoints = [
-  { icon: '🚚', title: '빠른 배송 안내', description: '주문 이후 배송 준비부터 배송 완료까지 상태를 단계별로 확인할 수 있어요.' },
-  { icon: '🎁', title: '신규 회원 혜택', description: '회원가입 후 첫 구매 할인과 이벤트 도서 프로모션을 함께 제공합니다.' },
-  { icon: '💳', title: '간편한 결제', description: '주문 페이지에서 결제 수단을 선택하고 바로 결제 내역까지 확인할 수 있어요.' },
+  { icon: '🚚', title: '배송 안내', description: '주문 후 배송 준비부터 배송 완료까지 상태를 확인하실 수 있습니다.' },
+  { icon: '🎁', title: '회원 혜택', description: '회원가입 후 첫 구매 할인과 이벤트 혜택을 이용하실 수 있습니다.' },
+  { icon: '💳', title: '결제 안내', description: '주문 페이지에서 결제 수단을 선택하고 결제 내역을 확인하실 수 있습니다.' },
 ];
 
 const quickCategories = [

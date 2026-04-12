@@ -122,6 +122,7 @@ onMounted(async () => {
       paymentKey,
       orderId: numericOrderId,
       amount,
+      method: tossMeta?.method || 'CARD',
     })
 
     clearPaymentMeta(numericOrderId)

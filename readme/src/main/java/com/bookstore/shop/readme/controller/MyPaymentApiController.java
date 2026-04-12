@@ -34,6 +34,15 @@ public class MyPaymentApiController {
         return ResponseEntity.ok(response); // HTTP 200 + JSON 응답
     }
 
+    @PostMapping("/bank-transfer")
+    public ResponseEntity<String> completeBankTransfer(
+            @RequestBody BankTransferRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        paymentService.completeBankTransfer(request, userDetails.getMemberId());
+        return ResponseEntity.ok("계좌이체 주문이 접수되었습니다.");
+    }
+
     // ── POST /order/payment/confirm ───────────────────────────────────────
     // 토스 결제 최종 승인
     // 토스 successUrl 리다이렉트 이후 프론트에서 paymentKey, orderId, amount 전송

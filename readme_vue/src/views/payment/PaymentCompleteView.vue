@@ -76,7 +76,8 @@ const approvedAt = computed(() => String(route.query.approvedAt || ''))
 
 const providerLabel = computed(() => {
   switch (provider.value) {
-    case 'TOSS':  return '토스페이먼츠'
+    case 'BANK_TRANSFER': return '계좌이체'
+    case 'TOSS':  return '토스페이'
     case 'KAKAO': return '카카오페이'
     case 'NAVER': return '네이버페이'
     default:      return provider.value
