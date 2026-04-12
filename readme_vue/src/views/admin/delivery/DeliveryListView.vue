@@ -3,6 +3,7 @@
     <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">배송 관리</h1>
+      <p class="mt-1 text-sm text-slate-400">배송 상태와 송장 정보를 확인하고 출고 진행 상황을 관리합니다.</p>
     </section>
 
     <!-- 필터 -->

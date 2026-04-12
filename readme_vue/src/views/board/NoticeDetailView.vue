@@ -11,6 +11,7 @@
               <p class="text-sm font-semibold text-brand-700">Notice Detail</p>
             </div>
             <h1 class="section-title mt-3">{{ notice.title }}</h1>
+            <p class="mt-2 text-sm text-slate-500">공지 상세 내용을 확인하고 필요한 안내를 빠르게 살펴보세요.</p>
           </div>
           <button
             type="button"

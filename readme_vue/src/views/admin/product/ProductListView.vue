@@ -6,7 +6,7 @@
       <div>
         <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
         <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">상품 목록 관리</h1>
-        <p class="mt-1 text-sm text-slate-400">재고·상태 변경은 <router-link to="/admin/product/stock" class="font-semibold text-brand-700 underline underline-offset-2">재고 관리</router-link> 페이지를 이용해 주세요.</p>
+        <p class="mt-1 text-sm text-slate-400">상품 검색과 상태 점검을 진행하고, 상세 수정이 필요한 상품은 수정 페이지에서 이어서 관리합니다.</p>
       </div>
       <router-link
         to="/admin/product/insert"
