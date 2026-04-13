@@ -90,12 +90,13 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <div v-if="featuredLoading" class="py-12 text-center text-sm text-slate-400">도서를 불러오는 중입니다.</div>
+      <div v-else class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <router-link
-          v-for="cat in quickCategories"
-          :key="cat.id"
-          :to="cat.to"
-          class="surface-soft card-fixed min-h-[7.5rem] items-center gap-3 px-4 py-5 text-center transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white"
+          v-for="product in activeProducts"
+          :key="product.id"
+          :to="`/product/${product.id}`"
+          class="surface-soft card-fixed min-h-[7.5rem] overflow-hidden px-4 py-5 transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white"
         >
           <img
             :src="resolveAssetUrl(product.thumbnail)"
@@ -116,7 +117,7 @@
               <p class="mt-1 text-sm text-slate-400 line-through">{{ Number(product.price).toLocaleString() }}원</p>
             </div>
           </div>
-        </article>
+        </router-link>
       </div>
 
       <div class="mt-6 flex justify-end">
@@ -144,10 +145,9 @@
       <div v-if="categoriesLoading" class="py-12 text-center text-sm text-slate-400">카테고리를 불러오는 중입니다.</div>
       <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article
-          v-for="book in featuredBooks"
-          :key="book.id"
-          class="surface-soft card-fixed cursor-pointer overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
-          @click="router.push(`/product/${book.id}`)"
+          v-for="category in visibleCategories"
+          :key="category.id"
+          class="surface-soft card-fixed overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
         >
           <button
             type="button"
@@ -163,7 +163,7 @@
 
           <div class="mt-4 flex flex-wrap gap-2">
             <button
-              v-for="subCategory in category.subCategories.slice(0, 4)"
+              v-for="subCategory in (category.subCategories || []).slice(0, 4)"
               :key="subCategory.id"
               type="button"
               class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-800"
@@ -172,10 +172,6 @@
               {{ subCategory.name }}
             </button>
           </div>
-          <span class="point-chip">{{ book.badge }}</span>
-          <p class="card-title-2 mt-3 text-base font-bold text-slate-900">{{ book.title }}</p>
-          <p class="card-meta-1 mt-1 text-sm text-slate-500">{{ book.author }}</p>
-          <p class="numeric-stable mt-auto pt-4 text-lg font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
         </article>
       </div>
     </section>
@@ -194,8 +190,8 @@
       <div v-if="recentReviewsLoading" class="py-12 text-center text-sm text-slate-400">리뷰를 불러오는 중입니다.</div>
       <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <article
-          v-for="book in bestSellers"
-          :key="book.id"
+          v-for="review in recentReviews"
+          :key="review.id"
           class="card-fixed rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-200 hover:shadow-md"
         >
           <div class="flex items-start justify-between gap-3">
@@ -203,7 +199,7 @@
               <p class="truncate text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">{{ review.productTitle }}</p>
               <h3 class="mt-2 line-clamp-2 text-base font-bold text-slate-900">{{ makeReviewTitle(review.content) }}</h3>
             </div>
-            <span class="shrink-0 text-sm font-semibold text-amber-500">{{ '★'.repeat(review.rating) }}</span>
+            <span class="shrink-0 text-sm font-semibold text-amber-500">{{ '★'.repeat(review.rating || 0) }}</span>
           </div>
 
           <p class="mt-3 text-sm font-semibold text-slate-600">{{ review.memberName }}</p>
@@ -212,9 +208,6 @@
           <div class="mt-auto pt-4 text-xs text-slate-400">
             {{ formatDate(review.createdAt) }}
           </div>
-          <p class="card-title-2 text-sm font-bold text-slate-900">{{ book.title }}</p>
-          <p class="card-meta-1 mt-2 text-xs text-slate-500">{{ book.author }}</p>
-          <p class="numeric-stable mt-auto pt-4 text-base font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
         </article>
       </div>
     </section>
@@ -246,6 +239,44 @@ const quickCategories = [
   { id: 4, name: '그림책', icon: '🧸', to: '/product?topId=3&subId=11' },
   { id: 5, name: '프로그래밍', icon: '💻', to: '/product?topId=4&subId=20' },
 ];
+
+const featuredSections = [
+  {
+    key: 'best',
+    label: '베스트셀러',
+    title: '지금 많이 찾는 도서',
+    description: '현재 판매량이 높은 도서를 한눈에 확인하실 수 있습니다.',
+    badge: 'BEST',
+    sortField: 'salesCount',
+    sortDirection: 'desc',
+  },
+  {
+    key: 'new',
+    label: '신간',
+    title: '최근 등록된 도서',
+    description: '새롭게 등록된 도서를 빠르게 둘러보실 수 있습니다.',
+    badge: 'NEW',
+    sortField: 'createdAt',
+    sortDirection: 'desc',
+  },
+  {
+    key: 'recommend',
+    label: '추천',
+    title: '추천 도서',
+    description: '재고와 판매 현황을 바탕으로 추천 도서를 모아두었습니다.',
+    badge: '추천',
+    sortField: 'viewCount',
+    sortDirection: 'desc',
+  },
+];
+
+const activeSectionKey = ref('best');
+const featuredLoading = ref(false);
+const categoriesLoading = ref(false);
+const recentReviewsLoading = ref(false);
+const featuredProducts = ref({ best: [], new: [], recommend: [] });
+const categories = ref([]);
+const recentReviews = ref([]);
 
 const activeSection = computed(
   () => featuredSections.find((section) => section.key === activeSectionKey.value) ?? featuredSections[0],

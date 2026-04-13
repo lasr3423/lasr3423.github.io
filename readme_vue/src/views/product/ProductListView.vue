@@ -231,6 +231,8 @@ const selectedTopId = ref(null);
 const selectedSubId = ref(null);
 const searchKeyword = ref('');
 const searchType = ref('title');
+const sortField = ref('createdAt');
+const sortDirection = ref('desc');
 const categories = ref([]);
 
 const categoryTabs = computed(() => [

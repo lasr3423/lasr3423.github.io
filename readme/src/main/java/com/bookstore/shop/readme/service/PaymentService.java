@@ -152,18 +152,22 @@ public class PaymentService {
         // 3. DB에 저장된 amount로 검증 (프론트에서 amount 안 보냄 → DB값 사용)
         validateAmount(request.getOrderId(), payment.getAmount());
 
+        String provider = request.getProvider();
+        String resolvedTid = hasText(request.getTid()) ? request.getTid() : payment.getPgTid();
+        String resolvedPaymentId = hasText(request.getPaymentId()) ? request.getPaymentId() : payment.getPgTid();
+
         // 4. approve API에 전달할 파라미터 빌드
         //    (카카오: tid + pgToken 필요 / 네이버: paymentId 필요)
         PaymentConfirmRequest confirmRequest = PaymentConfirmRequest.builder()
                 .orderId(request.getOrderId())
                 .memberId(memberId)
-                .tid(request.getTid())           // 카카오 tid
+                .tid(resolvedTid)           // 카카오 tid
                 .pgToken(request.getPgToken())   // 카카오 pg_token
-                .paymentId(request.getPaymentId()) // 네이버 paymentId
+                .paymentId(resolvedPaymentId) // 네이버 paymentId
                 .build();
 
         // 5. provider로 Gateway 구현체 선택 후 confirm() 호출
-        PaymentGateway gateway = resolveGateway(request.getProvider());
+        PaymentGateway gateway = resolveGateway(provider);
         gateway.confirm(confirmRequest);
 
         // 6. 결제 완료 상태로 업데이트
@@ -176,6 +180,10 @@ public class PaymentService {
         orderRepository.save(order);
 
         clearOrderedCartItems(order.getId(), memberId);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     // ─── 결제 실패 처리 (토스 failUrl) ───────────────────────────────────

@@ -82,7 +82,7 @@ const quickMenus = [
 ]
 
 const serviceMenus = [
-  { label: '이벤트', to: '/product?tag=event' },
+  { label: '이벤트', to: '/event' },
   { label: '상품 리뷰', to: '/review' },
   { label: 'QnA', to: '/qna' },
   { label: '공지사항', to: '/notice' },
@@ -130,6 +130,29 @@ function toggleTop(id) {
 
 function isActiveSub(topId, subId) {
   return Number(route.query.topId) === topId && Number(route.query.subId) === subId
+}
+
+function isMenuActive(item) {
+  const [path, queryString = ''] = item.to.split('?')
+
+  if (route.path !== path) {
+    return false
+  }
+
+  if (!queryString) {
+    return true
+  }
+
+  const params = new URLSearchParams(queryString)
+  return Array.from(params.entries()).every(([key, value]) => String(route.query[key] ?? '') === value)
+}
+
+function isQuickMenuActive(item) {
+  return isMenuActive(item)
+}
+
+function isServiceMenuActive(item) {
+  return isMenuActive(item)
 }
 
 watch(

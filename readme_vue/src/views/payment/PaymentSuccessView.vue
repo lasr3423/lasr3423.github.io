@@ -22,41 +22,51 @@ import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { paymentApi } from '@/api/payment'
 import { useOrderStore } from '@/store/order'
+import { useAuthStore } from '@/store/auth'
+import { clearCheckoutRefreshToken, restoreCheckoutRefreshToken } from '@/utils/checkoutAuthBridge'
 
 const route = useRoute()
 const router = useRouter()
 const orderStore = useOrderStore()
+const authStore = useAuthStore()
 
 function readPaymentMeta(orderId) {
-  const raw = sessionStorage.getItem(`payment-meta-${orderId}`)
+  const raw = sessionStorage.getItem(`payment-meta-${orderId}`) || localStorage.getItem(`payment-meta-${orderId}`)
   return raw ? JSON.parse(raw) : null
 }
 
 function clearPaymentMeta(orderId) {
   sessionStorage.removeItem(`payment-meta-${orderId}`)
+  localStorage.removeItem(`payment-meta-${orderId}`)
 }
 
 onMounted(async () => {
   const provider = String(route.query.provider || 'TOSS').toUpperCase()
 
   try {
+    restoreCheckoutRefreshToken()
+    if (!authStore.accessToken) {
+      await authStore.initialize()
+    }
+
     if (provider === 'KAKAO') {
       const orderId = Number(route.query.orderId)
       const pgToken = String(route.query.pg_token || '')
       const meta = readPaymentMeta(orderId)
 
-      if (!orderId || !pgToken || !meta?.tid) {
+      if (!orderId || !pgToken) {
         throw new Error('카카오 결제 승인 정보가 부족합니다.')
       }
 
       await paymentApi.approve({
         orderId,
         provider: 'KAKAO',
-        tid: meta.tid,
+        tid: meta?.tid || null,
         pgToken,
       })
 
       clearPaymentMeta(orderId)
+      clearCheckoutRefreshToken()
       orderStore.clearOrder()
       router.replace({
         path: '/payment/complete',
@@ -81,18 +91,19 @@ onMounted(async () => {
         throw new Error('네이버페이 승인 결과가 성공이 아닙니다.')
       }
 
-      if (!orderId || !(paymentId || meta?.paymentId)) {
+      if (!orderId) {
         throw new Error('네이버페이 승인 정보가 부족합니다.')
       }
 
       await paymentApi.approve({
         orderId,
         provider: 'NAVER',
-        paymentId: paymentId || meta.paymentId,
+        paymentId: paymentId || meta?.paymentId || null,
         resultCode: resultCode || 'Success',
       })
 
       clearPaymentMeta(orderId)
+      clearCheckoutRefreshToken()
       orderStore.clearOrder()
       router.replace({
         path: '/payment/complete',
@@ -126,6 +137,7 @@ onMounted(async () => {
     })
 
     clearPaymentMeta(numericOrderId)
+    clearCheckoutRefreshToken()
     orderStore.clearOrder()
     router.replace({
       path: '/payment/complete',

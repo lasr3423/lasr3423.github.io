@@ -211,6 +211,7 @@ import { useRouter } from 'vue-router'
 import { memberApi } from '@/api/member'
 import { paymentApi } from '@/api/payment'
 import { useOrderStore } from '@/store/order'
+import { persistCheckoutRefreshToken } from '@/utils/checkoutAuthBridge'
 
 const router = useRouter()
 const orderStore = useOrderStore()
@@ -249,7 +250,9 @@ function buildTossOrderId(orderId) {
 }
 
 function persistPaymentMeta(orderId, meta) {
-  sessionStorage.setItem(`payment-meta-${orderId}`, JSON.stringify(meta))
+  const payload = JSON.stringify(meta)
+  sessionStorage.setItem(`payment-meta-${orderId}`, payload)
+  localStorage.setItem(`payment-meta-${orderId}`, payload)
 }
 
 function loadNaverPaySdk() {
@@ -303,6 +306,8 @@ async function startPayment() {
     const orderId = orderStore.orderId
     const provider = 'KAKAO'
 
+    persistCheckoutRefreshToken()
+
     const { data } = await paymentApi.ready({
       orderId,
       provider,
@@ -348,6 +353,8 @@ async function requestNaverPayment() {
     const origin = window.location.origin
     const orderId = orderStore.orderId
 
+    persistCheckoutRefreshToken()
+
     const { data } = await paymentApi.ready({
       orderId,
       provider: 'NAVER',
@@ -371,11 +378,13 @@ async function requestNaverPayment() {
       throw new Error('네이버페이 SDK 객체를 찾지 못했습니다.')
     }
 
+    // openType: 'redirect' → 현재 창에서 네이버페이로 이동 후 returnUrl로 복귀
+    // popup 방식은 팝업 내 새 Vue 앱이 인증 실패(CONFIRM_FAILED)를 유발함
     const oPay = naverPay.create({
       mode: 'development',
       clientId: 'HN3GGCMDdTgGUfl0kFCo',
       chainId: 'Wmhwa0NxNE16eFh',
-      openType: 'popup',
+      openType: 'redirect',
     })
 
     oPay.open({
@@ -386,6 +395,7 @@ async function requestNaverPayment() {
       taxScopeAmount: Number(orderStore.finalPrice),
       taxExScopeAmount: 0,
       returnUrl: `${origin}/payment/success?provider=NAVER&orderId=${orderId}`,
+      cancelUrl: `${origin}/payment/fail?provider=NAVER&orderId=${orderId}&code=USER_CANCEL&message=${encodeURIComponent('결제를 취소하셨습니다.')}`,
     })
   } catch (error) {
     console.error('네이버페이 시작 실패', error)
@@ -401,6 +411,7 @@ async function requestTossPayment(method) {
   const tossOrderId = buildTossOrderId(orderStore.orderId)
   const requestMethod = '카드'
 
+  persistCheckoutRefreshToken()
   persistPaymentMeta(orderStore.orderId, {
     provider: 'TOSS',
     method,
