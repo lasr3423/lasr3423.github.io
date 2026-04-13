@@ -13,6 +13,10 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
   security:
     oauth2:
       client:
@@ -41,6 +45,10 @@ kakao:
   redirect-uri: http://localhost:8202/api/oauth/kakao/callback
 
 seed:
+  members:
+    enabled: ${SEED_MEMBERS_ENABLED:false}
+  commerce:
+    enabled: ${SEED_COMMERCE_ENABLED:false}
   api-product-count: ${SEED_API_PRODUCT_COUNT:1000}
 
 jwt:

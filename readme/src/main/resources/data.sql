@@ -1,21 +1,5289 @@
 -- ============================================================
--- PostgreSQL 시퀀스 동기화 스크립트
--- dummy_data.sql 처럼 명시적 ID로 INSERT한 경우,
--- IDENTITY 시퀀스가 최대 ID와 맞지 않아 duplicate key 오류 발생.
--- 서버 기동 시 모든 테이블 시퀀스를 현재 최대값으로 리셋.
+-- ReadMe 운영용 기본 시드 데이터 (카카오 도서 썸네일 기반)
+-- 주의: 서버 기동 시 기존 데이터를 비우고 다시 적재합니다.
+-- 기본 로그인 계정
+-- - admin@readme.test   / test1234!
+-- - manager@readme.test / test1234!
+-- - user1@readme.test   / test1234!
+-- - user2@readme.test   / test1234!
+-- - user3@readme.test   / test1234!
+-- - user4@readme.test   / test1234!
 -- ============================================================
 
-SELECT setval(pg_get_serial_sequence('member',        'id'), COALESCE(MAX(id), 0), true) FROM member;
-SELECT setval(pg_get_serial_sequence('product',       'id'), COALESCE(MAX(id), 0), true) FROM product;
-SELECT setval(pg_get_serial_sequence('category_top',  'id'), COALESCE(MAX(id), 0), true) FROM category_top;
-SELECT setval(pg_get_serial_sequence('category_sub',  'id'), COALESCE(MAX(id), 0), true) FROM category_sub;
-SELECT setval(pg_get_serial_sequence('cart',          'id'), COALESCE(MAX(id), 0), true) FROM cart;
-SELECT setval(pg_get_serial_sequence('cart_item',     'id'), COALESCE(MAX(id), 0), true) FROM cart_item;
-SELECT setval(pg_get_serial_sequence('"order"',      'id'), COALESCE(MAX(id), 0), true) FROM "order";
-SELECT setval(pg_get_serial_sequence('order_item',    'id'), COALESCE(MAX(id), 0), true) FROM order_item;
-SELECT setval(pg_get_serial_sequence('payment',       'id'), COALESCE(MAX(id), 0), true) FROM payment;
-SELECT setval(pg_get_serial_sequence('delivery',      'id'), COALESCE(MAX(id), 0), true) FROM delivery;
-SELECT setval(pg_get_serial_sequence('notice',        'id'), COALESCE(MAX(id), 0), true) FROM notice;
-SELECT setval(pg_get_serial_sequence('review',        'id'), COALESCE(MAX(id), 0), true) FROM review;
-SELECT setval(pg_get_serial_sequence('qna',           'id'), COALESCE(MAX(id), 0), true) FROM qna;
-SELECT setval(pg_get_serial_sequence('refresh_token', 'id'), COALESCE(MAX(id), 0), true) FROM refresh_token;
+ALTER TABLE "order" DROP CONSTRAINT IF EXISTS order_orderstatus_check;
+ALTER TABLE "order" ADD CONSTRAINT order_orderstatus_check CHECK (order_status IN ('PAYMENT_PENDING','PENDING','PAYED','APPROVAL','DELIVERING','DELIVERED','CANCELED'));
+ALTER TABLE payment DROP CONSTRAINT IF EXISTS payment_payment_provider_check;
+ALTER TABLE payment ADD CONSTRAINT payment_payment_provider_check CHECK (payment_provider IN ('BANK_TRANSFER','TOSS','KAKAO','NAVER'));
+ALTER TABLE payment ADD COLUMN IF NOT EXISTS refunded_amount INTEGER;
+ALTER TABLE payment ADD COLUMN IF NOT EXISTS return_fee INTEGER;
+
+TRUNCATE TABLE review_reaction, review_image, review, qna, notice, delivery, payment, order_item, "order", cart_item, cart, product_image, product, category_sub, category_top, refresh_token, member RESTART IDENTITY CASCADE;
+
+INSERT INTO member (id, created_at, updated_at, email, password, name, phone, address, member_role, member_status, provider, provider_id, marketing_agreed, deleted_at) VALUES
+    (1, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'admin@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '관리자', '010-7000-0001', '서울시 성동구 관리자길 1', 'ADMIN', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (2, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'manager@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '매니저', '010-7000-0002', '서울시 성동구 운영길 2', 'MANAGER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (3, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user1@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '김독자', '010-7000-1001', '서울시 마포구 독서로 11', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (4, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user2@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '이리더', '010-7000-1002', '서울시 강서구 서점로 22', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL),
+    (5, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user3@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '박페이지', '010-7000-1003', '경기도 성남시 책길 33', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (6, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user4@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '최문장', '010-7000-1004', '부산시 해운대구 문고길 44', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL);
+
+INSERT INTO category_top (id, created_at, updated_at, name, sort_order, category_status) VALUES
+    (1, '2026-04-13 09:01:00', '2026-04-13 09:01:00', '국내도서', 1, 'ACTIVATE'),
+    (2, '2026-04-13 09:01:00', '2026-04-13 09:01:00', '외국도서', 2, 'ACTIVATE'),
+    (3, '2026-04-13 09:01:00', '2026-04-13 09:01:00', '아동', 3, 'ACTIVATE'),
+    (4, '2026-04-13 09:01:00', '2026-04-13 09:01:00', 'IT', 4, 'ACTIVATE');
+
+INSERT INTO category_sub (id, created_at, updated_at, category_top_id, name, sort_order, category_status) VALUES
+    (1, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 1, '한국소설', 1, 'ACTIVATE'),
+    (2, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 1, '에세이', 2, 'ACTIVATE'),
+    (3, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 1, '인문', 3, 'ACTIVATE'),
+    (4, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 1, '경제/경영', 4, 'ACTIVATE'),
+    (5, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 1, '자기계발', 5, 'ACTIVATE'),
+    (6, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 2, '영미소설', 1, 'ACTIVATE'),
+    (7, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 2, '원서일반', 2, 'ACTIVATE'),
+    (8, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 2, '경제/경영', 3, 'ACTIVATE'),
+    (9, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 2, '인문/사회', 4, 'ACTIVATE'),
+    (10, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 2, '예술/디자인', 5, 'ACTIVATE'),
+    (11, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 3, '그림책', 1, 'ACTIVATE'),
+    (12, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 3, '초등학습', 2, 'ACTIVATE'),
+    (13, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 3, '어린이문학', 3, 'ACTIVATE'),
+    (14, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 3, '청소년', 4, 'ACTIVATE'),
+    (15, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 3, '부모교육', 5, 'ACTIVATE'),
+    (16, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 4, '백엔드', 1, 'ACTIVATE'),
+    (17, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 4, '프론트엔드', 2, 'ACTIVATE'),
+    (18, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 4, '데이터', 3, 'ACTIVATE'),
+    (19, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 4, '인공지능', 4, 'ACTIVATE'),
+    (20, '2026-04-13 09:01:30', '2026-04-13 09:01:30', 4, '프로그래밍', 5, 'ACTIVATE');
+
+INSERT INTO product (id, created_at, updated_at, category_top_id, category_sub_id, title, author, isbn, description, price, discount_rate, sale_price, stock, thumbnail, view_count, sales_count, product_status, deleted_at) VALUES
+    (1, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편소설 40', '김동인', '9788965820475', '꼭 읽어야 할 한국 단편 소설들이 수록되어 있으므로 청소년은 물론 성인도 필독 작품 목록으로 삼을 수 있을 것이다. 『한국단편소설 40』에 이어 30편을 추가한 『한국단편소설 70』은 더욱 완벽한 한국 단편 소설 목록을 구성할 것이다. 리베르의 ‘중고생이 꼭 읽어야 할 문학 필독서 시리즈’를 통해 한국고전소설·세계단편소설·한국대표수필 등 문학의 모든 것을 만날 수 있다.  ▶ 이 책은 2005년에 출간된 《한국단편소설 35》(리베르)의 개정판입니다
+출판사: 리베르
+ISBN: 9788965820475
+출간일시: 2012-11-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=922244&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+40', 16800, 10.00, 15120, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F922244%3Ftimestamp%3D20260310111009', 3, 2, 'ACTIVATE', NULL),
+    (2, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중고생이 꼭 읽어야 할 한국단편소설 50', '김동인', '9788965823148', '한국단편소설 50』은 중고등학교 교과서와 교육 과정에 꼭 포함되는 필독 작품을 선정했고, 수능·논술·내신을 위해 충실한 작품 해설을 실었다. 한 권에 가장 많은 50편의 작품을 수록하면서도 전문을 실어 완전한 감상을 할 수 있도록 했다. 작품 선정에는 문학 교과서 수록 빈도, 문학사적 의의, 예술성을 기준으로 삼았다. 또한 작품 줄거리를 한눈에 알아볼 수 있는 ‘인물 관계도’를 더해 내용을 더욱 쉽게 이해할 수 있다. 논술이 대학 입학의 중요한 요소
+출판사: 리베르스쿨
+ISBN: 9788965823148
+출간일시: 2021-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5851283&q=%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+50', 18800, 10.00, 16920, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5851283%3Ftimestamp%3D20260310123238', 6, 4, 'ACTIVATE', NULL),
+    (3, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국이 싫어서', '장강명', '9788937473074', '문학성과 다양성, 참신성을 기치로 한국문학의 미래를 이끌어 갈 신예들의 작품을 엄선한 「오늘의 젊은 작가」의 일곱 번째 작품 『한국이 싫어서』. 사회 비판적 문제에서 SF까지 아우르는 다양한 소재, 흡인력 있는 스토리 전개, 날렵하고 군더더기 없는 문장으로 오쿠다 히데오에 비견되며 한국 문학에 새로운 활기를 불어 넣고 있는 작가 장강명이 이번에는 20대 후반의 직장 여성이 회사를 그만두고 호주로 이민 간 사정을 대화 형식으로 들려준다.    20대
+출판사: 민음사
+ISBN: 9788937473074
+출간일시: 2015-05-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=541319&q=%ED%95%9C%EA%B5%AD%EC%9D%B4+%EC%8B%AB%EC%96%B4%EC%84%9C', 14000, 10.00, 12600, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F541319%3Ftimestamp%3D20241219113511', 9, 6, 'ACTIVATE', NULL),
+    (4, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설(2026년 3월 320호)', '한국소설가협회 편집부', '9771228648008', '한국소설가협회의 회원들의 신작소설 발표 및 신인 발굴 요람이 되고 있는 월간 『한국소설』.
+출판사: 한국소설가협회
+ISBN: 9771228648008
+출간일시: 2026-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3777615&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%282026%EB%85%84+3%EC%9B%94+320%ED%98%B8%29', 15000, 5.00, 14250, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3777615%3Ftimestamp%3D20260326110730', 12, 8, 'ACTIVATE', NULL),
+    (5, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중고생이 꼭 읽어야 할 한국고전소설 45', '박지원', '9788965823582', '우리나라 고전 문학은 다양한 이유로 인해 한 번쯤 짚고 넘어가야 하지만, 창작 연대가 오래될수록 작품을 이해하기 쉽지 않다. 『한국고전소설 45』는 쉽고 재미있는 고전 문학 공부를 위해 다양한 장치를 활용했다. 어려운 어휘는 바로 옆에서 풀이했고, 본문 중간중간 주석을 달아 작품을 쉽게 이해할 수 있도록 구성했다. 수능·논술·내신을 위해서 ‘작품 길잡이’, ‘구성과 줄거리’, ‘생각해 볼까요?’ 등으로 작품을 상세히 분석했다. 아울러 작품 내용에
+출판사: 리베르
+ISBN: 9788965823582
+출간일시: 2022-12-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6244777&q=%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4+45', 22000, 10.00, 19800, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6244777%3Ftimestamp%3D20260318124247', 15, 10, 'ACTIVATE', NULL),
+    (6, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중고생이 꼭 읽어야 할 한국단편소설75(상)', '김유정, 성낙수, 박찬영, 김형주', '9788965823438', '『한국단편소설 75』는 중고등학교 교과서와 교육 과정에 꼭 포함되는 필독 작품을 선정했고, 수능·논술·내신을 위해 충실한 작품 해설을 실었다. 두 권에 가장 많은 75편의 작품을 수록하면서도 전문을 실어 완전한 감상을 할 수 있도록 했다. 작품 선정에는 문학 교과서 수록 빈도, 문학사적 의의, 예술성을 기준으로 삼았다. 또한 작품 줄거리를 한눈에 알아볼 수 있는 ‘인물 관계도’와 ‘소설 한 장면’을 더해 내용을 더욱 쉽게 이해할 수 있다. 논술이 대학
+출판사: 리베르
+ISBN: 9788965823438
+출간일시: 2022-05-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6069131&q=%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A475%28%EC%83%81%29', 22000, 10.00, 19800, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6069131%3Ftimestamp%3D20260305145707', 18, 12, 'ACTIVATE', NULL),
+    (7, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, 'EBS 윤혜정의 나비효과 입문편(2022)', '윤혜정', '9788954750264', 'ㆍ 시, 소설, 비문학 딱 15강씩, 필수 국어 개념들을 영역별로 정리  ㆍ 오늘의 개념 태그로 제시된 개념으로 필요한 개념들을 정리  ㆍ Quiz 형식의 문제를 통해 지문에 직접 적용해 보는 연습  ㆍ 개념과 문제를 연결하는 기출문제들을 풀어 보면서 실제 시험에 대비  ㆍ EBS스마트북을 활용하여 스마트폰으로 바로 찍어 해설 강의 수강
+출판사: EBS한국교육방송공사
+ISBN: 9788954750264
+출간일시: 2019-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5117445&q=EBS+%EC%9C%A4%ED%98%9C%EC%A0%95%EC%9D%98+%EB%82%98%EB%B9%84%ED%9A%A8%EA%B3%BC+%EC%9E%85%EB%AC%B8%ED%8E%B8%282022%29', 15000, 10.00, 13500, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5117445%3Ftimestamp%3D20231114161047', 21, 14, 'ACTIVATE', NULL),
+    (8, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국중장편소설 베스트 12 VOL. 1(중고생이 꼭 읽어야 할)', '이미륵, 박완서, 이문구, 조세희, 양귀자', '9788991759374', '중고생이 꼭 읽어야 할 중장편소설 모음집『한국중장편소설 베스트 12』. 한국 문학사에서 중요한 위치를 차지하고, 학교 현장에서도 반드시 읽어야 할 소설로 꼽히는 열두 편의 중편 및 장편소설을 엄선하여 4권으로 나누어 엮었다. 제1권에서는 이미륵, 박완서, 이문구, 조세희, 양귀자의 작품을 소개한다.  이 책은 문학사적 의의, 예술성, 대중성을 작품 선정의 근거로 삼았으며, 문학 교과서에서 비중 있게 다루어진 작품들을 우선적으로 뽑았다. 특히 작품 감상
+출판사: 리베르
+ISBN: 9788991759374
+출간일시: 2008-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1360006&q=%ED%95%9C%EA%B5%AD%EC%A4%91%EC%9E%A5%ED%8E%B8%EC%86%8C%EC%84%A4+%EB%B2%A0%EC%8A%A4%ED%8A%B8+12+VOL.+1%28%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0%29', 6500, 10.00, 5850, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1360006%3Ftimestamp%3D20211208145634', 24, 16, 'ACTIVATE', NULL),
+    (9, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 고전소설 36선(반드시 읽어야 할 한국 고전소설)', '허균', '9788975070389', '출판사: 문장
+ISBN: 9788975070389
+출간일시: 2008-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1054054&q=%ED%95%9C%EA%B5%AD+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4+36%EC%84%A0%28%EB%B0%98%EB%93%9C%EC%8B%9C+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4%29', 13000, 10.00, 11700, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1054054%3Ftimestamp%3D20221025130248', 27, 18, 'ACTIVATE', NULL),
+    (10, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중고생이 꼭 읽어야 할 한국단편소설75(하)', '황순원, 성낙수, 박찬영, 김형주', '9788965823445', '『한국단편소설 75』는 중고등학교 교과서와 교육 과정에 꼭 포함되는 필독 작품을 선정했고, 수능·논술·내신을 위해 충실한 작품 해설을 실었다. 두 권에 가장 많은 75편의 작품을 수록하면서도 전문을 실어 완전한 감상을 할 수 있도록 했다. 작품 선정에는 문학 교과서 수록 빈도, 문학사적 의의, 예술성을 기준으로 삼았다. 또한 작품 줄거리를 한눈에 알아볼 수 있는 ‘인물 관계도’와 ‘소설 한 장면’을 더해 내용을 더욱 쉽게 이해할 수 있다. 논술이 대학
+출판사: 리베르
+ISBN: 9788965823445
+출간일시: 2022-05-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6069528&q=%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A475%28%ED%95%98%29', 22000, 10.00, 19800, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6069528%3Ftimestamp%3D20260306123116', 30, 20, 'ACTIVATE', NULL),
+    (11, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '아버지의 땅 소지 자메이카여 안녕 외(20세기 한국소설 41)(20세기 한국소설 41)', '임철우, 이창동, 김유택, 정도상, 홍희담', '9788936462512', '출판사: 창작과비평사
+ISBN: 9788936462512
+출간일시: 2019-05-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533880&q=%EC%82%AC%ED%8F%89%EC%97%AD+%EC%95%84%EB%B2%84%EC%A7%80%EC%9D%98+%EB%95%85+%EC%86%8C%EC%A7%80+%EC%9E%90%EB%A9%94%EC%9D%B4%EC%B9%B4%EC%97%AC+%EC%95%88%EB%85%95+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+41%29%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+41%29', 12000, 10.00, 10800, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533880%3Ftimestamp%3D20221025135822', 33, 22, 'ACTIVATE', NULL),
+    (12, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '깡통따개가 없는 마을 말을 찾아서 외(20세기 한국소설 43)(20세기 한국소설 43)', '최성각, 구효서, 이순원, 심상대, 윤대녕', '9788936462536', '출판사: 창작과비평사
+ISBN: 9788936462536
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534187&q=%EB%B6%80%EC%9A%A9%EC%82%B0+%EA%B9%A1%ED%86%B5%EB%94%B0%EA%B0%9C%EA%B0%80+%EC%97%86%EB%8A%94+%EB%A7%88%EC%9D%84+%EB%A7%90%EC%9D%84+%EC%B0%BE%EC%95%84%EC%84%9C+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+43%29%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+43%29', 12000, 10.00, 10800, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534187%3Ftimestamp%3D20221025135805', 36, 24, 'ACTIVATE', NULL),
+    (13, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '이 지랄맞음이 쌓여 축제가 되겠지(리커버:K)', '조승리', '9791158161767', '소설 앤솔러지『내가 이런 데서 일할 사람이 아닌데』, 에세이『검은 불꽃과 빨간 폭스바겐』으로 새로운 타이틀을 갱신하며 나아가는 조승리 작가의 첫 에세이 『이 지랄맞음이 쌓여 축제가 되겠지』가 교보문고 리커버:K로 돌아왔다. 조승리 작가는 데뷔작인 이 책을 통해 작가로서의 정체성이 시작된 순간을 솔직하게 보여주며 단숨에 화제를 모았다. 독자들로부터 늘 “시원시원하고 유쾌하다”는 감상을 듣는 반전매력의 소유자답게 이번 리커버판은 원 표지 그림이었던 김선우
+출판사: 달
+ISBN: 9791158161767
+출간일시: 2024-03-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6596349&q=%EC%9D%B4+%EC%A7%80%EB%9E%84%EB%A7%9E%EC%9D%8C%EC%9D%B4+%EC%8C%93%EC%97%AC+%EC%B6%95%EC%A0%9C%EA%B0%80+%EB%90%98%EA%B2%A0%EC%A7%80%28%EB%A6%AC%EC%BB%A4%EB%B2%84%3AK%29', 16800, 10.00, 15120, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6596349%3Ftimestamp%3D20250918142344', 39, 26, 'ACTIVATE', NULL),
+    (14, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '한 번뿐인 인생은 어떻게 살아야 하는가', '박찬위', '9791197647673', '독자들에게 인생에 대한 심사숙고를 독려하고, 행복을 추구하며 살아가는 것의 가치를 일깨워준다. 이러한 주제는 많은 이들에게 울림을 줄 것이며, 삶의 여정을 더욱 소중하게 여기도록 독자들의 마음을 높이 끌어올린다. 전체적으로 감동적이고 독창적인 에세이로, 인생에 대한 깊은 이해와 성찰을 전달한다.
+출판사: 하이스트
+ISBN: 9791197647673
+출간일시: 2023-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6322053&q=%ED%95%9C+%EB%B2%88%EB%BF%90%EC%9D%B8+%EC%9D%B8%EC%83%9D%EC%9D%80+%EC%96%B4%EB%96%BB%EA%B2%8C+%EC%82%B4%EC%95%84%EC%95%BC+%ED%95%98%EB%8A%94%EA%B0%80', 16800, 10.00, 15120, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6322053%3Ftimestamp%3D20251121151732', 42, 28, 'ACTIVATE', NULL),
+    (15, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '오늘도 나아가는 중입니다(웨딩 에디션)', '조민', '9791159259777', '이 ‘막힌 상태’를 기꺼이 누려보기로 마음먹었다. 일단 멈추어 주변을 살펴보고, 천천히 즐기면서 세상을 확장하고 더 큰 행복을 찾아보려 한다. 이 책은 그녀가 ‘전 법무부 장관의 딸’로서가 아닌 인간 ‘조민’ 자체로 내놓은 데뷔작이다. 그녀의 첫 에세이 출간을 통해 저자 조민이 풀고자 했던 이야기는 무엇일까? 많은 시련을 겪었지만, 저자는 말한다. 여전히 삶은 아름답고 현재는 소중하다고. 그리고 많은 실패에도 언제나 다시 노력하겠다고 말이다. 그녀는
+출판사: 참새책방
+ISBN: 9791159259777
+출간일시: 2023-09-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6441732&q=%EC%98%A4%EB%8A%98%EB%8F%84+%EB%82%98%EC%95%84%EA%B0%80%EB%8A%94+%EC%A4%91%EC%9E%85%EB%8B%88%EB%8B%A4%28%EC%9B%A8%EB%94%A9+%EC%97%90%EB%94%94%EC%85%98%29', 16800, 10.00, 15120, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6441732%3Ftimestamp%3D20251002142401', 45, 30, 'ACTIVATE', NULL),
+    (16, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '좋은 일이 오려고 그러나 보다(10만부 기념 행운 에디션)', '박여름', '9791192559742', '〈좋은 일이 오려고 그러나 보다〉는 뛰어난 공감능력과 정감 가는 말투로 7만 명 이상의 독자들에게 사랑과 응원을 건네는 박여름 작가의 새 에세이이다. 누구나 한 번은 겪어봤을 법한 일들, 한 번은 통과했어야 했던 나날들을 누구보다 잘 알아주고 다독여 주는 책이다.  책에는 살아가면서 마주하는 수많은 불안, 슬픔, 이별, 새로운 만남 등을 작가 특유의 시선으로 해석하여 읽기 좋게 가공한 짧고도 긴 글들이 수록되어 있다. 누군가의 따뜻한 마음씨가 필요할
+출판사: 히읏
+ISBN: 9791192559742
+출간일시: 2023-07-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6401999&q=%EC%A2%8B%EC%9D%80+%EC%9D%BC%EC%9D%B4+%EC%98%A4%EB%A0%A4%EA%B3%A0+%EA%B7%B8%EB%9F%AC%EB%82%98+%EB%B3%B4%EB%8B%A4%2810%EB%A7%8C%EB%B6%80+%EA%B8%B0%EB%85%90+%ED%96%89%EC%9A%B4+%EC%97%90%EB%94%94%EC%85%98%29', 16800, 10.00, 15120, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6401999%3Ftimestamp%3D20251126161132', 48, 32, 'ACTIVATE', NULL),
+    (17, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '벼랑 끝이지만 아직 떨어지진 않았어', '소재원', '9791197332678', '작가는 누구보다 불행한 인생을 살았다. 그 인생을 어떻게 대하고 살아왔는지, 거친 세상을 어떻게 이겨낼 수 있었는지 방법을 제시하는 편지글이 에세이의 첫 장을 이룬다. 그리고 작가가 좌절하고 무너졌을 때 그 상황을 이겨내기 위해 써 내려간 방법과 계획, 위로의 글들이 뒤를 따른다. 마지막은 작가가 깨달은 진짜 행복의 의미와 희망, 삶에 대한 결론이 진실하게 담겨 있다.
+출판사: 프롤로그
+ISBN: 9791197332678
+출간일시: 2024-03-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6571704&q=%EB%B2%BC%EB%9E%91+%EB%81%9D%EC%9D%B4%EC%A7%80%EB%A7%8C+%EC%95%84%EC%A7%81+%EB%96%A8%EC%96%B4%EC%A7%80%EC%A7%84+%EC%95%8A%EC%95%98%EC%96%B4', 18000, 10.00, 16200, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6571704%3Ftimestamp%3D20251021144230', 51, 34, 'ACTIVATE', NULL),
+    (18, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '찌그러져도 동그라미입니다', '김창완', '9788901280684', '한국 대중문화에 가장 독보적인 자취를 남긴 뮤지션 김창완의 에세이가 웅진지식하우스에서 출간된다. 김창완은 1977년 산울림으로 데뷔해 독자적인 음악 세계를 선보이며 가요계에 큰 획을 그었다. 그의 곡들은 아이유, 장범준, 김필, 스트레이 키즈 등 후배 가수들에 의해 다시 불리며 끊임없이 재탄생되고 있다. 『찌그러져도 동그라미입니다』는 김창완이 SBS 파워FM ‘아름다운 이 아침 김창완입니다’에서 청취자들에게 답한 편지와 매일 아침 직접 쓴 오프닝을
+출판사: 웅진지식하우스
+ISBN: 9788901280684
+출간일시: 2024-03-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6582392&q=%EC%B0%8C%EA%B7%B8%EB%9F%AC%EC%A0%B8%EB%8F%84+%EB%8F%99%EA%B7%B8%EB%9D%BC%EB%AF%B8%EC%9E%85%EB%8B%88%EB%8B%A4', 17800, 10.00, 16020, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6582392%3Ftimestamp%3D20260306123735', 54, 36, 'ACTIVATE', NULL),
+    (19, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '잘될 수밖에 없는 너에게', '최서영', '9791191891201', '최선을 다해 내 삶을 최고로 만들고 싶다면 반드시 읽어야 할 인생 참고서 50만 독자가 기다려온 최서영의 첫 번째 응원 에세이 《잘될 수밖에 없는 너에게》. 출간 즉시 ‘전 서점 에세이 1위 달성’, ‘누적 15만 부 돌파’라는 기록을 연이어 세우며 많은 사랑을 받고 있다. 《잘될 수밖에 없는 너에게》는 저자를 롤모델이자 인생 선배로 삼고 있는 수많은 독자들이 그녀의 힘 있는 동기부여 메시지를 모아 출간해달라는 요청에 응답한 책이다. 가장 반응이
+출판사: 북로망스
+ISBN: 9791191891201
+출간일시: 2022-08-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6139308&q=%EC%9E%98%EB%90%A0+%EC%88%98%EB%B0%96%EC%97%90+%EC%97%86%EB%8A%94+%EB%84%88%EC%97%90%EA%B2%8C', 19500, 10.00, 17550, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6139308%3Ftimestamp%3D20251221132212', 57, 38, 'ACTIVATE', NULL),
+    (20, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '사랑을 무게로 안 느끼게', '박완서', '9788933872352', '박완서의 이름을 널리 알린 첫 산문집이자 그의 대표작으로 꼽혀왔다. 세계사는 한국 문학의 거목 박완서 작가의 소중한 유산을 다시금 독자와 나누기 위해 제목과 장정을 바꿔 새롭게 소개한다. 『사랑을 무게로 안 느끼게』에 수록된 46편의 에세이는 작가로 첫발을 뗀 이듬해인 1971년부터 1994년까지, 작가이자 개인으로 통과해 온 20여 년에서 인상적인 순간들이 담겼다. 또한, 호원숙 작가가 개정판을 위해 특별히 허락한 미출간 원고 「님은 가시고 김치만 남았네」의
+출판사: 세계사
+ISBN: 9788933872352
+출간일시: 2024-01-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6537413&q=%EC%82%AC%EB%9E%91%EC%9D%84+%EB%AC%B4%EA%B2%8C%EB%A1%9C+%EC%95%88+%EB%8A%90%EB%81%BC%EA%B2%8C', 18000, 10.00, 16200, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6537413%3Ftimestamp%3D20251203152429', 60, 40, 'ACTIVATE', NULL),
+    (21, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '열 번 잘해도 한 번 실수로 무너지는 게 관계다', '김다슬', '9791196617141', '2022년 전체 1위 에세이 『기분을 관리하면 인생이 관리된다』를 통해 많은 독자들에게 위로와 공감을 전한 김다슬 작가의 신작이 출간되었다. 전작에서 기분에 따라 인생이 좌우되지 않기 위해서 어떻게 기분을 관리하고 받아들여야 하는지에 대한 실질적인 조언을 전했다면, 신작 『열 번 잘해도 한 번 실수로 무너지는 게 관계다』에서는 “10번 마음이 맞아도 1번 오해로 망가지는 것이 관계”라고 말하며, 결국 관계에서 가장 중요한 것은 바로 나 자신임을 이야기
+출판사: 클라우디아
+ISBN: 9791196617141
+출간일시: 2023-01-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6258101&q=%EC%97%B4+%EB%B2%88+%EC%9E%98%ED%95%B4%EB%8F%84+%ED%95%9C+%EB%B2%88+%EC%8B%A4%EC%88%98%EB%A1%9C+%EB%AC%B4%EB%84%88%EC%A7%80%EB%8A%94+%EA%B2%8C+%EA%B4%80%EA%B3%84%EB%8B%A4', 19600, 10.00, 17640, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6258101%3Ftimestamp%3D20250521220828', 63, 42, 'ACTIVATE', NULL),
+    (22, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '삶이라는 완벽한 농담', '이경규', '9791194246800', '대한민국 최초로 1990년대, 2000년대, 2010년대에 모두 방송연예대상을 수상하고, 45년 차에도 여전히 현역 예능인으로 활발한 활동을 이어가며 많은 후배들의 귀감과 영감이 되고 있는 이경규가 첫 에세이 《삶이라는 완벽한 농담》을 펴냈다. 1981년 MBC 공채 1기 개그맨으로 데뷔한 이래로 나이가 들어도 끊임없이 탐구하고 발전해온 저자가 인생에 대한 애정과 책임감으로 무장한 채 온몸으로 뛰어들어 배우고 감각했던 삶과 일, 꿈을 대하는 눈부신 이야기
+출판사: 쌤앤파커스
+ISBN: 9791194246800
+출간일시: 2025-03-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6850702&q=%EC%82%B6%EC%9D%B4%EB%9D%BC%EB%8A%94+%EC%99%84%EB%B2%BD%ED%95%9C+%EB%86%8D%EB%8B%B4', 17800, 10.00, 16020, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6850702%3Ftimestamp%3D20260310125057', 66, 44, 'ACTIVATE', NULL),
+    (23, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '아주 오랜만에 행복하다는 느낌', '백수린', '9788936438869', '한국일보문학상, 현대문학상, 이해조소설문학상, 문지문학상, 젊은작가상 등을 수상하며 발표하는 작품마다 평단과 독자의 찬사를 받아온 소설가 백수린이 신작 에세이 『아주 오랜만에 행복하다는 느낌』으로 독자를 만난다. ‘일상과 세계 사이에서 빛나는 이야기’를 선보여온 창비 ‘에세이&amp;’ 시리즈의 네번째 책이다. 올봄부터 4개월간 창비 온라인 플랫폼 ‘스위치’에서 일부를 연재할 당시 매달 1천건이 넘는 조회수를 기록하며 수많은 독자의 사랑을 받은 이
+출판사: 창비
+ISBN: 9788936438869
+출간일시: 2022-10-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6186421&q=%EC%95%84%EC%A3%BC+%EC%98%A4%EB%9E%9C%EB%A7%8C%EC%97%90+%ED%96%89%EB%B3%B5%ED%95%98%EB%8B%A4%EB%8A%94+%EB%8A%90%EB%82%8C', 15000, 10.00, 13500, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6186421%3Ftimestamp%3D20251112152254', 69, 46, 'ACTIVATE', NULL),
+    (24, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 2, '오역하는 말들', '황석희', '9791170612599', '영화 〈데드풀〉, 〈콜 미 바이 유어 네임〉, 〈보헤미안 랩소디〉, 〈에브리씽 에브리웨어 올 앳 원스〉에는 공통점이 있다. 정답으로 ‘메가 히트작’을 떠올렸다면 그것도 맞다. 하지만 다른 하나가 더 있다. 바로, 이 영화들의 한국어 자막이 모두 같은 번역가의 손에서 탄생했다는 것이다. 예상했겠지만 바로 황석희 번역가다. 대중에게 친근하게 와 닿는 재기발랄한 번역으로 잘 알려진 그가 이번에는 영화가 아닌 현실 세계를 번역한다. 흔히 번역이라고 하면
+출판사: 북다
+ISBN: 9791170612599
+출간일시: 2025-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6910622&q=%EC%98%A4%EC%97%AD%ED%95%98%EB%8A%94+%EB%A7%90%EB%93%A4', 16800, 10.00, 15120, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6910622%3Ftimestamp%3D20260401124345', 72, 48, 'ACTIVATE', NULL),
+    (25, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '유현준의 인문 건축 기행', '유현준', '9788932474892', '건축물은 인간의 생각과 세상의 물질이 만나 만들어진 결정체로, 많은 자본이 드는 만큼 여러 사람의 의견이 일치할 때만 완성되는 그 사회의 반영이자 단면이다. 그렇기에 건축물을 보면 당대 사람들이 세상을 읽는 관점, 물질을 다루는 기술 수준, 사회 경제 시스템, 인간에 대한 이해, 꿈꾸는 이상향, 생존을 위한 몸부림 등이 보인다. 이 책은 건축가 유현준이 감명받거나 영감을 얻은 30개의 건축물을 소개한다. 이 작품들을 설계한 건축가들은 수백 년 된
+출판사: 을유문화사
+ISBN: 9788932474892
+출간일시: 2023-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6353918&q=%EC%9C%A0%ED%98%84%EC%A4%80%EC%9D%98+%EC%9D%B8%EB%AC%B8+%EA%B1%B4%EC%B6%95+%EA%B8%B0%ED%96%89', 19500, 10.00, 17550, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6353918%3Ftimestamp%3D20250208152930', 75, 50, 'ACTIVATE', NULL),
+    (26, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '단 한 번밖에 살 수 없다면 인문고전을 읽어라', '김부건', '9791191777253', '외에 더 좋은 방법은 없다”라고 말했다. ‘나는 왜 계속 같은 실수를 되풀이할까? 왜 일이 잘 풀리지 않을까?’ 혹은 ‘왜 이런 일이 또 생기는 것일까’ 하는 생각이 들 때 《논어》는 ‘과이불개’라는 한마디로 명쾌한 답을 준다. 인문고전은 긴 설명을 하지 않고도 언어로써 인간의 통찰력을 깨우친다. 이것이 바로 고전을 읽어야 하는 이유이자 고전이 가지고 있는 힘이다. 〈교수신문〉이 고전에 담긴 사자성어로 올해를 표현하는 이유도 한 해를 돌아보고 더 나은 내년
+출판사: 밀리언서재
+ISBN: 9791191777253
+출간일시: 2023-01-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6242402&q=%EB%8B%A8+%ED%95%9C+%EB%B2%88%EB%B0%96%EC%97%90+%EC%82%B4+%EC%88%98+%EC%97%86%EB%8B%A4%EB%A9%B4+%EC%9D%B8%EB%AC%B8%EA%B3%A0%EC%A0%84%EC%9D%84+%EC%9D%BD%EC%96%B4%EB%9D%BC', 18000, 10.00, 16200, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6242402%3Ftimestamp%3D20230905201047', 78, 52, 'ACTIVATE', NULL),
+    (27, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '도시는 무엇으로 사는가', '유현준', '9788932472959', '도시는 도시 계획을 한 디자이너의 손을 떠나는 순간 이내 진화를 시작한다. 그 안에 사는 사람들의 삶이 반영되기 때문에 인간이 추구하는 것과 욕망이 드러난다. 하다못해 작은 사무실의 상사와 부하 직원의 자리배치에서도 사람들의 삶과 욕망을 읽을 수 있다. 상사는 부하 직원들의 모습을 볼 수 있지만 직원들이 그를 보려면 일부러 고개를 돌려서 봐야만 볼 수 있는 것이다.    『도시는 무엇으로 사는가』는 작은 골목부터 뉴욕의 센트럴파크에 이르기까지, 도시
+출판사: 을유문화사
+ISBN: 9788932472959
+출간일시: 2015-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=503307&q=%EB%8F%84%EC%8B%9C%EB%8A%94+%EB%AC%B4%EC%97%87%EC%9C%BC%EB%A1%9C+%EC%82%AC%EB%8A%94%EA%B0%80', 15000, 10.00, 13500, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F503307%3Ftimestamp%3D20260408111054', 81, 54, 'ACTIVATE', NULL),
+    (28, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '우리는 어디서 살아야 하는가', '김시덕', '9791191347975', '삼프로TV 〈김시덕 박사의 도시야사〉를 비롯해 다양한 매체를 통해 큰 주목을 받으며, “그 어떤 이야기보다 삶과 부 창출에 큰 도움이 되었다”는 호평을 얻었다.  이 책은 대한민국에서 ‘내 집 마련’을 꿈꾸는 이들을 위해 쓴 인문학자 김시덕의 첫 번째 경제경영서로, ‘살기 좋고 사기 좋은 곳’에 대해 ‘국가 프로젝트’, ‘안보’, ‘재난’, ‘교통’, ‘재개발’ 다섯 가지 시선으로 분석한다. 그가 수십 년간 두 발로 걷고, 두 눈으로 확인하며 직접 고른
+출판사: 포레스트북스
+ISBN: 9791191347975
+출간일시: 2022-07-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6122402&q=%EC%9A%B0%EB%A6%AC%EB%8A%94+%EC%96%B4%EB%94%94%EC%84%9C+%EC%82%B4%EC%95%84%EC%95%BC+%ED%95%98%EB%8A%94%EA%B0%80', 18000, 10.00, 16200, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6122402%3Ftimestamp%3D20250826141713', 84, 56, 'ACTIVATE', NULL),
+    (29, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '인문 여행자, 사라진 시간을 걷다', '김경한', '9791124070772', '어차피 모두가 죽음을 향해 간다면, 우리는 왜 살아가는가? 《인문 여행자, 사라진 시간을 걷다》가 붙드는 질문은 단순하지만 오래된 것이다. 이 책은 앞서 삶의 이유를 고민했던 누군가의 장소를 따라 걸으며, 유한한 삶 속에서 인간이 마주하는 허무와 그 안에서 발견되는 찬란함을 기록한 인문 여행 에세이다. 저자 김경한 대표는 베스트셀러 《인문 여행자, 도시를 걷다》를 통해 여행을 사유의 영역으로 넓혔으며, 이번 신간에서는 여행지를 하나의 이야기처럼 섬세
+출판사: 쌤앤파커스
+ISBN: 9791124070772
+출간일시: 2026-04-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7184220&q=%EC%9D%B8%EB%AC%B8+%EC%97%AC%ED%96%89%EC%9E%90%2C+%EC%82%AC%EB%9D%BC%EC%A7%84+%EC%8B%9C%EA%B0%84%EC%9D%84+%EA%B1%B7%EB%8B%A4', 19800, 10.00, 17820, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7184220%3Ftimestamp%3D20260404125846', 87, 58, 'ACTIVATE', NULL),
+    (30, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '인문(2011)(수능 언어 비문학 대계)', '차마고도', '9788959180561', '- 독자대상 : 수능준비생 언어영역 학습자 - 구성 : 비문학 인문분야 문제 - 특징 : ①1994~2011 대학수학능력시험, 평가원 모의수능평가, 전국연합학력평가, 학업성취도평가 총모음 ②역사 철학 윤리 종교 심리학 고전국역 신화 민속 학문 영역별 상세 분류 출제 경향과 맥락 잡기 ③총 158개 제시문 646개 문제, 즉문즉답 구성으로 비문학 대륙 쾌속 횡단
+출판사: 자우공부
+ISBN: 9788959180561
+출간일시: 2011-04-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=795903&q=%EC%9D%B8%EB%AC%B8%282011%29%28%EC%88%98%EB%8A%A5+%EC%96%B8%EC%96%B4+%EB%B9%84%EB%AC%B8%ED%95%99+%EB%8C%80%EA%B3%84%29', 17000, 10.00, 15300, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F795903%3Ftimestamp%3D20200410181404', 90, 60, 'ACTIVATE', NULL),
+    (31, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '사관학교 기출백서 수학(인문) 10개년 총정리(2023)', '사관학교입시연구회', '9791162158593', '- 2013~2022학년도 10년을 쌓아올린 철저한 분석 - 학습 효율을 높여주는 깔끔한 편집 - 어려운 문제를 술술 풀어주는 상세한 해설 - 연도별 기출 및 출제 경향 파악
+출판사: 시스컴
+ISBN: 9791162158593
+출간일시: 2021-10-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5844405&q=%EC%82%AC%EA%B4%80%ED%95%99%EA%B5%90+%EA%B8%B0%EC%B6%9C%EB%B0%B1%EC%84%9C+%EC%88%98%ED%95%99%28%EC%9D%B8%EB%AC%B8%29+10%EA%B0%9C%EB%85%84+%EC%B4%9D%EC%A0%95%EB%A6%AC%282023%29', 15000, 10.00, 13500, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5844405%3Ftimestamp%3D20230801175131', 93, 62, 'ACTIVATE', NULL),
+    (32, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '고등 국어 인문 사회 예술(2018)(홀수)(홀로 공부하는 수능 국어 기출 분석)', '박광일, 도서출판 홀수 편집부', '9791186264706', '- 독자대상 : 수학능력시험 준비생 - 구성 : 이론 + 문제 - 특징 : ① 5개년 평가원 출제 전 지문 수록 ② 지문 접근법과 문제 풀이법을 상세하고 친절하게 안내 ③ ‘서양철학 / 동양철학 / 독서 방법 / 미학 / 경제 / 법’으로 유형화 ④ 제재에 따른 지문 특성과 문제 유형을 파악할 수 있게 구성 ⑤ ‘박광일의 사고의 흐름’을 통해서 지문의 논리적 흐름과 체계를 분석 ⑥ 고난이도 문제에 대한 명쾌하고 자세한 해설을 제공
+출판사: 홀수
+ISBN: 9791186264706
+출간일시: 2017-12-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633157&q=%EA%B3%A0%EB%93%B1+%EA%B5%AD%EC%96%B4+%EC%9D%B8%EB%AC%B8+%EC%82%AC%ED%9A%8C+%EC%98%88%EC%88%A0%282018%29%28%ED%99%80%EC%88%98%29%28%ED%99%80%EB%A1%9C+%EA%B3%B5%EB%B6%80%ED%95%98%EB%8A%94+%EC%88%98%EB%8A%A5+%EA%B5%AD%EC%96%B4+%EA%B8%B0%EC%B6%9C+%EB%B6%84%EC%84%9D%29', 13000, 0.00, -1, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633157%3Ftimestamp%3D20220809182421', 96, 64, 'ACTIVATE', NULL),
+    (33, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '미술관에 간 인문학자', '안현배', '9791187150091', '조각을 그저 바라보는데 그치지 않고 곳곳에 담겨진 의미를 읽어내야 비로소 작품의 진면모를 감상하게 된다. 하나의 미술 작품을 제대로 감상하는 것이 인문학적 소양을 기르는 가장 효과적인 공부인 것도 그 때문이다.    『미술관에 간 인문학자』는 파리1대학에서 역사와 예술사를 공부하며 10년 넘게 루브르 박물관 속 명작의 숲을 탐사해온 인문학자 안현배의 독특한 미술 감상서다. 저자는 고전을, 신화를, 문학을, 역사를 읽듯 책 속의 명작들이 읽혀지도록 해박한
+출판사: 어바웃어북
+ISBN: 9791187150091
+출간일시: 2016-07-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1641588&q=%EB%AF%B8%EC%88%A0%EA%B4%80%EC%97%90+%EA%B0%84+%EC%9D%B8%EB%AC%B8%ED%95%99%EC%9E%90', 16000, 10.00, 14400, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1641588%3Ftimestamp%3D20230707153826', 99, 66, 'ACTIVATE', NULL),
+    (34, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, 'Why? 크리에이터(인문사회교양만화)(양장본 HardCover)', '조영선', '9788930231701', '인터넷 공간 너머 펼쳐지는 1인 미디어 세상, 내 꿈은 크리에이터!  “나도 도티, 잠뜰 같은 크리에이터가 될래요!” 어린이들의 인기 장래 희망으로 손꼽히는 크리에이터. 요즘 다양한 미디어에서는 크리에이터의 활동을 앞다투어 중요하게 다루고 있다. 크리에이터가 중심이 되는 예능 프로그램이 인기를 끌고 있는가 하면 강연, 책, 또 광고에 이르기까지 이들의 활동 영역은 분야를 가리지 않고 점점 넓어지고 있다.  &lt;Why? 크리에이터&gt;에서는
+출판사: 예림당
+ISBN: 9788930231701
+출간일시: 2018-10-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3777547&q=Why%3F+%ED%81%AC%EB%A6%AC%EC%97%90%EC%9D%B4%ED%84%B0%28%EC%9D%B8%EB%AC%B8%EC%82%AC%ED%9A%8C%EA%B5%90%EC%96%91%EB%A7%8C%ED%99%94%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3777547%3Ftimestamp%3D20200417160919', 102, 68, 'ACTIVATE', NULL),
+    (35, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '우리가 사랑한 도시', '김지윤, 전은환', '9791170613688', '여행이 우리 삶의 원동력이 되어줄 때가 있다. 해외여행을 즐기는 사람들이 늘어나고, 여행을 다녀온 기억으로 살아갈 힘을 얻는 이들이 많아진 지금 《우리가 사랑한 도시》는 더 풍부하고 깊이 있는 경험을 위한 지식을 전해준다. 이 책은 여행을 통해 ‘또 다른 나’를 만나고, 세상을 더 이해하게 된 두 저자가 들려주는 세계 각지의 도시에 관한 이야기다. 유명하다거나 다른 사람들이 가기 때문에 정한 여행지에 대한 흔한 정보가 아니다. 피렌체의 산 마르코
+출판사: 북다
+ISBN: 9791170613688
+출간일시: 2026-03-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7175154&q=%EC%9A%B0%EB%A6%AC%EA%B0%80+%EC%82%AC%EB%9E%91%ED%95%9C+%EB%8F%84%EC%8B%9C', 17500, 10.00, 15750, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7175154%3Ftimestamp%3D20260408153316', 105, 70, 'ACTIVATE', NULL),
+    (36, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '경북대학교 논술 AAT 인문계열(2020)', '적성고사전략연구소', '9788955716627', '본서의 특징  ㆍ 경북대 논술 AAT [인문계열]의 기출문제와 예상문제를 한 권으로 총정리 수록  ㆍ 경북대 논술 AAT 전형 [인문계열]의 출제경향과 준비법 수록  ㆍ 일반 논술문제와 차별화된 경북대 논술 AAT의 출제특징에 완벽하게 대비한 문제집  ㆍ 논술 AAT [인문계열] 실제문제와 동일하게 구성된 실전 연습문제 수록
+출판사: 넥젠북스
+ISBN: 9788955716627
+출간일시: 2019-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4998918&q=%EA%B2%BD%EB%B6%81%EB%8C%80%ED%95%99%EA%B5%90+%EB%85%BC%EC%88%A0+AAT+%EC%9D%B8%EB%AC%B8%EA%B3%84%EC%97%B4%282020%29', 18000, 10.00, 16200, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4998918%3Ftimestamp%3D20231024181709', 108, 72, 'ACTIVATE', NULL),
+    (37, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '경제신문이 말하지 않는 경제 이야기', '임주영', '9791198362841', '경제학에는 원래 정해진 답이 없다. 사람들은 경제학이 사회과학 범주에 속하고 주로 숫자와 데이터를 이론의 근거로 제시하니 마치 수학처럼 정답이 있을 것으로 생각하지만 전혀 그렇지 않다. 그랬다면 IMF 국가부도나 대공황 같은 숱한 경제 위기를 반복적으로 겪었겠는가. 경제학에는 현실과 전혀 안 맞는 가정을 전제로 계산하고 그 결과로 만들어낸 이론도 수두룩하다. ‘세테리스 패러버스’. 결과에 영향을 주는 변수가 무수히 많을 때는 다른 변수는 없다고 가정
+출판사: 민들레북
+ISBN: 9791198362841
+출간일시: 2024-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6525080&q=%EA%B2%BD%EC%A0%9C%EC%8B%A0%EB%AC%B8%EC%9D%B4+%EB%A7%90%ED%95%98%EC%A7%80+%EC%95%8A%EB%8A%94+%EA%B2%BD%EC%A0%9C+%EC%9D%B4%EC%95%BC%EA%B8%B0', 19000, 10.00, 17100, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6525080%3Ftimestamp%3D20260310124742', 111, 74, 'ACTIVATE', NULL),
+    (38, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '자본주의 시대에서 살아남기 위한 최소한의 경제 공부', '김욱현', '9791193282533', '그러나 저자는 단호하다. “진짜 투자는 한 번의 우연이 아니라 끝까지 버티는 힘에서 나온다.”  5년 만에 1,500만 원을 10억 원으로 회수한 투자자이자, 유튜브와 인스타그램 합산 62만 팔로워를 보유한 그는 화려한 기법 대신 경제적 기반을 이해하는 체계를 강조해 왔다. 강의와 실전 스터디를 통해 수많은 투자자의 계좌를 직접 지켜본 경험이 그 결론을 더 확실하게 만들어 주었다.  이 책은 금리, 환율, 물가, 정책 같은 숫자들이 내 월급, 집값, 대출, 투자
+출판사: 하이스트
+ISBN: 9791193282533
+출간일시: 2025-12-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7089209&q=%EC%9E%90%EB%B3%B8%EC%A3%BC%EC%9D%98+%EC%8B%9C%EB%8C%80%EC%97%90%EC%84%9C+%EC%82%B4%EC%95%84%EB%82%A8%EA%B8%B0+%EC%9C%84%ED%95%9C+%EC%B5%9C%EC%86%8C%ED%95%9C%EC%9D%98+%EA%B2%BD%EC%A0%9C+%EA%B3%B5%EB%B6%80', 28000, 10.00, 25200, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7089209%3Ftimestamp%3D20260305151550', 114, 76, 'ACTIVATE', NULL),
+    (39, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '벌거벗은 세계사: 경제편', 'tvn<벌거벗은세계사>제작팀, 김두얼, 김봉중, 김종일, 남종국, 박구병', '9791170610038', '모습으로 반복됩니다. 따라서 우리가 세계사를 좀 더 깊숙이 배운다면, 앞으로 어떤 일이 벌어질지 조금이라도 예상하고 대비할 힘을 기를 수 있습니다.  이 책은 tvN 최고 화재 교양 프로그램인 〈벌거벗은 세계사〉에서 다뤘던 내용 중 경제에 관한 사건들을 모아 만든 것입니다. 세계 역사에 큰 획을 그은 순간은 물론, 처음 만나는 의외의 사실들까지 더해 그동안 우리가 보지 못했던 프레임 밖 경제사를 보여줍니다. 중세 유럽의 최고 부자 중 하나로 르네상스 최고 예술가
+출판사: 교보문고
+ISBN: 9791170610038
+출간일시: 2023-04-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6339054&q=%EB%B2%8C%EA%B1%B0%EB%B2%97%EC%9D%80+%EC%84%B8%EA%B3%84%EC%82%AC%3A+%EA%B2%BD%EC%A0%9C%ED%8E%B8', 23000, 10.00, 20700, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6339054%3Ftimestamp%3D20260108151959', 117, 78, 'ACTIVATE', NULL),
+    (40, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '세계 경제 지각 변동', '박종훈', '9791198987631', '대통령이 쏘아 올린 관세 폭탄으로 국경은 다시 장벽이 되었고, 보호 구역은 정당화되었다. 이제 세계는 함께 성장하는 공동체가 아니라 누가 더 오래 버티는지를 두고 각축을 벌이는 생존의 장으로 탈바꿈했다. 그 과정에서 누군가는 막대한 경제적 이익을 챙겼고, 누군가는 고통을 떠안아야 했다. 미국의 무분별한 관세 정책과 이스라엘 이란 전쟁 등을 통해 세계 각국은 탈세계화를 꿈꾸며 자국 우선주의 정책으로 일관하고 있다. 〈세계 경제 지각 변동〉은 지금까지 경험해
+출판사: 글로퍼스
+ISBN: 9791198987631
+출간일시: 2025-06-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6946934&q=%EC%84%B8%EA%B3%84+%EA%B2%BD%EC%A0%9C+%EC%A7%80%EA%B0%81+%EB%B3%80%EB%8F%99', 22000, 10.00, 19800, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6946934%3Ftimestamp%3D20260403154117', 120, 80, 'ACTIVATE', NULL),
+    (41, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '경제기사 궁금증 300문 300답(2025)', '곽해선', '9791191183337', '경제상식은 더 이상 지식이 아니라 생존을 위한 필수요소다. 그렇다면 어디서부터 어떻게 시작해야 이 어려운 경제 분야에 쉽게 다가갈 수 있을까? 답은 ‘경제기사’에 있다. TV나 신문, 심지어 휴대폰만 열어도 매일 매일 경제와 관련된 뉴스와 기사들이 쏟아진다. 경제기사들 안에 숨겨진 맥락을 제대로 집어내야만 어느 요소가 내게 ‘기회’인지, 어느 요소가 내게 ‘리스크’인지 정확히 분간해낼 수 있는 능력이 길러진다.  아직도 경제 관련 지식이 어렵게만
+출판사: 혜다
+ISBN: 9791191183337
+출간일시: 2024-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6793990&q=%EA%B2%BD%EC%A0%9C%EA%B8%B0%EC%82%AC+%EA%B6%81%EA%B8%88%EC%A6%9D+300%EB%AC%B8+300%EB%8B%B5%282025%29', 26000, 10.00, 23400, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6793990%3Ftimestamp%3D20260325153013', 123, 82, 'ACTIVATE', NULL),
+    (42, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '경제기사 궁금증 300문 300답(2023)', '곽해선', '9791191183214', '불확실성의 시대, 경제기사 속에 답이 있다  경제상식은 더 이상 지식이 아니라 생존을 위한 필수요소다. 그렇다면 어디서부터 어떻게 시작해야 이 어려운 경제 분야에 쉽게 다가갈 수 있을까? 답은 ‘경제기사’에 있다. TV나 신문, 심지어 휴대폰만 열어도 매일 매일 경제와 관련된 뉴스와 기사들이 쏟아진다. 경제기사들 안에 숨겨진 맥락을 제대로 집어내야만 어느 요소가 내게 ‘기회’인지, 어느 요소가 내게 ‘리스크’인지 정확히 분간해낼 수 있는 능력이 길러
+출판사: 혜다
+ISBN: 9791191183214
+출간일시: 2023-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6271093&q=%EA%B2%BD%EC%A0%9C%EA%B8%B0%EC%82%AC+%EA%B6%81%EA%B8%88%EC%A6%9D+300%EB%AC%B8+300%EB%8B%B5%282023%29', 24000, 10.00, 21600, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6271093%3Ftimestamp%3D20250925141601', 126, 84, 'ACTIVATE', NULL),
+    (43, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '경제 읽어주는 남자의 15분 경제 특강', '김광석', '9791140704385', '⦁STEP ① 자본주의 사회를 살아가는 데 반드시 필요한 최소한의 경제 지식을 익힌다! ⦁STEP ② 어려웠던 경제뉴스가 들리고 신문이 재밌어지는 최신 경제 이슈 14강! ⦁STEP ③ 경제를 공부했을 뿐인데 미래가 보인다! 세상을 읽는 응용 학습까지!
+출판사: 더퀘스트
+ISBN: 9791140704385
+출간일시: 2023-05-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6342104&q=%EA%B2%BD%EC%A0%9C+%EC%9D%BD%EC%96%B4%EC%A3%BC%EB%8A%94+%EB%82%A8%EC%9E%90%EC%9D%98+15%EB%B6%84+%EA%B2%BD%EC%A0%9C+%ED%8A%B9%EA%B0%95', 20000, 10.00, 18000, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6342104%3Ftimestamp%3D20251126161041', 129, 86, 'ACTIVATE', NULL),
+    (44, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '경제금융용어 700선', '한국은행 편집부', '9791155383933', '▶ 이 책은 경제금융용어 700선에 대해 다룬 도서입니다. 경제금융용어에 대한 기초적이고 전반적인 내용을 확인할 수 있도록 구성했습니다.
+출판사: 한국은행
+ISBN: 9791155383933
+출간일시: 2020-08-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5447608&q=%EA%B2%BD%EC%A0%9C%EA%B8%88%EC%9C%B5%EC%9A%A9%EC%96%B4+700%EC%84%A0', 8000, 5.00, 7600, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5447608%3Ftimestamp%3D20260411115846', 132, 88, 'ACTIVATE', NULL),
+    (45, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '세금 내는 아이들', '옥효진', '9788947547260', '하죠! 사업자등록을 해서 가게도 차리고, 갑작스런 실직에 절망하기도 합니다.  이 책은 재미있는 동화 형식으로, 교실 속에서 아이들이 취업, 세금, 사업, 실업, 저축, 투자, 보험, 경매 등의 활동을 또래들과 함께하며 자연스럽게 경제 주체가 되어가는 과정을 통해 어렵고 낯설기만 한 경제를 쉽고 자연스럽게 습득하도록 하였습니다. 각장의 별면에는 경제 개념 정리 부분을 구성하여 동화로 배운 경제 개념을 완벽히 이해하고 정리할 수 있도록 구성했습니다.  《세금 내는
+출판사: 한경키즈(한국경제신문)
+ISBN: 9788947547260
+출간일시: 2021-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5736499&q=%EC%84%B8%EA%B8%88+%EB%82%B4%EB%8A%94+%EC%95%84%EC%9D%B4%EB%93%A4', 14000, 10.00, 12600, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5736499%3Ftimestamp%3D20251112145336', 135, 90, 'ACTIVATE', NULL),
+    (46, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '경제수학, 위기의 편의점을 살려라!', '김나영', '9791191360998', '10대에 꼭 익혀야 할 경제와 수학개념 ★★★★★ 《경제수학》을 알면 경제도 수학도 쏙쏙! ★★★★★  이 책은 청소년들이 수학, 경제, 경영 개념을 이해하고, 중학교 교과과정만으로도 경제수학의 입문부터 심화까지 익힐 수 있으며, 2025년부터 변경되는 고교학점제를 준비할 수 있도록 만들어져 있다. 저자인 김나영은 교육부, 기획재정부, 서울시교육청에서 청소년을 위한 경제금융교육개발을 담당했고, 오랫동안 양정중의 스타동아리 ‘실험경제반’ 운영을 통해 청소년
+출판사: 생각학교
+ISBN: 9791191360998
+출간일시: 2024-02-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6571543&q=%EA%B2%BD%EC%A0%9C%EC%88%98%ED%95%99%2C+%EC%9C%84%EA%B8%B0%EC%9D%98+%ED%8E%B8%EC%9D%98%EC%A0%90%EC%9D%84+%EC%82%B4%EB%A0%A4%EB%9D%BC%21', 15000, 10.00, 13500, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6571543%3Ftimestamp%3D20251112153237', 138, 92, 'ACTIVATE', NULL),
+    (47, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '보도 섀퍼 부의 레버리지', '보도 섀퍼', '9791162543269', '20년 전, 보도 섀퍼가 자신이 어떻게 완전한 경제적 자유를 이뤘는지 밝힌 저서가 업그레이드된 부의 공식과 마인드셋을 더해 개정증보판으로 돌아왔다! 26살에 모든 것을 잃고 단 4년 만에 수입의 ‘이자’만으로 평생 먹고살 수 있을 만큼 압도적 부를 이룬 그의 경제적 노하우와 부의 공식이 이 책에 모두 담겨 있다.  이 책에 내가 열심히 일해서 돈을 번 방식뿐 아니라 똑똑하게 일하며 빠르게 부를 축적한 비밀까지 모두 펼쳐내 담았다. 세상은 달라지고 있고
+출판사: 비즈니스북스
+ISBN: 9791162543269
+출간일시: 2023-02-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6272188&q=%EB%B3%B4%EB%8F%84+%EC%84%80%ED%8D%BC+%EB%B6%80%EC%9D%98+%EB%A0%88%EB%B2%84%EB%A6%AC%EC%A7%80', 17500, 10.00, 15750, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6272188%3Ftimestamp%3D20251127150939', 141, 94, 'ACTIVATE', NULL),
+    (48, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 4, '장하준의 경제학 레시피', '장하준', '9788960519794', '“자유 시장의 자유에 맡겨 두면 경제가 저절로 발전할까?” “사람들이 가난한 건 게으르기 때문일까?” “기회의 평등만 보장하면 공정한 세상이 만들어질까?” “복지 제도는 가난한 사람들에게 무료로 혜택을 베푸는 제도일까?” “기업은 과연 주주들의 것일까?” “정부의 개입은 정말로 경제 발전에 불필요할까?” “자유 무역은 정말로 자유로운 무역일까?” “뛰어난 기업가 개인의 역량이 기업과 산업 발전을 좌우할까?” “자동화가 우리의 일자리를 모두 빼앗아 갈까
+출판사: 부키
+ISBN: 9788960519794
+출간일시: 2023-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6312187&q=%EC%9E%A5%ED%95%98%EC%A4%80%EC%9D%98+%EA%B2%BD%EC%A0%9C%ED%95%99+%EB%A0%88%EC%8B%9C%ED%94%BC', 18000, 10.00, 16200, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6312187%3Ftimestamp%3D20260111130001', 144, 96, 'ACTIVATE', NULL),
+    (49, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발(탑 비즈니스 리더의)(탑 비즈니스 리더 시리즈 1)', 'BUSINESS 집필진', '9788962601411', '200명 이상의 세계적 석학들이 모여 비즈니스의 모든 것을 다룬 경제경영서 [탑 비즈니스 리더 시리즈] 제1권 『자기계발』. ''BUSINESS''의 세 번째 단행본 시리즈(총6권)로, 이번 책에서는 시대를 선도하는 비즈니스 리더의 자기계발을 다루고 있다.  강렬하고 세련된 첫인상을 주는 이미지 관리법, 자신이 추구하는 가치를 직장생활에 적용하는 방법, 자신을 바라보고 다른 사람들의 인식을 관리하는 기술, 소신과 자신감을 가지고 일하는 법, 이메일, 보고서
+출판사: 비즈니스맵
+ISBN: 9788962601411
+출간일시: 2009-07-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=872541&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C%28%ED%83%91+%EB%B9%84%EC%A6%88%EB%8B%88%EC%8A%A4+%EB%A6%AC%EB%8D%94%EC%9D%98%29%28%ED%83%91+%EB%B9%84%EC%A6%88%EB%8B%88%EC%8A%A4+%EB%A6%AC%EB%8D%94+%EC%8B%9C%EB%A6%AC%EC%A6%88+1%29', 12000, 10.00, 10800, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F872541%3Ftimestamp%3D20220630102358', 147, 98, 'ACTIVATE', NULL),
+    (50, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '어린이를 위한 준비습관(정직과 용기가 함께하는 자기계발 동화 11)', '어린이동화연구회', '9788994136110', '어린이들이 좋은 습관을 기를 수 있도록 재미있고 교훈적인 이야기를 담은 「정직과 용기가 함께하는 자기계발 동화」시리즈 제11권 『어린이를 위한 준비습관』. 이 책은 자신의 할 일을 미루는 주인공 ''건우''를 통해 우리 아이들에게 준비하는 습관의 중요성과 하루하루 최선을 다하는 모습을 보여준다. 우리 아이들이 학교나 가정에서 흔히 일어날 수 있는 일들을 소재로 하고 있어 쉽게 공감할 수 있다. 더불어 책 뒤에 [함께 생각해 보기]를 통해 준비를 잘하기 위해
+출판사: 꿈꾸는사람들
+ISBN: 9788994136110
+출간일시: 2010-06-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1412447&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%A4%80%EB%B9%84%EC%8A%B5%EA%B4%80%28%EC%A0%95%EC%A7%81%EA%B3%BC+%EC%9A%A9%EA%B8%B0%EA%B0%80+%ED%95%A8%EA%BB%98%ED%95%98%EB%8A%94+%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C+%EB%8F%99%ED%99%94+11%29', 9000, 10.00, 8100, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1412447%3Ftimestamp%3D20220527205248', 150, 100, 'ACTIVATE', NULL),
+    (51, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '돈쓰는 자기계발 돈버는 자기계발', '장열정', '9791188641055', '자기계발하며 돈을 버는 방법이 있다! 당신은 사랑하는 일을 하고 있습니까? 나는 사랑하는 일을 하며 돈을 벌고 있습니다. 나는 매일 자기계발하며 그것을 제품으로 만들어 팔고 있습니다. 내가 하는 자기계발은 내 사업이 되었고 내 직업이 되었고 내 돈이 되었습니다. 나는 매일 자기계발하는 것이 행복합니다. 내가 좋아하고 사랑하는 일로 내 1인사업을 시작했습니다. 그리고 지금은 집도 사고 벤츠도 타고 다니고 골프도 마음껏 치러 다니며 행복을 누리고 있습니다. 어떻게
+출판사: 백배미디어
+ISBN: 9791188641055
+출간일시: 2018-03-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1644827&q=%EB%8F%88%EC%93%B0%EB%8A%94+%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C+%EB%8F%88%EB%B2%84%EB%8A%94+%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 20000, 10.00, 18000, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1644827%3Ftimestamp%3D20220706185432', 153, 102, 'ACTIVATE', NULL),
+    (52, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '어린이를 위한 팀워크(어린이 자기계발동화 27)', '서지원', '9788960864610', '어린이의 꿈과 인성을 길러 주는 「어린이 자기계발동화」 제27권 『어린이를 위한 팀워크』. 이 시리즈는 아이들에게 꼭 필요한 인성만을 골라 재미난 이야기로 풀어낸 자기계발동화로 이루어져 있다. 일상생활 속에서 일어나는 일을 바탕으로 삼아 공감을 불러일으킨다. 제27권에서는 글로벌 시대에 중요한 덕목일 뿐 아니라, 꼭 필요한 자질인 팀워크의 법칙을 배울 수 있다. 초등학교 5학년 소년 완두는 집에서도 학교에서도 외롭다. 부모님의 별거로 스스로 마음을
+출판사: 위즈덤하우스
+ISBN: 9788960864610
+출간일시: 2011-08-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=841013&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%A5%BC+%EC%9C%84%ED%95%9C+%ED%8C%80%EC%9B%8C%ED%81%AC%28%EC%96%B4%EB%A6%B0%EC%9D%B4+%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C%EB%8F%99%ED%99%94+27%29', 9000, 10.00, 8100, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F841013%3Ftimestamp%3D20211219164139', 156, 104, 'ACTIVATE', NULL),
+    (53, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '시간 관리의 기술(어린이를 위한)(어린이 자기계발기술 4)', '노지영', '9788960864870', '아이들의 생활이나 학습에서 직접적 도움이 될 기술을 가르쳐주는 「어린이 자기계발기술」 제4권 『어린이를 위한 시간 관리의 기술』. 자기계발동화에 기술을 강화한 자기계발기술동화다. 시간 관리를 잘못한 탓에 언제나 엉망진창으로 학교생활을 하는 진후가, 어린이 공룡 화석 발굴단에 참가하기 위해 과학 퀴즈 대회에 뛰어들면서 벌어지는 사건사고 속으로 아이들을 안내한다. 공감대를 형성하는 재미있는 이야기를 읽어나가면서 자연스럽게 시간 관리를 해야 하는 이유는
+출판사: 위즈덤하우스
+ISBN: 9788960864870
+출간일시: 2011-11-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=841092&q=%EC%8B%9C%EA%B0%84+%EA%B4%80%EB%A6%AC%EC%9D%98+%EA%B8%B0%EC%88%A0%28%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%A5%BC+%EC%9C%84%ED%95%9C%29%28%EC%96%B4%EB%A6%B0%EC%9D%B4+%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C%EA%B8%B0%EC%88%A0+4%29', 9800, 10.00, 8820, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F841092%3Ftimestamp%3D20220820175714', 159, 106, 'ACTIVATE', NULL),
+    (54, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', 'AI 김영수', '9791173120756', '《다양한 주제에 관한 영어 지문 독해 및 문제 풀이 Best 20 시리즈》는 영어 독해 능력을 향상시키고자 하는 독자들을 위해 준비된 학습서입니다. 이 시리즈는 다양한 주제와 문체의 영어 지문을 통해 독해 실력을 키우는 데 중점을 두고 있습니다. 각 권은 20개의 독해 지문과 그에 따른 문제 풀이로 구성되어 있어, 독자들이 폭넓은 주제를 접하며 읽기 능력을 강화할 수 있습니다. 지문은 일상 생활, 학문적 주제, 문화적 배경 등 다양한 내용을 다루고
+출판사: 유페이퍼
+ISBN: 9791173120756
+출간일시: 2024-10-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6762604&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 5000, 10.00, -1, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6762604%3Ftimestamp%3D20241101164524', 162, 108, 'ACTIVATE', NULL),
+    (55, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '창의력(어린이를 위한)(어린이 자기계발동화 18)', '한창욱', '9788960862357', '어린이를 위한 자기계발동화『어린이를 위한 창의력』. 어린이에게 꼭 필요한 인성만을 골라 재미있고 감동적인 이야기로 풀어낸「어린이 자기계발동화」시리즈의 18번째 책이다. 창의력을 잃어버린 세 아이가 생각 도둑을 찾아다니는 이야기를 그리고 있다. 마을 사람들의 생각을 빼앗아간 생각 도둑을 잡기 위해서는 다섯 단계의 창의력 문제를 풀어야 한다. 다섯 가지의 창의력 미션을 해결하면서 생각 도둑에게 점점 다가가는 아이들. 이 책은 쫓고 쫓기는 추격전 속에서
+출판사: 위즈덤하우스
+ISBN: 9788960862357
+출간일시: 2010-02-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=840923&q=%EC%B0%BD%EC%9D%98%EB%A0%A5%28%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%A5%BC+%EC%9C%84%ED%95%9C%29%28%EC%96%B4%EB%A6%B0%EC%9D%B4+%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C%EB%8F%99%ED%99%94+18%29', 9000, 10.00, 8100, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F840923%3Ftimestamp%3D20220604112948', 165, 110, 'ACTIVATE', NULL),
+    (56, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', 'BUSINESS 집필진', '4808962601411', '세계 최고 비즈니스 사상가들의 혜안을 만나다!   200명 이상의 세계적 석학들이 모여 비즈니스의 모든 것을 다룬 경제경영서 [탑 비즈니스 리더 시리즈] 제1권 『자기계발』. ''BUSINESS''의 세 번째 단행본 시리즈(총6권)로, 이번 책에서는 시대를 선도하는 비즈니스 리더의 자기계발을 다루고 있다.  강렬하고 세련된 첫인상을 주는 이미지 관리법, 자신이 추구하는 가치를 직장생활에 적용하는 방법, 자신을 바라보고 다른 사람들의 인식을 관리하는 기술
+출판사: 비즈니스맵
+ISBN: 4808962601411
+출간일시: 2010-07-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4479188&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 0, 0.00, -1, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4479188%3Ftimestamp%3D20190301021602', 168, 112, 'ACTIVATE', NULL),
+    (57, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', '멍그리', '9791193054765', '이 전자책은 자기계발을 위한 포괄적인 가이드를 제공하며, 자기계발에 관한 다양한 측면을 다루고 있습니다.개인의 목표를 달성하고, 긍정적인 습관을 기르고, 사고방식을 개선하기 위한 실용적인 전략과 기술을 제공하며, 스트레스 관리와 도전 극복에도 도움이 됩니다.이 전자책은 자기계발 분야의 전문가에 의해 쓰여졌으며 독자들이 자신의 최고 버전이 되기 위해 행동을 취하도록 격려하기 위해 고안되었다.알기 쉬운 조언과 실행 가능한 단계를 통해 이 전자책은 자신의
+출판사: 작가와
+ISBN: 9791193054765
+출간일시: 2023-04-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6331486&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 9900, 5.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6331486', 171, 114, 'ACTIVATE', NULL),
+    (58, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', '나카노 아키라', '4808962602203', '피터 드러커가 이야기하는 21세기 지식사회 프로페셔널의 조건!  ''현대 경영학의 아버지''로 불리는 경영 이론가 피터 드러커가 들려주는 자기계발론『피터 드러커의 자기계발』. 바쁜 비즈니스맨들을 위해 출퇴근길 30분 정도의 투자로 경영대가들의 핵심이론을 골라 읽을 수 있게 구성한「비즈니스 에센셜 시리즈」의 첫 번째 책이다. 널리 알려진 를 비롯한 , &lt;21세기 지식경영&gt; 등의 저서들을 참고하여 드러커의 자기계발론을 알기 쉽게 정리했다.
+출판사: 비즈니스맵
+ISBN: 4808962602203
+출간일시: 2011-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4623192&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 0, 10.00, -1, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4623192%3Ftimestamp%3D20190301203420', 174, 116, 'ACTIVATE', NULL),
+    (59, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', '한국인재경영연구회', '9788964180259', '학계ㆍ산업 분야에서 활동하는 전문가가 모인 한국인재경영연구회가 편저한 『성공하는 사람들의 자기계발』. 동서고금을 통해 성공한 사람들의 실천적 사례와 지혜를 연구하여 불확실성 시대 속에서도 지속적 성공인생을 추구하는 현대인에게 이상과 비전을 건넨다. 특히 우리가 자신의 내부에 잠든 잠재능력을 발견하여 끄집어내 활용하는 방법을 소개하고 있다. 성공 속으로 걸어들어가도록 인도한다.
+출판사: 경영자료사
+ISBN: 9788964180259
+출간일시: 2012-01-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4381173&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 6900, 15.00, -1, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4381173%3Ftimestamp%3D20190228130914', 177, 118, 'ACTIVATE', NULL),
+    (60, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', 'Ghat GPT 저자 화이트워터 역자', '9791170850502', '동기 부여는 자기계발에 있어서 매우 중요한 역할을 합니다. 자기계발은 개인의 성장과 발전을 위해 목표를 설정하고 그에 따라 행동을 취하는 과정을 말합니다. 이러한 과정을 구체적으로 설명해주는 내용을 전달해주는 책입니다.
+출판사: 작가와
+ISBN: 9791170850502
+출간일시: 2023-05-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6357171&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 3500, 0.00, -1, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6357171', 180, 0, 'ACTIVATE', NULL),
+    (61, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설', '한국소설가협회', '2002976000518', '출판사: 삼문
+ISBN: 2002976000518
+출간일시: 1996-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=107949&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 7000, 5.00, -1, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F107949%3Ftimestamp%3D20250425142252', 183, 2, 'ACTIVATE', NULL),
+    (62, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설(계간)', '한국소설가협회', '2009960000011', '출판사: 한국소설가협회
+ISBN: 2009960000011
+출간일시: 1997-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=278133&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%28%EA%B3%84%EA%B0%84%29', 8000, 10.00, -1, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F278133%3Ftimestamp%3D20250425164813', 186, 4, 'ACTIVATE', NULL),
+    (63, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설 (8월호)', '편집부', '9771228648602', '출판사: 한국소설가협회
+ISBN: 9771228648602
+출간일시: 2010-08-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5670270&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%288%EC%9B%94%ED%98%B8%29', 15000, 15.00, -1, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5670270%3Ftimestamp%3D20250531154352', 189, 6, 'ACTIVATE', NULL),
+    (64, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설(8월호)', '한국소설가협회', '2011869000023', '출판사: 청어와삐삐
+ISBN: 2011869000023
+출간일시: 2001-12-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=285724&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%288%EC%9B%94%ED%98%B8%29', 7000, 0.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F285724%3Ftimestamp%3D20250425165347', 192, 8, 'ACTIVATE', NULL),
+    (65, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국모더니즘 소설연구(양장본 HardCover)', '김진석', '9791195464050', '『한국모더니즘 소설연구』는 한국모더니즘에 대해 다룬 책이다. 이상, 최명익, 박태원 등 일제 강점기의 모더니즘 작가 연구에 초점을 맞췄다. 또한 아방가르드 문학을 대표하는 한국의 초현실주의 문학과 이상의 수필 세계에 대해 살펴본다.
+출판사: 국학자료원
+ISBN: 9791195464050
+출간일시: 2015-01-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1657790&q=%ED%95%9C%EA%B5%AD%EB%AA%A8%EB%8D%94%EB%8B%88%EC%A6%98+%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 15000, 5.00, 14250, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1657790%3Ftimestamp%3D20221025130757', 195, 10, 'ACTIVATE', NULL),
+    (66, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '날개(한국문학을 권하다 10)', '이상', '9788994353470', '제10권 『날개』. 문학으로서의 읽는 즐거움을 살린 쉬운 해설과 편집, 단행본으로 출간된 적 없는 작품들도 수록한 총서 가운데 한 권이다. 자유분방한 형식과 역설의 재치, 독특한 난해함으로 한국문학을 새로운 경지로 이끈 이상의 작품 16편을 수록하였다. 저자의 첫 소설이자 자전소설로 인간 존재의 그 가치에 대한 질문을 담은 장편소설 ‘12월 12일’, 주인공의 일상을 의식의 흐름이라는 기법으로 묘사하며 작품 구성과 기교 측면에서 한 단계 올라섰다고 평가
+출판사: 애플북스
+ISBN: 9788994353470
+출간일시: 2014-06-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1417390&q=%EB%82%A0%EA%B0%9C%28%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99%EC%9D%84+%EA%B6%8C%ED%95%98%EB%8B%A4+10%29', 13500, 10.00, 12150, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1417390%3Ftimestamp%3D20221011181548', 198, 12, 'ACTIVATE', NULL),
+    (67, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편소설 45', '김동인, 김유정, 김정한, 나도향, 박완서, 심훈', '9791189503727', '『중고생이 꼭 읽어야 할 한국단편소설 45』는 국어·문학 교과서에 수록된 45편의 한국 현대 단편 소설을 엄선해 청소년들은 물론 성인들도 최대한 재미있고 쉽게 이해할 수 있도록 구성한 책이다. 본문의 단어 뜻풀이와 간단한 작품 설명 정도만 수록되어 있던 기존 단행본과 달리 청소년들이 작품을 더욱 깊이 있게 감상하고 학습에도 실질적인 도움을 주고자, 수능 만점 선생님이 본문의 중요한 구절과 작품 전반에 관한 내용을 친절하게 설명하는 형식으로 구성했다. 또한
+출판사: 생각뿔
+ISBN: 9791189503727
+출간일시: 2023-03-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5034797&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+45', 22000, 10.00, 19800, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5034797%3Ftimestamp%3D20260314114433', 1, 14, 'ACTIVATE', NULL),
+    (68, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편소설 BEST 20 (평생 소장 소설)', '김유정이효석현진건 외 6인', '1400000301586', '한국단편소설 BEST 20 (평생 소장 소설)  [필독서] 현대문학 단편소설  *** 한 권으로 현대문학 읽기 ***  - 중.고등학생 필독서 - 국어 교과서 수록 작품 - 한국인 가장 좋아하는 소설 - 죽기 전에 꼭 읽어야 하는 단편소설 ******************************  1. 김유정 봄봄 / 동백꽃 / 땡볕 / 노다지  2. 김동인 감자 / 발가락이 닮았다 / 배따라기 / 붉은 산  3. 이상 날개  4. 나도향 물레방아 / 벙어리
+출판사: 부크크(Bookk)
+ISBN: 1400000301586
+출간일시: 2018-03-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=8194&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+BEST+20+%28%ED%8F%89%EC%83%9D+%EC%86%8C%EC%9E%A5+%EC%86%8C%EC%84%A4%29', 15900, 0.00, 15900, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F8194%3Ftimestamp%3D20190122102834', 4, 16, 'ACTIVATE', NULL),
+    (69, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '목단화 치악산(하) 비행선 금수회의록 공진회(한국신소설선집 3)', '권영민', '9788952104069', '출판사: 서울대학교출판부
+ISBN: 9788952104069
+출간일시: 2003-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=632430&q=%EB%AA%A9%EB%8B%A8%ED%99%94+%EC%B9%98%EC%95%85%EC%82%B0%28%ED%95%98%29+%EB%B9%84%ED%96%89%EC%84%A0+%EA%B8%88%EC%88%98%ED%9A%8C%EC%9D%98%EB%A1%9D+%EA%B3%B5%EC%A7%84%ED%9A%8C%28%ED%95%9C%EA%B5%AD%EC%8B%A0%EC%86%8C%EC%84%A4%EC%84%A0%EC%A7%91+3%29', 14000, 5.00, 13300, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632430%3Ftimestamp%3D20221025182958', 7, 18, 'ACTIVATE', NULL),
+    (70, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 중장편 소설 베스트 12 세트(중고생이 꼭 읽어야 할)(전4권)', '박완서, 조세희', '9788991759503', '‘한국 중장편 소설 베스트 12(전4권)’는 한국 문학사에서 중요한 위치를 차지할 뿐 아니라 학교 현장에서도 필독서로 꼽히는 열 두 편의 중편 및 장편 소설을 엄선한 시리즈물이다. ‘한국단편소설 35’와 그 뒤를 이은 ‘한국단편소설 65’에 대한 독자들의 뜨거운 반응에 힘입어 새로 엮게 된 중장편 모음집은 독자들을 더 깊은 한국 문학의 세계로 나아가도록 이끌어 줄 것이다.
+출판사: 리베르
+ISBN: 9788991759503
+출간일시: 2010-12-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1353264&q=%ED%95%9C%EA%B5%AD+%EC%A4%91%EC%9E%A5%ED%8E%B8+%EC%86%8C%EC%84%A4+%EB%B2%A0%EC%8A%A4%ED%8A%B8+12+%EC%84%B8%ED%8A%B8%28%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0%29%28%EC%A0%844%EA%B6%8C%29', 22000, 10.00, 19800, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1353264%3Ftimestamp%3D20221025125227', 10, 20, 'ACTIVATE', NULL),
+    (71, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '초등학생들에게 소설 읽는 재미와 감동을 주는 한국대표소설 1', '나도향', '9788963791371', '『초등학생들에게 소설 읽는 재미와 감동을 주는 한국대표소설』 제1권은 중·고등학교 교과서에 실린 대표 소설들을 모아 놓은 책으로, 1920~1940년대 격변기의 시대상과 다양한 인물들의 삶을 보여준다. 작품 발표 당시의 원문을 그대로 게재함을 원칙으로 하였으나 일부는 현대 어법에 맞게 고쳤으며, 초등학생이 이해하기 어려운 낱말은 별표와 함께 해석을 달았다.
+출판사: 거인
+ISBN: 9788963791371
+출간일시: 2016-09-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=891207&q=%EC%B4%88%EB%93%B1%ED%95%99%EC%83%9D%EB%93%A4%EC%97%90%EA%B2%8C+%EC%86%8C%EC%84%A4+%EC%9D%BD%EB%8A%94+%EC%9E%AC%EB%AF%B8%EC%99%80+%EA%B0%90%EB%8F%99%EC%9D%84+%EC%A3%BC%EB%8A%94+%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EC%86%8C%EC%84%A4+1', 15000, 10.00, 13500, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F891207%3Ftimestamp%3D20230216151251', 13, 22, 'ACTIVATE', NULL),
+    (72, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설의 이론', '조동일', '9788942349012', '이 책은 해당 분야 전공자들을 위한 교재 겸 전문서이다.
+출판사: 지식산업사
+ISBN: 9788942349012
+출간일시: 2004-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=577780&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%EB%A1%A0', 18000, 10.00, 16200, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F577780%3Ftimestamp%3D20221025120200', 16, 24, 'ACTIVATE', NULL),
+    (73, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설의 변신 논리', '김미란', '9788976262851', '변신이란 주제가 한국의 설화와 소설에 어떻게 구현되고 있으며 변신주제의 철학적 근거는 무엇인지 탐구한책. 변신주제의 구현양상과 의미를 고찰하고,변신주제와 철학의 관련성, 변신주제에 대한 지식인들의 인식 태도 등을 작품 예와 함께 고찰했다.
+출판사: 태학사
+ISBN: 9788976262851
+출간일시: 1998-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1070032&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EC%9D%98+%EB%B3%80%EC%8B%A0+%EB%85%BC%EB%A6%AC', 13000, 10.00, 11700, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1070032%3Ftimestamp%3D20250326114225', 19, 26, 'ACTIVATE', NULL),
+    (74, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, 'EBS 필독 중학 교과서 소설(2024)', 'EBS교육방송 편집부', '9788954751872', '중학 국어로 수능까지 잡는다!  EBS 필독 중학 국어로 수능 잡기, 교과서 소설    1. 교과서 작품 학습으로 중학 내신부터 수능 문제까지 대비!  9종의 중학교 교과서 작품 중에서 대학수학능력시험과 평가원 모의평가 등에서 다루었던 작품을 선별하여 제시하였습니다. 작품에 충실한 학습을 바탕으로 중학교 내신부터 수능 문제까지 자신 있게 도전할 수 있습니다.  2. 감상은 즐겁게, 핵심 개념은 쉽게!  문학 작품을 즐겁게 감상하면서 핵심 개념을 쉽게
+출판사: EBS한국교육방송공사
+ISBN: 9788954751872
+출간일시: 2020-01-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5210337&q=EBS+%ED%95%84%EB%8F%85+%EC%A4%91%ED%95%99+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%86%8C%EC%84%A4%282024%29', 13500, 10.00, 12150, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5210337%3Ftimestamp%3D20241207134008', 22, 28, 'ACTIVATE', NULL),
+    (75, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설의 구조와 실상', '성현경', '2004636001453', '고전소설을 중심으로 하여 한국 소설의 구조적 특질과 변화를 한국인의 의식 구조와 관련시켜 구명하고자 한 저자 나름대로의 지속적인 관심과 노력으로 이루어졌다. 구운몽과 옥루몽에 대해 집중적으로 연구되어져 있으며 謫降小說硏究는 우리 고전소설 중에서 謫降說話를 모집·정리 분석하고 이들의 창작 연대를 밝혀 놓은 것인데 실증주의적 태도를 견지하면서 한국소설의 구조와 실상을 구명하려 한 것이 특징이다.
+출판사: 영남대학교출판부
+ISBN: 2004636001453
+출간일시: 1989-10-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=160680&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EC%9D%98+%EA%B5%AC%EC%A1%B0%EC%99%80+%EC%8B%A4%EC%83%81', 7700, 15.00, 7700, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F160680%3Ftimestamp%3D20251205130328', 25, 30, 'ACTIVATE', NULL),
+    (76, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국고전소설 40', '박지원', '9788965820499', '『중고생이 꼭 읽어야 할 한국고전소설 40』은 청소년 문학 분야 베스트셀러인 《한국고전소설 35》의 개정 증보판으로, 중고등학교 교과서 개정과 교육과정 개편에 따라 꼭 포함돼야 할 작품을 추가하고, 내신, 수능, 논술을 위해 내용을 보완하였다. 문학 교과서 수록 빈도, 문학사적 의의, 예술성을 기준으로 선정하였다.  작품 전문을 수록해 완전한 감상이 가능하고, 줄거리를 구성 단계에 따라 구분해 작품의 내용을 정확히 파악할 수 있도록 했다. 수행 평가, 수능
+출판사: 리베르
+ISBN: 9788965820499
+출간일시: 2013-01-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=920944&q=%ED%95%9C%EA%B5%AD%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4+40', 16800, 10.00, 15120, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920944%3Ftimestamp%3D20260101111128', 28, 32, 'ACTIVATE', NULL),
+    (77, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국현대 대하소설 탐구', '정종진', '9788959662968', '출판사: 태학사
+ISBN: 9788959662968
+출간일시: 2009-02-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=811661&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80+%EB%8C%80%ED%95%98%EC%86%8C%EC%84%A4+%ED%83%90%EA%B5%AC', 18000, 10.00, 16200, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F811661%3Ftimestamp%3D20211030144651', 31, 34, 'ACTIVATE', NULL),
+    (78, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '서편제 눈길 병신과 머저리 겨울밤 포인트 외(20세기 한국소설 21)', '최상규, 송상옥, 이병주, 이청준', '9788936462314', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 이청준, 이병주 외 편. 이청준의 &lt;병신과 머저리&gt;, 이병주의 &lt;겨울밤&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들
+출판사: 창비
+ISBN: 9788936462314
+출간일시: 2018-09-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534105&q=%EC%84%9C%ED%8E%B8%EC%A0%9C+%EB%88%88%EA%B8%B8+%EB%B3%91%EC%8B%A0%EA%B3%BC+%EB%A8%B8%EC%A0%80%EB%A6%AC+%EA%B2%A8%EC%9A%B8%EB%B0%A4+%ED%8F%AC%EC%9D%B8%ED%8A%B8+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+21%29', 12000, 10.00, 10800, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534105%3Ftimestamp%3D20231124190628', 34, 36, 'ACTIVATE', NULL),
+    (79, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편소설 70', '박완서', '9788965820482', '작품 줄거리를 한눈에 알아볼 수 있는 ‘인물 관계도’를 더해 내용을 더욱 쉽게 이해할 수 있다.  논술이 입시의 중요한 요소가 되면서 문학은 이제 교양을 넘어 필수 과목이 되었다. 이 책에는 살아가는 동안 꼭 읽어야 할 한국 단편 소설들이 수록되어 있으므로 청소년은 물론 성인도 필독 작품 목록으로 삼을 수 있을 것이다. 리베르의 ‘중고생이 꼭 읽어야 할 문학 필독서 시리즈’를 통해 한국고전소설·세계단편소설·한국대표수필 등 문학의 모든 것을 만날 수 있다
+출판사: 리베르
+ISBN: 9788965820482
+출간일시: 2013-01-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=920398&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+70', 16800, 10.00, 15120, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920398%3Ftimestamp%3D20260115111124', 37, 38, 'ACTIVATE', NULL),
+    (80, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '청산댁 해구 누님의 초상 목선 외(20세기 한국소설 32)', '백시종, 유재용, 한승원, 조정래', '9788936462420', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 한승원, 조정래 외 편. 한승원의 &lt;목선&gt;, &lt;아리랑 별곡&gt;, 조정래의 &lt;청산댁&gt;, &lt;유형의 땅&gt;, 백시종의 &lt;해구&gt;, 유재용의 &lt;누님의 초상&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를
+출판사: 창비
+ISBN: 9788936462420
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534170&q=%EC%B2%AD%EC%82%B0%EB%8C%81+%ED%95%B4%EA%B5%AC+%EB%88%84%EB%8B%98%EC%9D%98+%EC%B4%88%EC%83%81+%EB%AA%A9%EC%84%A0+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+32%29', 11000, 10.00, 9900, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534170%3Ftimestamp%3D20231124183714', 40, 40, 'ACTIVATE', NULL),
+    (81, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '남생이 빛 속으로 잔등 지맥 외(20세기 한국소설 12)', '최정희, 현덕, 허준, 김사량', '9788936462222', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 김사량, 허준 외 편. 김사량의 &lt;빛 속으로&gt;, 허준의 &lt;잔등&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을 위해
+출판사: 창비
+ISBN: 9788936462222
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534144&q=%EB%82%A8%EC%83%9D%EC%9D%B4+%EB%B9%9B+%EC%86%8D%EC%9C%BC%EB%A1%9C+%EC%9E%94%EB%93%B1+%EC%A7%80%EB%A7%A5+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+12%29', 12000, 10.00, 10800, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534144%3Ftimestamp%3D20231124144702', 43, 42, 'ACTIVATE', NULL),
+    (82, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '당제 흐르는 북 만취당기 외(20세기 한국소설 23)', '최일남, 김문수, 송기숙', '9788936462338', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 최일남, 송기숙 외 편. 최일남의 &lt;노새 두 마리&gt;, &lt;흐르는 북&gt;, 송기숙의 &lt;몽기미 풍경&gt;, &lt;개는 왜 짖는가&gt;, 김문수의 &lt;만취당기&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의
+출판사: 창비
+ISBN: 9788936462338
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534158&q=%EB%8B%B9%EC%A0%9C+%ED%9D%90%EB%A5%B4%EB%8A%94+%EB%B6%81+%EB%A7%8C%EC%B7%A8%EB%8B%B9%EA%B8%B0+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+23%29', 12000, 10.00, 10800, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534158%3Ftimestamp%3D20231124184458', 46, 44, 'ACTIVATE', NULL),
+    (83, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '무명소졸 창 도정 증인 외(20세기 한국소설 13)', '이선희, 이봉구, 김영수, 최태응, 임옥인', '9788936462239', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 김학철, 지하련 외 편. 김학철의 &lt;무명소졸&gt;, 지하련의 &lt;도정&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을
+출판사: 창비
+ISBN: 9788936462239
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534096&q=%EB%AC%B4%EB%AA%85%EC%86%8C%EC%A1%B8+%EC%B0%BD+%EB%8F%84%EC%A0%95+%EC%A6%9D%EC%9D%B8+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+13%29', 8000, 10.00, 7200, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534096%3Ftimestamp%3D20231124170150', 49, 46, 'ACTIVATE', NULL),
+    (84, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '날개 사랑손님과 어머니 장삼이사 마권 외(20세기 한국소설 9)', '주요섭, 최명익, 이상, 현경준, 유향림', '9788936462192', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 이상, 최명익 외 편. 이상의 &lt;날개&gt;, 최명익의 &lt;장삼이사&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을 위해 작가
+출판사: 창비
+ISBN: 9788936462192
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534140&q=%EB%82%A0%EA%B0%9C+%EC%82%AC%EB%9E%91%EC%86%90%EB%8B%98%EA%B3%BC+%EC%96%B4%EB%A8%B8%EB%8B%88+%EC%9E%A5%EC%82%BC%EC%9D%B4%EC%82%AC+%EB%A7%88%EA%B6%8C+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+9%29', 12000, 10.00, 10800, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534140%3Ftimestamp%3D20231124154539', 52, 48, 'ACTIVATE', NULL),
+    (85, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '만세전 두 파산 전화 양과자갑(20세기 한국소설 2)', '염상섭', '9788936462123', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 염상섭 편. 염상섭의 &lt;만세전&gt;, &lt;두 파산&gt; 등 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을 위해 작가의 인생관과 소설의 배경이
+출판사: 창비
+ISBN: 9788936462123
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534082&q=%EB%A7%8C%EC%84%B8%EC%A0%84+%EB%91%90+%ED%8C%8C%EC%82%B0+%EC%A0%84%ED%99%94+%EC%96%91%EA%B3%BC%EC%9E%90%EA%B0%91%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+2%29', 12000, 10.00, 10800, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534082%3Ftimestamp%3D20250628112838', 55, 50, 'ACTIVATE', NULL),
+    (86, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설의 기독교적 수용과 문학적표현', '김경완', '9788976265869', '이 책은 일반 독자들을 대상으로 집필한 소설이다.
+출판사: 태학사
+ISBN: 9788976265869
+출간일시: 2000-11-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1068997&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EC%9D%98+%EA%B8%B0%EB%8F%85%EA%B5%90%EC%A0%81+%EC%88%98%EC%9A%A9%EA%B3%BC+%EB%AC%B8%ED%95%99%EC%A0%81%ED%91%9C%ED%98%84', 9000, 10.00, 8100, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1068997%3Ftimestamp%3D20221025143502', 58, 52, 'ACTIVATE', NULL),
+    (87, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '당신에 대해서 공중누각 구평목 씨의 바퀴벌레 외(20세기 한국소설 42)', '이인성, 최수철, 이승우, 정찬, 박상우', '9788936462529', '［20세기 한국소설］시리즈 제42권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이인성, 최수철, 이승우 등 6명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462529
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534135&q=%EB%8B%B9%EC%8B%A0%EC%97%90+%EB%8C%80%ED%95%B4%EC%84%9C+%EA%B3%B5%EC%A4%91%EB%88%84%EA%B0%81+%EA%B5%AC%ED%8F%89%EB%AA%A9+%EC%94%A8%EC%9D%98+%EB%B0%94%ED%80%B4%EB%B2%8C%EB%A0%88+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+42%29', 8000, 10.00, 7200, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534135%3Ftimestamp%3D20231124175926', 61, 54, 'ACTIVATE', NULL),
+    (88, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '먼 그대 봉숭아 꽃물 내 사촌 별정 우체국장 외(20세기 한국소설 34)', '서영은, 김민숙, 김만옥, 윤후명', '9788936462444', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 윤후명, 서영은 외 편. 서영은의 &lt;사막을 건너는 법&gt;, &lt;먼 그대&gt;, 윤후명의 &lt;돈황의 사랑&gt;, &lt;원숭이는 없다&gt;, 김민숙의 &lt;복숭아 꽃물&gt;, 김만옥의 &lt;내 사촌 별정 우체국장&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과
+출판사: 창비
+ISBN: 9788936462444
+출간일시: 2017-10-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533872&q=%EB%A8%BC+%EA%B7%B8%EB%8C%80+%EB%B4%89%EC%88%AD%EC%95%84+%EA%BD%83%EB%AC%BC+%EB%82%B4+%EC%82%AC%EC%B4%8C+%EB%B3%84%EC%A0%95+%EC%9A%B0%EC%B2%B4%EA%B5%AD%EC%9E%A5+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+34%29', 12000, 10.00, 10800, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533872%3Ftimestamp%3D20231124162505', 64, 56, 'ACTIVATE', NULL),
+    (89, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '복덕방 달밤 해방 전후 소설가 구보씨의 일일 외(20세기 한국소설 6)', '이태준, 박태원', '9788936462161', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 이태준, 박태원 편. 이태준의 &lt;복덕방&gt;, 박태원의 &lt;소설가 구보씨의 일일&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년
+출판사: 창비
+ISBN: 9788936462161
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534134&q=%EB%B3%B5%EB%8D%95%EB%B0%A9+%EB%8B%AC%EB%B0%A4+%ED%95%B4%EB%B0%A9+%EC%A0%84%ED%9B%84+%EC%86%8C%EC%84%A4%EA%B0%80+%EA%B5%AC%EB%B3%B4%EC%94%A8%EC%9D%98+%EC%9D%BC%EC%9D%BC+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+6%29', 12000, 10.00, 10800, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534134%3Ftimestamp%3D20231124145916', 67, 58, 'ACTIVATE', NULL),
+    (90, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '바비도 요한 시집 유예 불신시대 쑈리 킴 외(20세기 한국소설 15)', '김성한, 장용학, 곽학송, 오상원, 박경리', '9788936462253', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 김성한, 장용학 외 편. 김성한의 &lt;바비도&gt;, 장용학의 &lt;요한 시집&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들
+출판사: 창비
+ISBN: 9788936462253
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534147&q=%EB%B0%94%EB%B9%84%EB%8F%84+%EC%9A%94%ED%95%9C+%EC%8B%9C%EC%A7%91+%EC%9C%A0%EC%98%88+%EB%B6%88%EC%8B%A0%EC%8B%9C%EB%8C%80+%EC%91%88%EB%A6%AC+%ED%82%B4+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+15%29', 12000, 10.00, 10800, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534147%3Ftimestamp%3D20231124150740', 70, 60, 'ACTIVATE', NULL),
+    (91, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '기억의 심연(한국소설과 분단의 현상학)', '유임하', '9788981071820', '출판사: 이회문화사
+ISBN: 9788981071820
+출간일시: 2002-03-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1130152&q=%EA%B8%B0%EC%96%B5%EC%9D%98+%EC%8B%AC%EC%97%B0%28%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EA%B3%BC+%EB%B6%84%EB%8B%A8%EC%9D%98+%ED%98%84%EC%83%81%ED%95%99%29', 15000, 10.00, 13500, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1130152%3Ftimestamp%3D20211204202023', 73, 62, 'ACTIVATE', NULL),
+    (92, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '티타임을 위하여 착한 사람 문성현 외(20세기 한국소설 47)', '이선, 윤영수, 김소진, 공선옥, 한창훈', '9788936462574', '［20세기 한국소설］시리즈 제47권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이선, 윤영수, 김소진 등 5명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462574
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533887&q=%ED%8B%B0%ED%83%80%EC%9E%84%EC%9D%84+%EC%9C%84%ED%95%98%EC%97%AC+%EC%B0%A9%ED%95%9C+%EC%82%AC%EB%9E%8C+%EB%AC%B8%EC%84%B1%ED%98%84+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+47%29', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533887%3Ftimestamp%3D20231124171242', 76, 64, 'ACTIVATE', NULL),
+    (93, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '흔들리는 땅 분노의 일기 형 외(20세기 한국소설 27)', '홍성원, 신상웅, 최창학', '9788936462376', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 홍성원, 신상웅 외 편. 홍성원의 &lt;즐거운 지옥&gt;, &lt;흔들리는 땅&gt;, 신상웅의 &lt;분노의 일기&gt;, &lt;돌아온 우리의 친구&gt;, 최창학의 &lt;형&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이
+출판사: 창비
+ISBN: 9788936462376
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534162&q=%ED%9D%94%EB%93%A4%EB%A6%AC%EB%8A%94+%EB%95%85+%EB%B6%84%EB%85%B8%EC%9D%98+%EC%9D%BC%EA%B8%B0+%ED%98%95+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+27%29', 8000, 10.00, 7200, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534162%3Ftimestamp%3D20231124191258', 79, 66, 'ACTIVATE', NULL),
+    (94, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소금 공장신문 질소비료 공장 외(20세기 한국소설 7)', '김남천, 강경애, 이북명', '9788936462178', '창비의 ''20세기 한국소설'' 시리즈 중 김남천, 강경애, 이북명 편. 이 세 작가들은 조선프롤레타리아예술동맹, 즉 카프(KAPF)가 문단에서 세력을 떨치던 1930년을 전후로 활동을 시작했으며, 계급으로서의 자기의식을 보여준다는 공통점을 보인다.    김남천의 &lt;공장신문&gt;은 공장을 무대로 해 공장 안에 어용노조와 자본가 사이의 결탁을 소재로 해 노동자의 실상을 그린다. 강경애의 &lt;소금&gt;은 저자의 간도 체험을 바탕으로 쓴 작품으로
+출판사: 창비
+ISBN: 9788936462178
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533850&q=%EC%86%8C%EA%B8%88+%EA%B3%B5%EC%9E%A5%EC%8B%A0%EB%AC%B8+%EC%A7%88%EC%86%8C%EB%B9%84%EB%A3%8C+%EA%B3%B5%EC%9E%A5+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+7%29', 8000, 10.00, 7200, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533850%3Ftimestamp%3D20231124144727', 82, 68, 'ACTIVATE', NULL),
+    (95, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '갯마을 메아리 실비명 젊은 느티나무 외(20세기 한국소설 14)', '김이석, 최인욱, 손소희, 유주현, 정한숙', '9788936462246', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 오영수, 강신재 외 편. 오영수의 &lt;갯마을&gt;, 강신재의 &lt;젊은 느티나무&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들
+출판사: 창비
+ISBN: 9788936462246
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533855&q=%EA%B0%AF%EB%A7%88%EC%9D%84+%EB%A9%94%EC%95%84%EB%A6%AC+%EC%8B%A4%EB%B9%84%EB%AA%85+%EC%A0%8A%EC%9D%80+%EB%8A%90%ED%8B%B0%EB%82%98%EB%AC%B4+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+14%29', 12000, 10.00, 10800, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533855%3Ftimestamp%3D20231124182102', 85, 70, 'ACTIVATE', NULL),
+    (96, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 소설의 분단 이야기(책세상문고 우리시대 109)', '유임하', '9788970135823', '출판사: 책세상
+ISBN: 9788970135823
+출간일시: 2006-08-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=955370&q=%ED%95%9C%EA%B5%AD+%EC%86%8C%EC%84%A4%EC%9D%98+%EB%B6%84%EB%8B%A8+%EC%9D%B4%EC%95%BC%EA%B8%B0%28%EC%B1%85%EC%84%B8%EC%83%81%EB%AC%B8%EA%B3%A0+%EC%9A%B0%EB%A6%AC%EC%8B%9C%EB%8C%80+109%29', 4900, 10.00, 4410, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F955370%3Ftimestamp%3D20221025152635', 88, 72, 'ACTIVATE', NULL),
+    (97, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '강 무너진 극장 강 건너 저쪽에서 외(20세기 한국소설 20)', '한남철, 서정인, 박태순', '9788936462307', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 서정인, 박태순 외 편. 서정인의 &lt;강&gt;, 박태순의 &lt;무너진 극장&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들
+출판사: 창비
+ISBN: 9788936462307
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534154&q=%EA%B0%95+%EB%AC%B4%EB%84%88%EC%A7%84+%EA%B7%B9%EC%9E%A5+%EA%B0%95+%EA%B1%B4%EB%84%88+%EC%A0%80%EC%AA%BD%EC%97%90%EC%84%9C+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+20%29', 12000, 10.00, 10800, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534154%3Ftimestamp%3D20231124174042', 91, 74, 'ACTIVATE', NULL),
+    (98, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '가면 안개 너머 청진항2 밤과 요람 부르는 소리 외(20세기 한국소설 38)', '이경자, 유시춘, 강석경, 김향숙, 양귀자', '9788936462482', '［20세기 한국소설］시리즈 제38권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이경자, 유시춘, 강석경 등 6명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462482
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533876&q=%EA%B0%80%EB%A9%B4+%EC%95%88%EA%B0%9C+%EB%84%88%EB%A8%B8+%EC%B2%AD%EC%A7%84%ED%95%AD2+%EB%B0%A4%EA%B3%BC+%EC%9A%94%EB%9E%8C+%EB%B6%80%EB%A5%B4%EB%8A%94+%EC%86%8C%EB%A6%AC+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+38%29', 8000, 10.00, 7200, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533876%3Ftimestamp%3D20231124185031', 94, 76, 'ACTIVATE', NULL),
+    (99, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '우리들의 일그러진 영웅 금시조 통도사 가는 길 외(20세기 한국소설 37)', '조성기, 이문열, 최시한', '9788936462475', '［20세기 한국소설］시리즈 제37권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 조성기, 이문열, 최시한의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어 내실
+출판사: 창비
+ISBN: 9788936462475
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534177&q=%EC%9A%B0%EB%A6%AC%EB%93%A4%EC%9D%98+%EC%9D%BC%EA%B7%B8%EB%9F%AC%EC%A7%84+%EC%98%81%EC%9B%85+%EA%B8%88%EC%8B%9C%EC%A1%B0+%ED%86%B5%EB%8F%84%EC%82%AC+%EA%B0%80%EB%8A%94+%EA%B8%B8+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+37%29', 12000, 10.00, 10800, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534177%3Ftimestamp%3D20231124145917', 97, 78, 'ACTIVATE', NULL),
+    (100, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '객지 한씨연대기 삼포가는 길 섬섬옥수 몰개월의 새(20세기 한국소설 25)', '황석영', '9788936462352', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 황석영 편. &lt;객지&gt;, &lt;한씨연대기&gt;, &lt;삼포 가는 길&gt; 등 작가의 대표작 5여 편을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,작가의 인생관과 소설의 배경이 되는 시대상을
+출판사: 창비
+ISBN: 9788936462352
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533866&q=%EA%B0%9D%EC%A7%80+%ED%95%9C%EC%94%A8%EC%97%B0%EB%8C%80%EA%B8%B0+%EC%82%BC%ED%8F%AC%EA%B0%80%EB%8A%94+%EA%B8%B8+%EC%84%AC%EC%84%AC%EC%98%A5%EC%88%98+%EB%AA%B0%EA%B0%9C%EC%9B%94%EC%9D%98+%EC%83%88%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+25%29', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533866%3Ftimestamp%3D20240731112901', 100, 80, 'ACTIVATE', NULL),
+    (101, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '동백꽃 봄 봄 레디메이드 인생 치숙 외(20세기 한국소설 5)', '채만식, 김유정', '9788936462154', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 채만식, 김유정편. 채만식의 &lt;레디메이드 인생&gt;, &lt;명일&gt;, &lt;치숙&gt;, 김유정의 &lt;동백꽃&gt;, &lt;금따는 콩밭&gt;등 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기
+출판사: 창비
+ISBN: 9788936462154
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534084&q=%EB%8F%99%EB%B0%B1%EA%BD%83+%EB%B4%84+%EB%B4%84+%EB%A0%88%EB%94%94%EB%A9%94%EC%9D%B4%EB%93%9C+%EC%9D%B8%EC%83%9D+%EC%B9%98%EC%88%99+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+5%29', 12000, 10.00, 10800, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534084%3Ftimestamp%3D20250611113317', 103, 82, 'ACTIVATE', NULL),
+    (102, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '운수 좋은 날 벙어리 삼룡이 빈처 화수분 외(20세기 한국소설 3)', '전영택, 현진건, 나도향, 박종화', '9788936462130', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 현진건, 나도향 외 편. 현진건의 &lt;운수 좋은 날&gt;, 나도향의 &lt;벙어리 삼룡이&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한
+출판사: 창비
+ISBN: 9788936462130
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533846&q=%EC%9A%B4%EC%88%98+%EC%A2%8B%EC%9D%80+%EB%82%A0+%EB%B2%99%EC%96%B4%EB%A6%AC+%EC%82%BC%EB%A3%A1%EC%9D%B4+%EB%B9%88%EC%B2%98+%ED%99%94%EC%88%98%EB%B6%84+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+3%29', 12000, 10.00, 10800, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533846%3Ftimestamp%3D20231124183135', 106, 84, 'ACTIVATE', NULL),
+    (103, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '신궁 분지 강원도 달비장수 감비 천불붙이 첫눈 외(20세기 한국소설 22)', '천승세, 남정현, 박용숙, 전병순, 이정호', '9788936462321', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 천승세, 방영웅 외 편. 천승세의 &lt;포대령&gt;, 방영웅의 &lt;첫 눈&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을
+출판사: 창비
+ISBN: 9788936462321
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533863&q=%EC%8B%A0%EA%B6%81+%EB%B6%84%EC%A7%80+%EA%B0%95%EC%9B%90%EB%8F%84+%EB%8B%AC%EB%B9%84%EC%9E%A5%EC%88%98+%EA%B0%90%EB%B9%84+%EC%B2%9C%EB%B6%88%EB%B6%99%EC%9D%B4+%EC%B2%AB%EB%88%88+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+22%29', 8000, 10.00, 7200, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533863%3Ftimestamp%3D20231124153057', 109, 86, 'ACTIVATE', NULL),
+    (104, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '민촌 탈출기 서화 과도기 낙동강 석공조합 대표 외(20세기 한국소설 4)', '최서해, 이기영, 한설야, 조명희, 이익상', '9788936462147', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 최서해, 이기영 외 편. 최서해의 &lt;탈출기&gt;, 이기영의 &lt;민촌&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을 위해
+출판사: 창비
+ISBN: 9788936462147
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534130&q=%EB%AF%BC%EC%B4%8C+%ED%83%88%EC%B6%9C%EA%B8%B0+%EC%84%9C%ED%99%94+%EA%B3%BC%EB%8F%84%EA%B8%B0+%EB%82%99%EB%8F%99%EA%B0%95+%EC%84%9D%EA%B3%B5%EC%A1%B0%ED%95%A9+%EB%8C%80%ED%91%9C+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+4%29', 12000, 10.00, 10800, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534130%3Ftimestamp%3D20231124165828', 112, 88, 'ACTIVATE', NULL),
+    (105, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '배따라기 감자 어린벗에게 용과 용의  대격전(20세기 한국소설 1)', '신채호, 이광수, 현상윤, 양건식, 나혜석', '9788936462116', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 이광수, 김동인 외 편. 이광수의 &lt;무명&gt;, 김동인의 &lt;감자&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한 청소년들을 위해 작가
+출판사: 창비
+ISBN: 9788936462116
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534126&q=%EB%B0%B0%EB%94%B0%EB%9D%BC%EA%B8%B0+%EA%B0%90%EC%9E%90+%EC%96%B4%EB%A6%B0%EB%B2%97%EC%97%90%EA%B2%8C+%EC%9A%A9%EA%B3%BC+%EC%9A%A9%EC%9D%98++%EB%8C%80%EA%B2%A9%EC%A0%84%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+1%29', 12000, 10.00, 10800, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534126%3Ftimestamp%3D20231124165459', 115, 90, 'ACTIVATE', NULL),
+    (106, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '마음의 감옥 어둠의 혼 미망 말하는 돌 외(20세기 한국소설 31)', '김원일, 문순태, 송기원', '9788936462413', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 김원일, 송기원 외 편. 김원일의 &lt;어둠의 혼&gt;, &lt;미망&gt;, 송기원의 &lt;월행&gt;, &lt;다시 월문리에서&gt;, 문순태의 &lt;말하는 돌&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식
+출판사: 창비
+ISBN: 9788936462413
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534119&q=%EB%A7%88%EC%9D%8C%EC%9D%98+%EA%B0%90%EC%98%A5+%EC%96%B4%EB%91%A0%EC%9D%98+%ED%98%BC+%EB%AF%B8%EB%A7%9D+%EB%A7%90%ED%95%98%EB%8A%94+%EB%8F%8C+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+31%29', 12000, 10.00, 10800, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534119%3Ftimestamp%3D20231124154847', 118, 92, 'ACTIVATE', NULL),
+    (107, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '세상 끝의 골목들 쇳물처럼 새벽 출정 외(20세기 한국소설 46)', '이남희, 정화진, 방현석, 김한수, 전성태', '9788936462567', '［20세기 한국소설］시리즈 제46권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이남희, 정화진, 방현석 등 5명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462567
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534138&q=%EC%84%B8%EC%83%81+%EB%81%9D%EC%9D%98+%EA%B3%A8%EB%AA%A9%EB%93%A4+%EC%87%B3%EB%AC%BC%EC%B2%98%EB%9F%BC+%EC%83%88%EB%B2%BD+%EC%B6%9C%EC%A0%95+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+46%29', 8000, 10.00, 7200, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534138%3Ftimestamp%3D20240122202231', 121, 94, 'ACTIVATE', NULL),
+    (108, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '고수 무기질 청년 오막살이 집 한채 출구 휴전선 외(20세기 한국소설 39))', '이외수, 김원우, 김성동, 유순하, 이병천', '9788936462499', '［20세기 한국소설］시리즈 제39권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이외수, 김언우, 김성동 등 5명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462499
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534131&q=%EA%B3%A0%EC%88%98+%EB%AC%B4%EA%B8%B0%EC%A7%88+%EC%B2%AD%EB%85%84+%EC%98%A4%EB%A7%89%EC%82%B4%EC%9D%B4+%EC%A7%91+%ED%95%9C%EC%B1%84+%EC%B6%9C%EA%B5%AC+%ED%9C%B4%EC%A0%84%EC%84%A0+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+39%29%29', 12000, 10.00, 10800, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534131%3Ftimestamp%3D20231124175152', 124, 96, 'ACTIVATE', NULL),
+    (109, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '우묵배미의 사랑 어두운 기억의 저편 외 (20세기 한국소설 40)', '이균영, 박영한, 현길언, 이원규, 최인식', '9788936462505', '［20세기 한국소설］시리즈 제40권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이균영, 박영한, 현길언 등 5명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462505
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534181&q=%EC%9A%B0%EB%AC%B5%EB%B0%B0%EB%AF%B8%EC%9D%98+%EC%82%AC%EB%9E%91+%EC%96%B4%EB%91%90%EC%9A%B4+%EA%B8%B0%EC%96%B5%EC%9D%98+%EC%A0%80%ED%8E%B8+%EC%99%B8+%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+40%29', 12000, 40.00, 7200, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534181%3Ftimestamp%3D20231124154540', 127, 98, 'ACTIVATE', NULL),
+    (110, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '푸른 사과가 있는 국도 블랙 러시안 외(20세기 한국소설 50)', '배수아, 김경욱, 김연수, 하성란, 조경란', '9788936462604', '［20세기 한국소설］시리즈 제50권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 배수아, 김경욱, 김연수 등 5명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462604
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533890&q=%ED%91%B8%EB%A5%B8+%EC%82%AC%EA%B3%BC%EA%B0%80+%EC%9E%88%EB%8A%94+%EA%B5%AD%EB%8F%84+%EB%B8%94%EB%9E%99+%EB%9F%AC%EC%8B%9C%EC%95%88+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+50%29', 12000, 10.00, 10800, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533890%3Ftimestamp%3D20231124163816', 130, 100, 'ACTIVATE', NULL),
+    (111, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '그 집 앞 양수리 가는 길 민달팽이 회색 눈사람 외(20세기 한국소설 44)', '이혜경, 김인숙, 김형경, 최윤, 이청해', '9788936462543', '［20세기 한국소설］시리즈 제44권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 이혜경, 김인숙, 기형경 등 6명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462543
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533883&q=%EA%B7%B8+%EC%A7%91+%EC%95%9E+%EC%96%91%EC%88%98%EB%A6%AC+%EA%B0%80%EB%8A%94+%EA%B8%B8+%EB%AF%BC%EB%8B%AC%ED%8C%BD%EC%9D%B4+%ED%9A%8C%EC%83%89+%EB%88%88%EC%82%AC%EB%9E%8C+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+44%29', 12000, 10.00, 10800, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533883%3Ftimestamp%3D20231124170857', 133, 102, 'ACTIVATE', NULL),
+    (112, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '내 인생의 마지막 4.5초 도시의 향기 외(20세기 한국소설 49)', '성석제, 채영주, 함정임, 고종석, 한강', '9788936462598', '［20세기 한국소설］시리즈 제49권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 성석제, 채영주, 함정임 등 6명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462598
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534143&q=%EB%82%B4+%EC%9D%B8%EC%83%9D%EC%9D%98+%EB%A7%88%EC%A7%80%EB%A7%89+4.5%EC%B4%88+%EB%8F%84%EC%8B%9C%EC%9D%98+%ED%96%A5%EA%B8%B0+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+49%29', 8000, 10.00, 7200, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534143%3Ftimestamp%3D20231124163355', 136, 104, 'ACTIVATE', NULL),
+    (113, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '선생과 황태자 아메리카 영자의 전성시대 외(20세기 한국소설 29)', '송영, 조해일, 조선작', '9788936462390', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 송영, 조해일, 조선작 편. 송영의 &lt;선생과 황태자&gt;, &lt;중앙선 기차&gt;, 조해일의 &lt;뿔&gt;, &lt;아메리카&gt;, 조선작의 &lt;영자의 전성시대&gt;, &lt;성벽&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를
+출판사: 창비
+ISBN: 9788936462390
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533868&q=%EC%84%A0%EC%83%9D%EA%B3%BC+%ED%99%A9%ED%83%9C%EC%9E%90+%EC%95%84%EB%A9%94%EB%A6%AC%EC%B9%B4+%EC%98%81%EC%9E%90%EC%9D%98+%EC%A0%84%EC%84%B1%EC%8B%9C%EB%8C%80+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+29%29', 12000, 10.00, 10800, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533868%3Ftimestamp%3D20231124173651', 139, 106, 'ACTIVATE', NULL),
+    (114, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '비 오는 날 잉여인간 테러리스트 암사지도 외(20세기 한국소설 16)', '손창섭, 선우휘, 서기원', '9788936462260', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 손창섭, 선우휘, 서기원 편. 손창섭의 &lt;잉여인간&gt;, 선우휘의 &lt;불꽃&gt;, 서기원의 &lt;마록열전&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기
+출판사: 창비
+ISBN: 9788936462260
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534098&q=%EB%B9%84+%EC%98%A4%EB%8A%94+%EB%82%A0+%EC%9E%89%EC%97%AC%EC%9D%B8%EA%B0%84+%ED%85%8C%EB%9F%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8+%EC%95%94%EC%82%AC%EC%A7%80%EB%8F%84+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+16%29', 12000, 10.00, 10800, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534098%3Ftimestamp%3D20231124153815', 142, 108, 'ACTIVATE', NULL),
+    (115, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '순이 삼촌 마지막 테우리 도둑 견습 외촌장 기행 외(20세기 한국소설 36)', '김주영, 현기영', '9788936462468', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 김주영, 현기영 편. 김주영의 &lt;도둑견습&gt;, &lt;외촌장 기행&gt; 현기영의 &lt;순이 삼촌&gt;, &lt;겨우살이&gt; 등 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,작가
+출판사: 창비
+ISBN: 9788936462468
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534127&q=%EC%88%9C%EC%9D%B4+%EC%82%BC%EC%B4%8C+%EB%A7%88%EC%A7%80%EB%A7%89+%ED%85%8C%EC%9A%B0%EB%A6%AC+%EB%8F%84%EB%91%91+%EA%B2%AC%EC%8A%B5+%EC%99%B8%EC%B4%8C%EC%9E%A5+%EA%B8%B0%ED%96%89+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+36%29', 12000, 10.00, 10800, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534127%3Ftimestamp%3D20231124184500', 145, 110, 'ACTIVATE', NULL),
+    (116, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '수난 이대 감정이 있는 심연 213호 주택 외(20세기 한국소설 18)', '한무숙, 김광식, 한말숙, 하근찬, 오유권', '9788936462284', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 하근찬, 한무숙 외 편. 하근찬의 &lt;수난 이대&gt;, 한무숙의 &lt;감정이 있는 심연&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한
+출판사: 창비
+ISBN: 9788936462284
+출간일시: 2005-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534150&q=%EC%88%98%EB%82%9C+%EC%9D%B4%EB%8C%80+%EA%B0%90%EC%A0%95%EC%9D%B4+%EC%9E%88%EB%8A%94+%EC%8B%AC%EC%97%B0+213%ED%98%B8+%EC%A3%BC%ED%83%9D+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+18%29', 12000, 10.00, 10800, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534150%3Ftimestamp%3D20231124152316', 148, 112, 'ACTIVATE', NULL),
+    (117, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 현대 소설교육론', '선주원', '9788927908258', '『한국 현대 소설교육론』은 임용고사를 위해 소설교육을 공부하려는 학생들과 대학에서 소설교육을 강의하고자 하는 사람들을 위해 집필된 책이다. 소설교육이란 무엇인지, 소설교육의 목표는 무엇인지, 소설교육의 내용과 교수-학습방법은 무엇인지, 소설교육에서 평가는 어떻게 할 것인가를 다루었다.
+출판사: 국학자료원
+ISBN: 9788927908258
+출간일시: 2014-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=459538&q=%ED%95%9C%EA%B5%AD+%ED%98%84%EB%8C%80+%EC%86%8C%EC%84%A4%EA%B5%90%EC%9C%A1%EB%A1%A0', 35000, 10.00, 31500, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F459538%3Ftimestamp%3D20220902190632', 151, 114, 'ACTIVATE', NULL),
+    (118, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '메밀꽃 필 무렵 김강사와 T교수 모범경작생 외(20세기 한국소설 8)', '이무영, 유진오, 이효석, 백신애, 박화성', '9788936462185', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 이효석, 유진오 외 편. 이효석의 &lt;메밀꽃 필무렵&gt;, 유진오의 &lt;김강사와 T교수&gt; 등 각 작가들의 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,‘정답 찾기’에만 빠져 소설 읽기의 참맛을 경험하지 못한
+출판사: 창비
+ISBN: 9788936462185
+출간일시: 2017-10-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534088&q=%EB%A9%94%EB%B0%80%EA%BD%83+%ED%95%84+%EB%AC%B4%EB%A0%B5+%EA%B9%80%EA%B0%95%EC%82%AC%EC%99%80+T%EA%B5%90%EC%88%98+%EB%AA%A8%EB%B2%94%EA%B2%BD%EC%9E%91%EC%83%9D+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+8%29', 12000, 10.00, 10800, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534088%3Ftimestamp%3D20231124184911', 154, 116, 'ACTIVATE', NULL),
+    (119, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '무진기행 서울 1964년 겨울 유자약전 조용한 강 외(20세기 한국소설 19)', '백인빈, 이제하, 김승옥', '9788936462291', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 [20세기 한국소설] 시리즈 중 김승옥, 이제하, 백인빈편. 백인빈의 &lt;조용한 강&gt;, 이제하의 &lt;나그네는 길에서도 쉬지 안는다&gt;, 김승옥의 &lt;무진기행&gt;, &lt;서울, 1964년 겨울&gt; 등 대표작을 실었다.  중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성
+출판사: 창비
+ISBN: 9788936462291
+출간일시: 2019-01-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534102&q=%EB%AC%B4%EC%A7%84%EA%B8%B0%ED%96%89+%EC%84%9C%EC%9A%B8+1964%EB%85%84+%EA%B2%A8%EC%9A%B8+%EC%9C%A0%EC%9E%90%EC%95%BD%EC%A0%84+%EC%A1%B0%EC%9A%A9%ED%95%9C+%EA%B0%95+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+19%29', 12000, 10.00, 10800, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534102%3Ftimestamp%3D20231124181727', 157, 118, 'ACTIVATE', NULL),
+    (120, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '우상의 눈물 아베의 가족 리빠똥 장군 굶주린 혼(20세기 한국소설 24)', '김용성, 전상국, 이동하', '9788936462345', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 전상국, 이동하 외 편. 전상국의 &lt;아베의 가족&gt;, &lt;우상의 눈물&gt;, 김용성의 &lt;리빠똥 장군&gt;, 이동하의 &lt;굶주린 혼&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게
+출판사: 창비
+ISBN: 9788936462345
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534109&q=%EC%9A%B0%EC%83%81%EC%9D%98+%EB%88%88%EB%AC%BC+%EC%95%84%EB%B2%A0%EC%9D%98+%EA%B0%80%EC%A1%B1+%EB%A6%AC%EB%B9%A0%EB%98%A5+%EC%9E%A5%EA%B5%B0+%EA%B5%B6%EC%A3%BC%EB%A6%B0+%ED%98%BC%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+24%29', 12000, 10.00, 10800, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534109%3Ftimestamp%3D20231124165528', 160, 0, 'ACTIVATE', NULL),
+    (121, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '관촌수필5 우리동네 황씨 영명길 영기 외(20세기 한국소설 26)', '박상륭, 이문구, 이정환', '9788936462369', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 이문구, 박상륭 외 편. 박상륭의 &lt;열명길&gt;, &lt;남도 1&gt;, 이정환의 &lt;영기&gt;, 이문구의 &lt;암소&gt;, &lt;공산토월&gt;, &lt;우리 동네 황씨&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들
+출판사: 창비
+ISBN: 9788936462369
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534112&q=%EA%B4%80%EC%B4%8C%EC%88%98%ED%95%845+%EC%9A%B0%EB%A6%AC%EB%8F%99%EB%84%A4+%ED%99%A9%EC%94%A8+%EC%98%81%EB%AA%85%EA%B8%B8+%EC%98%81%EA%B8%B0+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+26%29', 12000, 40.00, 7200, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534112%3Ftimestamp%3D20231124172240', 163, 2, 'ACTIVATE', NULL),
+    (122, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '구마검 모란병 자유종 산천초목 화의혈 (한국신소설선집 5)', '이해조', '9788952104588', '출판사: 서울대학교출판부
+ISBN: 9788952104588
+출간일시: 2003-12-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=632400&q=%EA%B5%AC%EB%A7%88%EA%B2%80+%EB%AA%A8%EB%9E%80%EB%B3%91+%EC%9E%90%EC%9C%A0%EC%A2%85+%EC%82%B0%EC%B2%9C%EC%B4%88%EB%AA%A9+%ED%99%94%EC%9D%98%ED%98%88+%28%ED%95%9C%EA%B5%AD%EC%8B%A0%EC%86%8C%EC%84%A4%EC%84%A0%EC%A7%91+5%29', 16000, 10.00, 16000, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632400%3Ftimestamp%3D20220604114250', 166, 4, 'ACTIVATE', NULL),
+    (123, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국대표소설 39', '황순원, 이태준', '9788965820673', '『한국대표소설 39』는 작품마다 작가와 작품 세계, 작품 정리, 주요 등장인물, 구성과 줄거리, 익혀 둘 개념, 함께 읽을 작품, 생각해 볼 문제, 작품 본문으로 구성되어 있다. 독서에 필수적인 배경지식과 작품의 포인트를 짚어 주는 해설을 실어 학생들이 작품을 읽고 이해하는 데 도움을 주었다. 나아가 한 작품의 이해에 그치지 않고, 그 작품을 통해 스스로 생각하는 힘을 기르고 특정한 주제에 대해 스스로 답을 서술할 수 있는 능력을 키우기 위해 깊이 있는
+출판사: 리베르스쿨
+ISBN: 9788965820673
+출간일시: 2014-10-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=922252&q=%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EC%86%8C%EC%84%A4+39', 16800, 10.00, 15120, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F922252%3Ftimestamp%3D20230912213247', 169, 6, 'ACTIVATE', NULL),
+    (124, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '천하무적 포도나무집 풍경 인간에 대한 예의 외(20세기 한국소설 45)', '김남일, 김영현, 공지영, 김하기, 주인석', '9788936462550', '［20세기 한국소설］시리즈 제45권. 근대 문학 요람기인 1910년대부터 2000년대 초까지 약 100년 동안의 중단편 소설 중 주옥같은 작품을 엄선해 한데 묶은 것으로, 김남일, 김영현, 공지영 등 5명의 작품을 엄선해 담았다.    이 책은 리얼리즘 계열의 작품에 중심을 두되 다양한 경향의 대표작을 망라해 한국 현대소설의 총체적 흐름을 조망할 수 있도록 선정하고, 작가의 특성과 변모를 보여주는 문제작, 그리고 사회상을 잘 반영하는 수작들을 골고루 실어
+출판사: 창비
+ISBN: 9788936462550
+출간일시: 2006-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534191&q=%EC%B2%9C%ED%95%98%EB%AC%B4%EC%A0%81+%ED%8F%AC%EB%8F%84%EB%82%98%EB%AC%B4%EC%A7%91+%ED%92%8D%EA%B2%BD+%EC%9D%B8%EA%B0%84%EC%97%90+%EB%8C%80%ED%95%9C+%EC%98%88%EC%9D%98+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+45%29', 8000, 10.00, 7200, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534191%3Ftimestamp%3D20231124183931', 172, 8, 'ACTIVATE', NULL),
+    (125, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '그 가을의 사흘동안 조그만 체험기 엄마의 말뚝2 외(20세기 한국소설 35)', '박완서', '9788936462451', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 박완서 편. &lt;조그만 체험기&gt;, &lt;그 가을의 사흘 동안&gt;, &lt;엄마의 말뚝 2&gt; 등 작가의 대표작 5여 편을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자 50여 명이 이메일대화를 통해 청소년들의 눈높이와 문제의식에 맞춰 읽기 쉽게 구성한 해설을 덧붙였으며,작가의 인생관과 소설
+출판사: 창비
+ISBN: 9788936462451
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534174&q=%EA%B7%B8+%EA%B0%80%EC%9D%84%EC%9D%98+%EC%82%AC%ED%9D%98%EB%8F%99%EC%95%88+%EC%A1%B0%EA%B7%B8%EB%A7%8C+%EC%B2%B4%ED%97%98%EA%B8%B0+%EC%97%84%EB%A7%88%EC%9D%98+%EB%A7%90%EB%9A%9D2+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+35%29', 12000, 40.00, 7200, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534174%3Ftimestamp%3D20231124181736', 175, 10, 'ACTIVATE', NULL),
+    (126, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국심리소설연구', '김진석', '9788976263315', '이 책은 해당 분야 전공자들을 위한 교재 겸 전문서이다.
+출판사: 태학사
+ISBN: 9788976263315
+출간일시: 1998-05-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1068756&q=%ED%95%9C%EA%B5%AD%EC%8B%AC%EB%A6%AC%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC', 10000, 10.00, 9000, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1068756%3Ftimestamp%3D20221025123431', 178, 12, 'ACTIVATE', NULL),
+    (127, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국현대소설비평론', '이익성', '9788976267986', '이 책은 해당 분야 전공자들을 위한 교재 겸 전문서이다.
+출판사: 태학사
+ISBN: 9788976267986
+출간일시: 2002-09-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1069188&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EB%B9%84%ED%8F%89%EB%A1%A0', 10000, 10.00, 9000, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1069188%3Ftimestamp%3D20200317135354', 181, 14, 'ACTIVATE', NULL),
+    (128, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국현대소설', '김선 엮음', '9788970012698', '출판사: 예문당
+ISBN: 9788970012698
+출간일시: 1998-10-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=950751&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4', 13000, 10.00, 11700, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F950751%3Ftimestamp%3D20211029184928', 184, 16, 'ACTIVATE', NULL),
+    (129, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '토끼와잠수함 타인의 방 굴뚝과 천장 타인의 얼굴 외(20세기 한국소설30)', '최인호, 오탁번, 한수산, 박범신', '9788936462406', '20세기의 한국 소설문학 중 주옥 같은 중단편 소설을 엄선해 시대별로 한데 묶은 &lt;20세기 한국소설&gt; 시리즈 중 최인호, 박범신 외 편. 최인호의 &lt;타인의 방&gt;, &lt;깊고 푸른 밤&gt;, 박범신의 &lt;토끼와 잠수함&gt;, &lt;흰 소가 끄는 수레&gt;, 오탁번의 &lt;굴뚝과 천장&gt;, 한수산의 &lt;타인의 얼굴&gt; 등 각 작가들의 대표작을 담았다.    이 책은 중고등학교 국어, 문학 선생님들과 전문연구자
+출판사: 창비
+ISBN: 9788936462406
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=534166&q=%ED%86%A0%EB%81%BC%EC%99%80%EC%9E%A0%EC%88%98%ED%95%A8+%ED%83%80%EC%9D%B8%EC%9D%98+%EB%B0%A9+%EA%B5%B4%EB%9A%9D%EA%B3%BC+%EC%B2%9C%EC%9E%A5+%ED%83%80%EC%9D%B8%EC%9D%98+%EC%96%BC%EA%B5%B4+%EC%99%B8%2820%EC%84%B8%EA%B8%B0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A430%29', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534166%3Ftimestamp%3D20231124183831', 187, 18, 'ACTIVATE', NULL),
+    (130, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 개화기 소설 연구', '이용남 외', '9788976265401', '출판사: 태학사
+ISBN: 9788976265401
+출간일시: 2000-07-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1070256&q=%ED%95%9C%EA%B5%AD+%EA%B0%9C%ED%99%94%EA%B8%B0+%EC%86%8C%EC%84%A4+%EC%97%B0%EA%B5%AC', 20000, 10.00, 18000, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1070256%3Ftimestamp%3D20221025121237', 190, 20, 'ACTIVATE', NULL),
+    (131, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 근대소설 양식론', '문한별', '9788959663781', '출판사: 태학사
+ISBN: 9788959663781
+출간일시: 2010-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=810248&q=%ED%95%9C%EA%B5%AD+%EA%B7%BC%EB%8C%80%EC%86%8C%EC%84%A4+%EC%96%91%EC%8B%9D%EB%A1%A0', 25000, 10.00, 22500, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F810248%3Ftimestamp%3D20221025143627', 193, 22, 'ACTIVATE', NULL),
+    (132, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '바이링궐 에디션 한국 대표 소설 세트 2', '이문열', '9788994006734', '『바이링궐 에디션 한국 현대 소설 세트집(전15권)』제2권. 도서출판 아시아에서 한국 대표 작가들의 작품을 영어로 번역하여, 한글과 영어로 동시에 읽을 수 있는 ''바이링궐 에디션 한국 현대 소설'' 시리즈의 두번째 세트집이다. 세트2는 자유, 사랑과 연애, 남과 북이라는 카테고리로 나누어져 있다. 한국 현대사에서 익숙한 문제의식이지만 젊은 세대나 외국 독자들의 이해를 돕고자 카테고리에 대한 간소한 설명과 작가들의 작품에 대한 짧지만 심도 있는 해설과
+출판사: 아시아
+ISBN: 9788994006734
+출간일시: 2013-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1409014&q=%EB%B0%94%EC%9D%B4%EB%A7%81%EA%B6%90+%EC%97%90%EB%94%94%EC%85%98+%ED%95%9C%EA%B5%AD+%EB%8C%80%ED%91%9C+%EC%86%8C%EC%84%A4+%EC%84%B8%ED%8A%B8+2', 79000, 10.00, 71100, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1409014%3Ftimestamp%3D20251213110817', 196, 24, 'ACTIVATE', NULL),
+    (133, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '바이링궐 에디션 한국 대표 소설 세트 4', '김남일, 공선옥, 김연수, 김재영, 이경, 천승세', '9791156620020', '한국 문단을 대표하는 작가들의 단편 작품을 한글과 영어로 동시에 읽을 수 있는 「바이링궐 에디션 한국 대표 소설」 시리즈 제4권. 아시아 출판사는 지난 반세기 동안 한국에서 나온 가장 중요하고 첨예한 문제의식을 가진 작가들의 작품들을 선별한 기획시리즈이다. 이번 4권에선 ‘디아스포라(Diaspora)’, ‘가족(Family)’, ‘유머(Humor)’라는 카테고리로 나누어 한국 대표 작가들의 중요 단편 소설들을 기획, 분류하여 수록하였다.
+출판사: 아시아
+ISBN: 9791156620020
+출간일시: 2014-03-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1569475&q=%EB%B0%94%EC%9D%B4%EB%A7%81%EA%B6%90+%EC%97%90%EB%94%94%EC%85%98+%ED%95%9C%EA%B5%AD+%EB%8C%80%ED%91%9C+%EC%86%8C%EC%84%A4+%EC%84%B8%ED%8A%B8+4', 79000, 10.00, 71100, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1569475%3Ftimestamp%3D20251213110820', 199, 26, 'ACTIVATE', NULL),
+    (134, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중학생 한국 단편소설 1', '김동인', '9788971866399', '출판사: 서림문화사
+ISBN: 9788971866399
+출간일시: 2005-05-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=989997&q=%EC%A4%91%ED%95%99%EC%83%9D+%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+1', 9000, 10.00, 8100, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989997%3Ftimestamp%3D20221025134320', 2, 28, 'ACTIVATE', NULL),
+    (135, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중학생 한국 단편소설 5', '김정한', '9788971866474', '출판사: 서림문화사
+ISBN: 9788971866474
+출간일시: 2005-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=992054&q=%EC%A4%91%ED%95%99%EC%83%9D+%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+5', 9000, 10.00, 8100, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F992054%3Ftimestamp%3D20221025125131', 5, 30, 'ACTIVATE', NULL),
+    (136, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 근현대소설의 흐름', '윤병로', '9788989352594', '출판사: 새미
+ISBN: 9788989352594
+출간일시: 2001-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1292863&q=%ED%95%9C%EA%B5%AD+%EA%B7%BC%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EC%9D%98+%ED%9D%90%EB%A6%84', 23000, 10.00, 20700, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1292863%3Ftimestamp%3D20221025120350', 8, 32, 'ACTIVATE', NULL),
+    (137, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '사피엔스 한국문학 중 단편소설 1∼10권 세트(전10권)', '김유정', '9788965881254', '한국을 대표하는 작가들의 중요 작품들을 엄선한 소설 선집 「사피엔스 한국문학 중ㆍ단편소설」 시리즈. 중ㆍ단편소설을 묶어 작가별로 구성하고, 작가의 중요 작품과 작품별 해설, 작가의 작품 세계와 연보까지 한 권에 담았다. 여러 판본을 참조하여 텍스트에 최대한 정확성을 기하되, 현대인이 읽기 쉽도록 표기를 다듬었다. 특히 한국문학의 달인들이 충실한 해설을 제시함으로써 근본적인 문학 감상을 위한 길잡이가 되어준다. 중학생부터 고등학생까지 청소년들의 눈높이에
+출판사: 사피엔스21
+ISBN: 9788965881254
+출간일시: 2012-02-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=920729&q=%EC%82%AC%ED%94%BC%EC%97%94%EC%8A%A4+%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99+%EC%A4%91+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+1%E2%88%BC10%EA%B6%8C+%EC%84%B8%ED%8A%B8%28%EC%A0%8410%EA%B6%8C%29', 74500, 10.00, 67050, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920729%3Ftimestamp%3D20221025125029', 11, 34, 'ACTIVATE', NULL),
+    (138, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '1930년대 한국 추리소설 연구(양장본 Hardcover)', '오혜진', '9788961841108', '『1930년대 한국 추리소설 연구』는 저자가 박사학위로 취득한 &lt;1930년대 한국 추리소설 연구&gt;를 단행본으로 엮은 것으로, 1930년대의 추리소설의 역사에 대해 저술하고 있다. 이 책에서 저자는 연애와 로맨스의 침투, 스파이담론의 유포, 유사종교의 폐해 등과 같이 추리소설이 유행할 수밖에 없었던 흥미로운 배경들을 소개하고 있으며 1930년대 대중문화의 한 축을 담당했고, 당대 사회,문화와 긴밀히 교류했던 추리소설의 생성과 소멸을 살펴보고 있다
+출판사: 어문학사
+ISBN: 9788961841108
+출간일시: 2009-11-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=858777&q=1930%EB%85%84%EB%8C%80+%ED%95%9C%EA%B5%AD+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%EC%97%B0%EA%B5%AC%28%EC%96%91%EC%9E%A5%EB%B3%B8+Hardcover%29', 22000, 10.00, 19800, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F858777%3Ftimestamp%3D20220818182009', 14, 36, 'ACTIVATE', NULL),
+    (139, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '필독 한국단편소설 1(중고생이 읽어야 할)', '김동인', '9788972440444', '청소년을 위한 한국단편소설. 현대 문학의 장을 연 1920, 30년대를 전후로 활동했던 주요 작가들의 대표적인 작품을 엄선하여 엮었다. 아내에게 기생하며 무기력한 삶을 살아가고 있는 주인공을 통해 비일상적인 삶을 살아가는 지식인의 좌절과 방황을 그린 이상의 〈날개〉 외 15편을 수록했다. 당시 굴곡 많은 우리의 생활과 사회상을 그대로 투영한 작품들을 실었다.
+출판사: 신라출판사
+ISBN: 9788972440444
+출간일시: 2001-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1003032&q=%ED%95%84%EB%8F%85+%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+1%28%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0%29', 7500, 10.00, 6750, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1003032%3Ftimestamp%3D20211114181847', 17, 38, 'ACTIVATE', NULL),
+    (140, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편 소설 2(종합적 사고력)', '나도향', '9788986982602', '출판사: 버들미디어
+ISBN: 9788986982602
+출간일시: 2006-01-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1244026&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4+2%28%EC%A2%85%ED%95%A9%EC%A0%81+%EC%82%AC%EA%B3%A0%EB%A0%A5%29', 9000, 10.00, 8100, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1244026%3Ftimestamp%3D20221025125144', 20, 40, 'ACTIVATE', NULL),
+    (141, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편 소설 1(종합적 사고력)', '김동인', '9788986982596', '출판사: 버들미디어
+ISBN: 9788986982596
+출간일시: 2006-01-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1245158&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4+1%28%EC%A2%85%ED%95%A9%EC%A0%81+%EC%82%AC%EA%B3%A0%EB%A0%A5%29', 9000, 10.00, 8100, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1245158%3Ftimestamp%3D20221025125121', 23, 42, 'ACTIVATE', NULL),
+    (142, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 몽골 소설선집(2018 한몽 문학 제5호)', '바밀리온 편집부', '9772586371003', '원류에는 몽골반점이라는 것으로부터 고대몽골의 피가 이어져왔다. 우리와 인종구분이 잘 되지 않는 몽골민족, 그들은 무지개를 뜻하는 솔롱고라는 발음으로 한국을 지칭한다. 그러한 몽골문인들과 10년 가까이 가져온 교류 끝에 탄생한 한국-몽골 소설선집에는 몽골의 유목문화와 몽골신화바탕의 서사. 그리고 전설로 내려오는 13세기 타타르부족과 헝기라드부족의 약탈 전쟁을 통하여 한국문화 속의 서사와 그 차이를 엿 볼 수 있다.  몽골은 원시시대부터 21세기 1990년 사회주의
+출판사: 바밀리온
+ISBN: 9772586371003
+출간일시: 2018-11-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5226712&q=%ED%95%9C%EA%B5%AD+%EB%AA%BD%EA%B3%A8+%EC%86%8C%EC%84%A4%EC%84%A0%EC%A7%91%282018+%ED%95%9C%EB%AA%BD+%EB%AC%B8%ED%95%99+%EC%A0%9C5%ED%98%B8%29', 18000, 10.00, 16200, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5226712%3Ftimestamp%3D20250531140528', 26, 44, 'ACTIVATE', NULL),
+    (143, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '필독 한국단편소설 2(중고생이 읽어야 할)', '김유정', '9788972440451', '출판사: 신라출판사
+ISBN: 9788972440451
+출간일시: 2001-09-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1002349&q=%ED%95%84%EB%8F%85+%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+2%28%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0%29', 7500, 10.00, 6750, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1002349%3Ftimestamp%3D20221025125113', 29, 46, 'ACTIVATE', NULL),
+    (144, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국고전소설 관계 저서 및 작품집 목록', '김일렬, 김소라', '9788974111625', '출판사: 새문사
+ISBN: 9788974111625
+출간일시: 2006-07-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1033095&q=%ED%95%9C%EA%B5%AD%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4+%EA%B4%80%EA%B3%84+%EC%A0%80%EC%84%9C+%EB%B0%8F+%EC%9E%91%ED%92%88%EC%A7%91+%EB%AA%A9%EB%A1%9D', 8000, 0.00, 8000, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1033095%3Ftimestamp%3D20221025190040', 32, 48, 'ACTIVATE', NULL),
+    (145, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 현대소설의 탈식민성과 문학교육(양장본 HardCover)', '최현주', '9791186478790', '우리가 확인하고 넘어가야 할 사실은 탈식민과 반식민의 구별이다. 자칫 탈식민과 반식민을 동일시할 경우 열린 장으로서의 교실의 구조 변화는 기대하기 어렵기 때문이다. 왜냐하면 반식민은 폭력적이고 단성적인 제국주의자에 대립하는 저항적 주체를 생성해내지만 탈식민은 다성적이고 열린 주체를 정립해내기 때문이다. 즉 반식민은 제국주의와 동일한 폐쇄적 구조에서의 정체성 확립을 지향하지만, 탈식민은 식민주의와의 대립을 넘어선 열린 구조속에서의 다양성을 추구하는
+출판사: 국학자료원
+ISBN: 9791186478790
+출간일시: 2016-02-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1628926&q=%ED%95%9C%EA%B5%AD+%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EC%9D%98+%ED%83%88%EC%8B%9D%EB%AF%BC%EC%84%B1%EA%B3%BC+%EB%AC%B8%ED%95%99%EA%B5%90%EC%9C%A1%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 20000, 10.00, 18000, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1628926%3Ftimestamp%3D20221025135532', 35, 50, 'ACTIVATE', NULL),
+    (146, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국문학 명작선 소설 세트', '한국언어문화연구원', '9788995832325', '비판 의식, 생활근거지를 상실한 사람들의 비애, 이 다섯 개의 주제 아래 작품 서너 개 정도를 묶었다. 이 작품들은 한국의 근대화 과정에서 빚어지는 다양한 문제들을 확인할 수 있게 하며, 오늘을 사는 우리들이 지녀야 할 가치관을 정립하는 데도 중요한 역할을 할 것이다. 또한 앞으로 전개될 한국 소설의 흐름을 예견하는 데 중요한 방향타 역할을 할 것이다. 소설을 읽으면서 한국 근대사의 모습을 이해하면서 그 속에서 살아가는 사람들의 삶의 방식에 주목하자. 소
+출판사: 한우리북스
+ISBN: 9788995832325
+출간일시: 2008-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1449811&q=%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99+%EB%AA%85%EC%9E%91%EC%84%A0+%EC%86%8C%EC%84%A4+%EC%84%B8%ED%8A%B8', 60000, 10.00, 54000, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1449811%3Ftimestamp%3D20240110183456', 38, 52, 'ACTIVATE', NULL),
+    (147, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국대표소설 100(상)(한 번에 이해하는)(개정판)', '김종회', '9788983924575', '100년의 한국문학사 속의 한국 대표 소설 100선을 선보이는 『한국대표소설 100』 상권. 이 책은 이인직의 ‘혈의 누’에서 김훈의 ‘칼의 노래’에 이르기까지 지난 100년간 한국 소설의 맥을 이어온 대표작가 100인의 작품 100선을 엄선하여 수록한 것이다. 사회상을 반영하여 변화해 온 대표작들을 통해 한국 현대소설 100년사를 한눈에 이해할 수 있도록 하였다.
+출판사: 문학수첩
+ISBN: 9788983924575
+출간일시: 2012-10-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1174945&q=%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EC%86%8C%EC%84%A4+100%28%EC%83%81%29%28%ED%95%9C+%EB%B2%88%EC%97%90+%EC%9D%B4%ED%95%B4%ED%95%98%EB%8A%94%29%28%EA%B0%9C%EC%A0%95%ED%8C%90%29', 14000, 10.00, 12600, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174945%3Ftimestamp%3D20221025125244', 41, 54, 'ACTIVATE', NULL),
+    (148, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국대표소설 100(하)(한 번에 이해하는)(개정판)', '김종회', '9788983924582', '100년의 한국문학사 속의 한국 대표 소설 100선을 선보이는 『한국대표소설 100』 하권. 이 책은 이인직의 ‘혈의 누’에서 김훈의 ‘칼의 노래’에 이르기까지 지난 100년간 한국 소설의 맥을 이어온 대표작가 100인의 작품 100선을 엄선하여 수록한 것이다. 사회상을 반영하여 변화해 온 대표작들을 통해 한국 현대소설 100년사를 한눈에 이해할 수 있도록 하였다.
+출판사: 문학수첩
+ISBN: 9788983924582
+출간일시: 2012-10-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1174459&q=%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EC%86%8C%EC%84%A4+100%28%ED%95%98%29%28%ED%95%9C+%EB%B2%88%EC%97%90+%EC%9D%B4%ED%95%B4%ED%95%98%EB%8A%94%29%28%EA%B0%9C%EC%A0%95%ED%8C%90%29', 14000, 10.00, 12600, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174459%3Ftimestamp%3D20221025125242', 44, 56, 'ACTIVATE', NULL),
+    (149, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 단편소설 베스트 39(중고생이 꼭 읽어야 할)(개정판)', '김동인, 황순원, 김원일, 성석제 외', '9788976701138', '이 책은 수능/내신/논술 대비 필독서로 2002년도에 출간된 《한국단편소설 베스트 30》의 두 번째 개정판이다. 새 국어교과서와 새 문학교과서, 그리고 최근 수능 출제 경향을 반영하였고 1900년대부터 2000년까지 한국의 현대문학사 100년을 아우르는 한국 중?단편소설 39편을 엄선하여 수록하였다.
+출판사: 혜문서관
+ISBN: 9788976701138
+출간일시: 2014-07-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1075467&q=%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EB%B2%A0%EC%8A%A4%ED%8A%B8+39%28%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0%29%28%EA%B0%9C%EC%A0%95%ED%8C%90%29', 15800, 10.00, 14220, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1075467%3Ftimestamp%3D20221025134342', 47, 58, 'ACTIVATE', NULL),
+    (150, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편소설 37선(국어과 선생님이 뽑은)', '김동인, 김동리, 김승옥, 김유정, 나도향', '9788989994183', '출판사: 북앤북
+ISBN: 9788989994183
+출간일시: 2007-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1315174&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+37%EC%84%A0%28%EA%B5%AD%EC%96%B4%EA%B3%BC+%EC%84%A0%EC%83%9D%EB%8B%98%EC%9D%B4+%EB%BD%91%EC%9D%80%29', 16800, 10.00, 15120, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1315174%3Ftimestamp%3D20220721003517', 50, 60, 'ACTIVATE', NULL),
+    (151, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 현대 단편 소설 33', '김동인, 신영재, 임성옥, 채대일', '9788986607673', '출판사: 맑은창
+ISBN: 9788986607673
+출간일시: 2008-08-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1248774&q=%ED%95%9C%EA%B5%AD+%ED%98%84%EB%8C%80+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4+33', 15000, 10.00, 13500, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1248774%3Ftimestamp%3D20211014160020', 53, 62, 'ACTIVATE', NULL),
+    (152, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국에서 과학소설은 어떻게 살아남았는가?', '고장원', '1400000284766', '그러나 어떤 분야이건 간에 그에 관한 역사를 한 사람의 손으로 빚어낸다는 것은 결코 만만한 일이 아니다. 더구나 해당 분야의 선례를 거의 찾아보기 힘들 때에는 더 더욱 그렇다. [한국에서 과학소설은 어떻게 살아남았는가?](부제: 한국과학소설 100년사)는 기본적으로 2011년 3월부터 2013년 가을까지 필자가 장장 2년여 동안 [사이언스타임즈]에 연재한 컬럼이 기본 출발점이다. 그렇다고 해서 이 책이 단지 당시 글들을 한데 이어 붙인 산술조합은 아니다. 애초
+출판사: 부크크(Bookk)
+ISBN: 1400000284766
+출간일시: 2017-06-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6957&q=%ED%95%9C%EA%B5%AD%EC%97%90%EC%84%9C+%EA%B3%BC%ED%95%99%EC%86%8C%EC%84%A4%EC%9D%80+%EC%96%B4%EB%96%BB%EA%B2%8C+%EC%82%B4%EC%95%84%EB%82%A8%EC%95%98%EB%8A%94%EA%B0%80%3F', 33000, 0.00, 33000, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6957%3Ftimestamp%3D20190122101828', 56, 64, 'ACTIVATE', NULL),
+    (153, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국근대역사소설연구', '류재엽', '9788982066696', '출판사: 국학자료원
+ISBN: 9788982066696
+출간일시: 2002-11-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1141620&q=%ED%95%9C%EA%B5%AD%EA%B7%BC%EB%8C%80%EC%97%AD%EC%82%AC%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC', 14000, 10.00, 12600, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1141620%3Ftimestamp%3D20221025134510', 59, 66, 'ACTIVATE', NULL),
+    (154, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 전후 실존주의 소설 연구', '배경열', '9788976266859', '출판사: 태학사
+ISBN: 9788976266859
+출간일시: 2001-07-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1069496&q=%ED%95%9C%EA%B5%AD+%EC%A0%84%ED%9B%84+%EC%8B%A4%EC%A1%B4%EC%A3%BC%EC%9D%98+%EC%86%8C%EC%84%A4+%EC%97%B0%EA%B5%AC', 10000, 10.00, 9000, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1069496%3Ftimestamp%3D20221025142856', 62, 68, 'ACTIVATE', NULL),
+    (155, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국문단의 샛별(2014 신춘문예 당선소설집)', '조수연 외', '9788990707598', '『한국문단의 샛별』은 2014 신춘문예 당선소설집이다. 백시종 한국소설가협회 이사장의 ‘소설의 힘은 아직도 위대합니다’를 시작으로 당선된 작가들의 소설 작품 18편이 수록되어 있으며 당선소감과 심사평이 함께 수록되었다.
+출판사: 한국소설가협회
+ISBN: 9788990707598
+출간일시: 2014-01-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1335277&q=%ED%95%9C%EA%B5%AD%EB%AC%B8%EB%8B%A8%EC%9D%98+%EC%83%9B%EB%B3%84%282014+%EC%8B%A0%EC%B6%98%EB%AC%B8%EC%98%88+%EB%8B%B9%EC%84%A0%EC%86%8C%EC%84%A4%EC%A7%91%29', 16000, 10.00, 14400, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1335277%3Ftimestamp%3D20190127221239', 65, 70, 'ACTIVATE', NULL),
+    (156, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설, 한국을 말하다', '장강명, 곽재식, 구병모, 이서수, 이기호, 김화진', '9791167374462', '속한 사회는 신속하고 완벽하게만 굴러가는가? 오늘 아침 눈뜨자마자 본 타인의 편집된 SNS 피드처럼?  작년 가을부터 올해 봄까지, 기사가 아닌 ‘이야기’를 통해 한국 사회를 들여다보자는 취지로 연재되었던 문화일보 기획 시리즈 《소설, 한국을 말하다》가 앤솔러지 형태로 은행나무출판사에서 출간되었다. 《소설, 한국을 말하다》에 수록된 스물한 편의 작품들은 모두 4천 자 내외의 초단편소설이다. 지금 한국 문학장에서 가장 활발하게, 꾸준히 활동하고 있는 작가들
+출판사: 은행나무
+ISBN: 9791167374462
+출간일시: 2024-08-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6703315&q=%EC%86%8C%EC%84%A4%2C+%ED%95%9C%EA%B5%AD%EC%9D%84+%EB%A7%90%ED%95%98%EB%8B%A4', 16800, 10.00, 15120, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6703315%3Ftimestamp%3D20250611152837', 68, 72, 'ACTIVATE', NULL),
+    (157, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국대표 단편소설(청소년을 위한)', '하근찬', '9788995317402', '이 책은 중학생과 고등학생을 위한 참고서적이다.
+출판사: 꿈과희망
+ISBN: 9788995317402
+출간일시: 2003-05-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1445459&q=%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%28%EC%B2%AD%EC%86%8C%EB%85%84%EC%9D%84+%EC%9C%84%ED%95%9C%29', 8000, 10.00, 7200, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1445459%3Ftimestamp%3D20221025130246', 71, 74, 'ACTIVATE', NULL),
+    (158, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 근대 고백소설의 형성과 서사양식', '우정권', '9788956260617', '어떻게 되었을까 하는 문제를 구체화 시킨 연구서이다. 한국 현대문학의 글쓰기 양상, 즉 서사양식의 특수성이 무엇인가를 찾아가는 과정에서 고백적 글쓰기 방식이 있음을 알게 되었고, 이것을 단일한 연구 테마로 정해 고백소설의 형성과 서사양식을 살펴보고자 하였다. 개화기부터 소설 작품을 읽어나가면서 소설 속 화자나 주인공의 삶이든지, 작가의 삶이든지 상당수 많은 작품을이 고백적 서술로 발견되었고, 그 사실들이 한국 근대소설의 형성에 어떤 영향을 미쳤는지 보여준다
+출판사: 소명출판
+ISBN: 9788956260617
+출간일시: 2004-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=728600&q=%ED%95%9C%EA%B5%AD+%EA%B7%BC%EB%8C%80+%EA%B3%A0%EB%B0%B1%EC%86%8C%EC%84%A4%EC%9D%98+%ED%98%95%EC%84%B1%EA%B3%BC+%EC%84%9C%EC%82%AC%EC%96%91%EC%8B%9D', 16000, 10.00, 14400, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F728600%3Ftimestamp%3D20250611113323', 74, 76, 'ACTIVATE', NULL),
+    (159, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '정부원(상)(한국의 번안 소설 3)', '박진영', '9788992214230', '출판사: 현실문화연구
+ISBN: 9788992214230
+출간일시: 2007-10-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1376303&q=%EC%A0%95%EB%B6%80%EC%9B%90%28%EC%83%81%29%28%ED%95%9C%EA%B5%AD%EC%9D%98+%EB%B2%88%EC%95%88+%EC%86%8C%EC%84%A4+3%29', 12500, 10.00, 11250, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1376303%3Ftimestamp%3D20220520232011', 77, 78, 'ACTIVATE', NULL),
+    (160, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '정부원(하)(한국의 번안 소설 4)', '박진영', '9788992214247', '출판사: 현실문화연구
+ISBN: 9788992214247
+출간일시: 2007-10-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1374613&q=%EC%A0%95%EB%B6%80%EC%9B%90%28%ED%95%98%29%28%ED%95%9C%EA%B5%AD%EC%9D%98+%EB%B2%88%EC%95%88+%EC%86%8C%EC%84%A4+4%29', 12500, 10.00, 11250, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1374613%3Ftimestamp%3D20211107145613', 80, 80, 'ACTIVATE', NULL),
+    (161, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '해왕성(상)(한국의 번안 소설 5)', '박진영', '9788992214254', '출판사: 현실문화연구
+ISBN: 9788992214254
+출간일시: 2007-10-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1372124&q=%ED%95%B4%EC%99%95%EC%84%B1%28%EC%83%81%29%28%ED%95%9C%EA%B5%AD%EC%9D%98+%EB%B2%88%EC%95%88+%EC%86%8C%EC%84%A4+5%29', 12500, 10.00, 11250, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1372124%3Ftimestamp%3D20220818180843', 83, 82, 'ACTIVATE', NULL),
+    (162, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '해왕성(하)(한국의 번안 소설 7)', '박진영', '9788992214278', '출판사: 현실문화연구
+ISBN: 9788992214278
+출간일시: 2007-10-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1374017&q=%ED%95%B4%EC%99%95%EC%84%B1%28%ED%95%98%29%28%ED%95%9C%EA%B5%AD%EC%9D%98+%EB%B2%88%EC%95%88+%EC%86%8C%EC%84%A4+7%29', 13000, 10.00, 11700, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1374017%3Ftimestamp%3D20220818185046', 86, 84, 'ACTIVATE', NULL),
+    (163, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, 'EBS 윤혜정의 나비효과 입문편 워크북(2022)', 'EBS교육방송 편집부', '9788954760072', 'EBS 최고 베스트셀러 〈윤혜정의 나비효과 입문편〉과 찰떡 짝꿍 윤혜정 선생님과 함께하는 문제 적용 연습 “윤혜정의 나비효과 입문편 워크북”  국어영역 No.1 윤혜정 선생님 직접 집필 〈윤혜정의 나비효과 입문편〉과 동일한 시 문학/소설 문학/비문학 각 15강 합본 구성 바로 옆에서 1:1 수업을 해 주는 것처럼 음성 지원되는 혜정 샘의 친절한 설명과 함께하는 문제 적용 연습  복습해야 할 ‘오늘의 개념 태그’ 내가 지금 무엇을 배우고 있는지, 무엇을 익혀야
+출판사: EBS한국교육방송공사
+ISBN: 9788954760072
+출간일시: 2021-11-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5892762&q=EBS+%EC%9C%A4%ED%98%9C%EC%A0%95%EC%9D%98+%EB%82%98%EB%B9%84%ED%9A%A8%EA%B3%BC+%EC%9E%85%EB%AC%B8%ED%8E%B8+%EC%9B%8C%ED%81%AC%EB%B6%81%282022%29', 15000, 10.00, 13500, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5892762%3Ftimestamp%3D20230711185436', 89, 86, 'ACTIVATE', NULL),
+    (164, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국의 여성영웅소설(재판)', '정병헌, 이유경', '9788976265494', '『한국의 여성영웅소설』은 우리의 고전 소설 중에서 여성영웅소설 다섯 편을 모아 엮은 책이다. 여성이 주인공인 소설을 통해 ''소설이란 무엇인가'', ''문학이란 무엇인가''라는 본질적 질문에 기초하고 있다. 《박씨부인전》, 《금방울전》, 《옥주호연》, 《홍계월전》, 《방한림전》을 수록했으며, 여성영웅소설의 이야기 전개 방식을 고찰했다.
+출판사: 태학사
+ISBN: 9788976265494
+출간일시: 2012-08-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1070266&q=%ED%95%9C%EA%B5%AD%EC%9D%98+%EC%97%AC%EC%84%B1%EC%98%81%EC%9B%85%EC%86%8C%EC%84%A4%28%EC%9E%AC%ED%8C%90%29', 12000, 10.00, 10800, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1070266%3Ftimestamp%3D20221025115326', 92, 88, 'ACTIVATE', NULL),
+    (165, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '100년동안의 한국대표 단편소설 1', '신달자, 박덕규, 한원균, 김수이', '9788989790327', '출판사: 지식마당
+ISBN: 9788989790327
+출간일시: 2005-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1316965&q=100%EB%85%84%EB%8F%99%EC%95%88%EC%9D%98+%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+1', 14000, 10.00, 12600, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1316965%3Ftimestamp%3D20221025125138', 95, 90, 'ACTIVATE', NULL),
+    (166, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '100년동안의 한국대표 단편소설 2', '신달자, 박덕규, 한원균, 김수이', '9788989790334', '출판사: 지식마당
+ISBN: 9788989790334
+출간일시: 2005-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1307128&q=100%EB%85%84%EB%8F%99%EC%95%88%EC%9D%98+%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+2', 14000, 10.00, 12600, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1307128%3Ftimestamp%3D20221025125134', 98, 92, 'ACTIVATE', NULL),
+    (167, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 근대문학 단편소설 9선', '김동인 외 6인', '1400000297742', '읽을거리가 넘쳐나는 이 시대에, 소중한 시간을 낭비하지 않기 위해 좋은 읽을거리를 찾아내는 일은 더없이 중요한 일이 되었습니다. 이 책에 소개된 한국 근대 문학 단편들은 검증되고 또 검증된 작품들입니다. 저자별로 더 많은 작품이 있으나 그중에서도 많은 사람이 즐겨 읽고 사랑하는 작품들을 선별했습니다. 입시를 앞둔 학생으로부터 연세 지긋한 어른에 이르기까지 누구나 즐겁게 읽을 수 있는 작품들입니다.  작가들은 각기 다른 개성과 감성으로 일제 강점기의
+출판사: 퍼플
+ISBN: 1400000297742
+출간일시: 2018-01-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7884&q=%ED%95%9C%EA%B5%AD+%EA%B7%BC%EB%8C%80%EB%AC%B8%ED%95%99+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+9%EC%84%A0', 6700, 15.00, 6700, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7884%3Ftimestamp%3D20190122102609', 101, 94, 'ACTIVATE', NULL),
+    (168, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 베스트 단편 소설 1(중고생이 꼭 읽어야 할)', '김동인', '9788990811110', '출판사: 새희망
+ISBN: 9788990811110
+출간일시: 2006-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1332450&q=%ED%95%9C%EA%B5%AD+%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4+1%28%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0%29', 5000, 10.00, 4500, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1332450%3Ftimestamp%3D20221025135353', 104, 96, 'ACTIVATE', NULL),
+    (169, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '삼대. 1(한국문학산책 20: 장편소설)', '염상섭, 김명진 (엮음)', '9788967900458', '한국인이 꼭 읽어야 할 대표 작가들의 주요 작품을 엄선한 문학전집 「한국문학산책」 시리즈. 고전부터 근ㆍ현대 작품에 이르기까지 우리나라 대표 작가들의 다양한 작품을 만날 수 있다. 중ㆍ단편소설, 장편소설, 고전 문학, 신소설 네 장르로 나누었고, 전문가들이 작가의 주요 작품과 작가 소개, 작품 해설 등을 전해준다. 또한 뜻풀이와 삽화를 실어 보는 재미와 읽는 즐거움을 더했다.  제20권에서는 봉건 사회에서 자본주의 사회로 변화하는 1930년대를 삼대
+출판사: 지식의숲
+ISBN: 9788967900458
+출간일시: 2013-04-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=940267&q=%EC%82%BC%EB%8C%80.+1%28%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99%EC%82%B0%EC%B1%85+20%3A+%EC%9E%A5%ED%8E%B8%EC%86%8C%EC%84%A4%29', 9500, 10.00, 8550, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F940267%3Ftimestamp%3D20220410075728', 107, 98, 'ACTIVATE', NULL),
+    (170, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '초등학생이 꼭 읽어야 할 한국 단편소설', '김동인, 이상, 이효석, 나도향, 현진건, 김유정', '9791161861364', '교과서에 실린 작가들의 한국대표 단편 소설.
+출판사: 꿈과희망
+ISBN: 9791161861364
+출간일시: 2023-05-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6342202&q=%EC%B4%88%EB%93%B1%ED%95%99%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 16000, 10.00, 14400, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6342202%3Ftimestamp%3D20260305151342', 110, 100, 'ACTIVATE', NULL),
+    (171, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '삼대. 2(한국문학산책 21: 장편소설)', '염상섭, 김명진 (엮음)', '9788967900465', '『삼대』 제2권은 일제 강점기 서울의 현실을 배경으로 가족 간에 벌어지는 삼대의 세대 갈등을 그려 낸 염상섭의 대표작이다. 서울의 한 중산층 집안인 조 씨 일가에서 일어나는 재산 싸움을 중심으로 하여, 1930년대의 여러 가지 이념의 상호 관계와 유교 사회에서 자본주의 사회로 변화하는 당대의 현실을 매우 생동감 있게 그려 냈다.
+출판사: 지식의숲
+ISBN: 9788967900465
+출간일시: 2013-04-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=938751&q=%EC%82%BC%EB%8C%80.+2%28%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99%EC%82%B0%EC%B1%85+21%3A+%EC%9E%A5%ED%8E%B8%EC%86%8C%EC%84%A4%29', 9500, 10.00, 8550, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F938751%3Ftimestamp%3D20220410075519', 113, 102, 'ACTIVATE', NULL),
+    (172, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '2026 소설, 한국을 말하다', '성해나, 김기태, 박연준, 박민정, 성혜령, 김경욱', '9791167376398', '기사가 아닌 ‘이야기’를 통해 한국 사회의 현실을 고찰하며 큰 호응을 얻었던 문화일보 연재 기획 《소설, 한국을 말하다》가 2026년 여전히 첨예하고 현재적인 주제들로 돌아왔다. 12.3 비상 계엄과 6.3 대선을 거치며 한국 사회는 더 많은 난제를 마주한다. 이에 《2026 소설, 한국을 말하다》에서는 한국 문단에서 활발히 활동하는 소설가뿐 아니라 학자, 번역가 등 다양하게 구성된 작가 19인이 가장 시의적인 키워드를 통해 지금 여기 우리의 모습을
+출판사: 은행나무
+ISBN: 9791167376398
+출간일시: 2026-04-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7194043&q=2026+%EC%86%8C%EC%84%A4%2C+%ED%95%9C%EA%B5%AD%EC%9D%84+%EB%A7%90%ED%95%98%EB%8B%A4', 16800, 10.00, 15120, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7194043%3Ftimestamp%3D20260411121731', 116, 104, 'ACTIVATE', NULL),
+    (173, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '사피엔스 한국문학 중 단편소설 11∼20권 세트(전10권)', '이태준', '9788965881445', '한국을 대표하는 작가들의 중요 작품들을 엄선한 소설 선집 「사피엔스 한국문학 중ㆍ단편소설」 시리즈. 중ㆍ단편소설을 묶어 작가별로 구성하고, 작가의 중요 작품과 작품별 해설, 작가의 작품 세계와 연보까지 한 권에 담았다. 여러 판본을 참조하여 텍스트에 최대한 정확성을 기하되, 현대인이 읽기 쉽도록 표기를 다듬었다. 특히 한국문학의 달인들이 충실한 해설을 제시함으로써 근본적인 문학 감상을 위한 길잡이가 되어준다. 중학생부터 고등학생까지 청소년들의 눈높이에
+출판사: 사피엔스21
+ISBN: 9788965881445
+출간일시: 2012-10-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=922914&q=%EC%82%AC%ED%94%BC%EC%97%94%EC%8A%A4+%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99+%EC%A4%91+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+11%E2%88%BC20%EA%B6%8C+%EC%84%B8%ED%8A%B8%28%EC%A0%8410%EA%B6%8C%29', 79000, 10.00, 71100, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F922914%3Ftimestamp%3D20221025125023', 119, 106, 'ACTIVATE', NULL),
+    (174, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '표본실의 청개구리 외(한국문학산책 1: 중 단편소설)', '염상섭, 김성해 (엮음)', '9788967900243', '소설 네 장르로 나누었고, 전문가들이 작가의 주요 작품과 작가 소개, 작품 해설 등을 전해준다. 또한 뜻풀이와 삽화를 실어 보는 재미와 읽는 즐거움을 더했다.  제1권에서는 염상섭의 중ㆍ단편소설 《표본실의 청개구리》, 《두 파산》, 《임종》을 소개한다. 염상섭은 한국에서 자연주의 문학을 최초로 받아들인 작가로, 사회의 어두운 부분을 드러내면서 개인의 자유와 개성을 강조하는 작품을 많이 썼다. 현실에 대한 비판적인 시선을 사실주의적 기법으로 표현했으며, 이를
+출판사: 지식의숲
+ISBN: 9788967900243
+출간일시: 2013-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=940263&q=%ED%91%9C%EB%B3%B8%EC%8B%A4%EC%9D%98+%EC%B2%AD%EA%B0%9C%EA%B5%AC%EB%A6%AC+%EC%99%B8%28%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99%EC%82%B0%EC%B1%85+1%3A+%EC%A4%91+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%29', 7000, 10.00, 6300, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F940263%3Ftimestamp%3D20220410085001', 122, 108, 'ACTIVATE', NULL),
+    (175, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, 'EBS 국어 독해의 원리 고등 현대소설(2025)', 'EBS교육방송 편집부', '9788954750974', '● 예비 고1~고2 학생들을 대상으로 문학 작품과 독서(비문학) 지문을 독해하는 방법을 정리  ● 독해 방법을 6가지 원리로 정리, 작품과 지문을 독해할 때 필요한 요소들을 한 번에 학습  ● 현대시, 현대 소설, 고전 시가, 고전 산문, 독서(비문학) 5권으로 구성하여 영역별로 집중 학습 가능  ● 원리 익히기’에서 원리를 익히고, ‘원리 다지기’에서 원리를 적용하여 학습하는 단계별 구성  ● 작품과 지문마다 세세한 설명과 풍부한 보충 자료들을 제공하여
+출판사: EBS한국교육방송공사
+ISBN: 9788954750974
+출간일시: 2019-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5150547&q=EBS+%EA%B5%AD%EC%96%B4+%EB%8F%85%ED%95%B4%EC%9D%98+%EC%9B%90%EB%A6%AC+%EA%B3%A0%EB%93%B1+%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%282025%29', 15500, 10.00, 13950, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5150547%3Ftimestamp%3D20260227114304', 125, 110, 'ACTIVATE', NULL),
+    (176, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '우리 집 인문학: 한국소설', '배혜림', '9791124248027', '〈우리 집 인문학〉 시리즈는 부모와 아이가 함께 읽고 대화하도록 이끄는 인문교양서다. 시, 한국소설, 세계소설, 철학, 명화, 영화 총 6권으로 구성되어 있다. 인문학 텍스트를 매개로 작품 속 질문을 출발점으로 삼아, 그 작품이 탄생한 역사적 맥락과 사회적 배경을 함께 탐구하도록 설계되었다. 이를 통해 독자는 작품을 단순히 감상하는 데서 그치지 않고, 왜 이런 이야기가 나올 수밖에 없었는지, 그 시대 사람들은 무엇을 고민했는지를 입체적으로 이해할 수
+출판사: 상상스퀘어
+ISBN: 9791124248027
+출간일시: 2026-02-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7154470&q=%EC%9A%B0%EB%A6%AC+%EC%A7%91+%EC%9D%B8%EB%AC%B8%ED%95%99%3A+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 22000, 10.00, 19800, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7154470%3Ftimestamp%3D20260214121240', 128, 112, 'ACTIVATE', NULL),
+    (177, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '작은할머니: 그 여자의 소설(지식을만드는지식 한국희곡선집)', '엄인희', '9791130410920', '＜지만지한국희곡선집＞은 개화기 이후부터 현대까지 문학사와 공연사에 길이 남을 작품을 선정했습니다. 이 책은 ‘그 여자의 소설’이라는 부제가 달린 8장 희곡이다. 축첩이 허용되던 환경에서 씨받이로 들어온 ‘작은댁’의 삶을 연대기로 제시해 한국 근현대사 중턱에서 여성이자 어머니로서 삶이 어떠했는지 보여 주며 그에 대한 성찰을 유도한다.
+출판사: 지식을만드는지식
+ISBN: 9791130410920
+출간일시: 2014-02-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1530509&q=%EC%9E%91%EC%9D%80%ED%95%A0%EB%A8%B8%EB%8B%88%3A+%EA%B7%B8+%EC%97%AC%EC%9E%90%EC%9D%98+%EC%86%8C%EC%84%A4%28%EC%A7%80%EC%8B%9D%EC%9D%84%EB%A7%8C%EB%93%9C%EB%8A%94%EC%A7%80%EC%8B%9D+%ED%95%9C%EA%B5%AD%ED%9D%AC%EA%B3%A1%EC%84%A0%EC%A7%91%29', 7800, 10.00, 7020, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1530509%3Ftimestamp%3D20221025120424', 131, 114, 'ACTIVATE', NULL),
+    (178, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '이 비가 그치면(양장본 Hardcover)', '이영철', '9791185482255', '강렬한 문체로 문단에 파장을 일으킨 작가 이영철 소설집. 지금 당신의 사랑은 당신 곁에 있는지를 묻고있다.
+출판사: 청어
+ISBN: 9791185482255
+출간일시: 2014-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1623338&q=%EC%9D%B4+%EB%B9%84%EA%B0%80+%EA%B7%B8%EC%B9%98%EB%A9%B4%28%EC%96%91%EC%9E%A5%EB%B3%B8+Hardcover%29', 13000, 10.00, 11700, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1623338%3Ftimestamp%3D20220830221854', 134, 116, 'ACTIVATE', NULL),
+    (179, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국현대소설 이야기', '채호석, 안주영', '9788965822462', '이런 이야기를 썼는지를 알아야 비로소 문학 작품을 제대로 이해할 수 있다.  교과서에 수록된 작품과 문학사적으로 중요한 작품을 시대별로 엄선해 다양한 각도에서 해설했다. 작품이 창작된 시기의 역사적 사실, 관련 일화 등을 알면 한국 현대 소설의 숨겨진 의미도 파악할 수 있다. 문학 작품을 이해하기 위한 열쇠가 되는 질문들은 작품과 작가마다 다르다. 『한국현대소설 이야기』에서 각각의 질문에 대한 답을 제시하면서 독자를 재미있는 문학의 세계로 안내할 것이다
+출판사: 리베르
+ISBN: 9788965822462
+출간일시: 2018-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=920977&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4+%EC%9D%B4%EC%95%BC%EA%B8%B0', 12000, 10.00, 10800, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920977%3Ftimestamp%3D20250401113647', 137, 118, 'ACTIVATE', NULL),
+    (180, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중학 교과서 소설(2019)(EBS 필독)', 'EBS교육방송 편집부', '9788954735087', '- 독자대상 : 중학교 국어 시 학습자 - 구성 : 이론 + 문제 + 정답 및 해설
+출판사: EBS한국교육방송공사
+ISBN: 9788954735087
+출간일시: 2017-12-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=695195&q=%EC%A4%91%ED%95%99+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%86%8C%EC%84%A4%282019%29%28EBS+%ED%95%84%EB%8F%85%29', 11000, 10.00, 9900, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F695195%3Ftimestamp%3D20221025125148', 140, 0, 'ACTIVATE', NULL),
+    (181, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '지하실의 멜로디', '김한강', '9791156055341', '“노블누아르의 핏빛 사랑이 당신의 가슴에 방아쇠를 당기다!”    장르소설은 유형적이다. 하지만 비슷한 패턴이라 하더라도 스토리 자체가 박진감이 넘치고 반전의 효과마저 탁월하면 새로운 감동을 불러일으키기 마련이다. 『지하실의 멜로디』로 작가 데뷔를 한 김한강이 딱 그렇다.  그는 마치 능숙한 기성작가처럼 빠른 전개와 서스펜스를 구축해 작품의 가독성을 높였다. 더욱이 작품의 무대로 미국을 비롯해 유럽까지 종횡무진 누비게 해 놓았다. 주인공 잭이 CIA요원
+출판사: 신아출판사
+ISBN: 9791156055341
+출간일시: 2018-07-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1558973&q=%EC%A7%80%ED%95%98%EC%8B%A4%EC%9D%98+%EB%A9%9C%EB%A1%9C%EB%94%94', 13800, 10.00, 12420, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1558973%3Ftimestamp%3D20241022114556', 143, 2, 'ACTIVATE', NULL),
+    (182, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 단편소설 베스트 37', '김동인, 김유정, 현진건, 황순원, 전상국, 조정래 외', '9788976701145', '《한국 단편소설 베스트 30》은 ‘서울시교육청 권장도서’, ‘전국 초·중·고교 독서지도교사모임 (사)전국독서새물결모임 추천도서’, ‘조선일보 맛있는 공부 추천도서’ 등 여러 기관과 학교에서 좋은 책으로 선정되며 많은 학생과 선생님들, 나아가서 부모님들에게까지 두루 사랑과 관심을 받아왔습니다. 그 후 2009년 《한국 단편소설 베스트 37》로 수정·보완판을 발행했고, 2014년에 《한국 단편소설 베스트 39》로 개정하였으며, 2021년에 다시 한 번 《한국
+출판사: 혜문서관
+ISBN: 9788976701145
+출간일시: 2021-03-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5615786&q=%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EB%B2%A0%EC%8A%A4%ED%8A%B8+37', 15800, 10.00, 14220, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5615786%3Ftimestamp%3D20260228120711', 146, 4, 'ACTIVATE', NULL),
+    (183, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설 재미있게 읽는 법', '조현행', '9791158583330', '소설 읽기는 기존의 소설 읽기 방식과는 다르다. 인물ㆍ사건ㆍ배경ㆍ문체 등을 파악하고 주제를 찾는 방법을 따르지 않고, 보다 자유로운 방식으로 느끼며 해석에 이르도록 하기 때문이다. 또 소설을 읽으면서 생겨나는 궁금증은 스스로 질문을 던지고 스스로 그 답을 찾도록 함으로써, 자기만의 자유로운 해석을 끌어내도록 한다. 특히 16편의 한국 현대 단편과 함께 그 방법을 전하고 있어 독자는 더욱 친밀감을 느끼며 자연스럽게 재미있게 소설 읽는 법을 배울 수 있다
+출판사: 밥북
+ISBN: 9791158583330
+출간일시: 2017-09-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1586748&q=%EC%86%8C%EC%84%A4+%EC%9E%AC%EB%AF%B8%EC%9E%88%EA%B2%8C+%EC%9D%BD%EB%8A%94+%EB%B2%95', 12000, 10.00, 10800, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1586748%3Ftimestamp%3D20250201113516', 149, 6, 'ACTIVATE', NULL),
+    (184, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '국어과 선생님이 뽑은 한국 단편 소설: 근현대·신소설', '채만식, 이인직, 이해조, 최찬식, 강경애, 계용묵', '9791186649671', '문해력은 대학에까지 이어져 공부의 밑거름이 된다. 이에 교육과정 개편과 교과서 개정에 맞춰 논술시험과 대학 입시에 도움이 되었으면 하는 바람으로 1900년대 조선 개화기부터 일제 강점기의 시대적 배경과 당시의 사회상을 엿볼 수 있는 한국 단편 소설 및 근현대·신소설 40편을 수록했다. 작품마다 작가 소개, 작품 정리, 줄거리를 실었으며 한자나 어려운 단어는 괄호 안에 주석을 달아 원작의 표현과 내용을 쉽게 파악할 수 있도록 꾸미고 정확성을 기하기 위해 여러 판본
+출판사: 북앤북
+ISBN: 9791186649671
+출간일시: 2023-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6260659&q=%EA%B5%AD%EC%96%B4%EA%B3%BC+%EC%84%A0%EC%83%9D%EB%8B%98%EC%9D%B4+%EB%BD%91%EC%9D%80+%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4%3A+%EA%B7%BC%ED%98%84%EB%8C%80%C2%B7%EC%8B%A0%EC%86%8C%EC%84%A4', 15800, 10.00, 14220, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6260659%3Ftimestamp%3D20250510152808', 152, 8, 'ACTIVATE', NULL),
+    (185, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 대표 단편 소설 김유정 편', '김유정', '9791198015310', 'ㆍ 수능·논술·내신을 위한 한국 근대 소설 대표작! ㆍ 교과서에서 비중 있게 다룬 작품으로 우선 수록! ㆍ 작품 전문을 수록하여 읽는 재미를 높임! ㆍ 주석이나 부연 설명 없이 소설을 읽는 즐거움! ㆍ 교과서 수록 작품과 함께 문학성 높은 작품 추가! ㆍ 다수의 청소년 추천 작품으로 수록!
+출판사: FILOS
+ISBN: 9791198015310
+출간일시: 2023-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6443867&q=%ED%95%9C%EA%B5%AD+%EB%8C%80%ED%91%9C+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4+%EA%B9%80%EC%9C%A0%EC%A0%95+%ED%8E%B8', 16000, 10.00, 14400, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6443867%3Ftimestamp%3D20260317123343', 155, 10, 'ACTIVATE', NULL),
+    (186, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 신소설 현대소설', '현대 문학 독서지도회', '9788970015316', '통합 논술과 독서평가의 내신반영에 도움이 되는 중ㆍ고등학생 필독서. 이인직의 &lt;혈의 누&gt;, 안국선의 &lt;금수회의록&gt;, 이광수의 &lt;무정&gt; 등 한국신소설과 현대소설 8편이 수록되어 있다.    이 책은 작품을 읽기 전에 작가 소개와 등장 인물, 줄거리, 작품 정리를 먼저 실어 이야기를 이해하고 작품을 읽는 데 도움을 주도록 구성하였다. 또한, 작품을 읽고 되짚어 보는 코너를 나혀왜 작가의 감추어진 메시지를 알게 해주어, 독서
+출판사: 예문당
+ISBN: 9788970015316
+출간일시: 2006-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=950119&q=%ED%95%9C%EA%B5%AD+%EC%8B%A0%EC%86%8C%EC%84%A4+%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4', 10000, 10.00, 9000, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F950119%3Ftimestamp%3D20240725113158', 158, 12, 'ACTIVATE', NULL),
+    (187, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국현대소설과 타자의 정치학', '김윤정', '9791195464029', '『한국현대소설과 타자의 정치학』은 20세기 한국 문학에서 중요한 위상을 차지하는 작가들의 여러 작품을 다뤘다. 특히 기존의 문학 연구가 보여준 전통적 남성 중심주의 시각에서 탈피하여 보다 더 적극적이고 능동적인 여성의 시각으로 현대소설에 내재한 근대성과 타자의 관계를 조망한다.
+출판사: 새미
+ISBN: 9791195464029
+출간일시: 2004-08-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1661499&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EA%B3%BC+%ED%83%80%EC%9E%90%EC%9D%98+%EC%A0%95%EC%B9%98%ED%95%99', 10000, 10.00, 9000, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1661499%3Ftimestamp%3D20251003110438', 161, 14, 'ACTIVATE', NULL),
+    (188, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 단편소설19', '황순원, 오영수, 하근찬, 최일남', '9788976043191', '능력평가에 나올 만한 작품은 무궁무진하고 학생들이 느끼는 마음의 부담감은 점점 커져만 갈 뿐이다. 하지만 어디에나 중요작품은 있는 법! 16종 교과서에서 가장 비중 있게 다뤄지는 작품들과, 교과서에는 실리지 않았지만 중학생이라면 꼭 읽고 넘어가야 하는 대한민국 대표 단편들을 엄선해 묶은 책이 나왔다. 『중학생이 되기 전에 미리 읽는 한국 단편소설19』 한 권이라면 예비 중학생부터 고등학생까지 두고두고 곁에 읽으며 필수 목록을 채워갈 수 있을 것이다
+출판사: 문예춘추사
+ISBN: 9788976043191
+출간일시: 2016-10-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1066143&q=%ED%95%9C%EA%B5%AD+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A419', 13000, 10.00, 11700, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1066143%3Ftimestamp%3D20260319110840', 164, 16, 'ACTIVATE', NULL),
+    (189, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국추리소설 걸작선 1', '김내성, 현재훈, 김성종, 문윤성, 이상우', '9788959754274', '한국의 걸작 추리 작품 44편을 소개하는 단편 추리소설 모음집 『한국추리소설 걸작선』 제1권. 1983년에 창립하여 현재까지 왕성한 활동을 펼치고 있는 한국추리작가협회의 결산물이라 할 수 있는 작품집이다. 회원 스스로 우수 단편을 가려냈으며, 작고 회원의 작품은 추천작이나 대표작 중에서 선택하여 모두 44편의 작품을 2권의 책에 나누어 담았다. 한국 현대 추리문학의 아버지로 불리는 김내성의 1937년 작품 《가상범인》부터 홍성호의 2012년 작품 《B
+출판사: 한스미디어
+ISBN: 9788959754274
+출간일시: 2012-08-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=813322&q=%ED%95%9C%EA%B5%AD%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%EA%B1%B8%EC%9E%91%EC%84%A0+1', 17000, 10.00, 15300, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F813322%3Ftimestamp%3D20230330140258', 167, 18, 'ACTIVATE', NULL),
+    (190, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '우리 집 인문학: 한국소설', '배혜림', '9791124248096', '〈우리 집 인문학〉 시리즈는 부모와 아이가 함께 읽고 대화하도록 이끄는 인문교양서다. 시, 한국소설, 세계소설, 철학, 명화, 영화 총 6권으로 구성되어 있다. 인문학 텍스트를 매개로 작품 속 질문을 출발점으로 삼아, 그 작품이 탄생한 역사적 맥락과 사회적 배경을 함께 탐구하도록 설계되었다. 이를 통해 독자는 작품을 단순히 감상하는 데서 그치지 않고, 왜 이런 이야기가 나올 수밖에 없었는지, 그 시대 사람들은 무엇을 고민했는지를 입체적으로 이해할 수
+출판사: 상상스퀘어
+ISBN: 9791124248096
+출간일시: 2026-02-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7157638&q=%EC%9A%B0%EB%A6%AC+%EC%A7%91+%EC%9D%B8%EB%AC%B8%ED%95%99%3A+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 15400, 10.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7157638%3Ftimestamp%3D20260215121833', 170, 20, 'ACTIVATE', NULL),
+    (191, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중고생이 꼭 읽어야 할 한국중장편소설 40', '박경리', '9788965823599', '매년 새 학기가 되면 수많은 문학 해설서가 쏟아져 나온다. 그만큼 문학 작품을 쉽게 접할 수 있는 환경이 조성되었지만, 해설과 질문이 부실한 책이 대부분이다. 『한국중장편소설 40』은 쉽고 재미있는 문학 공부를 위해 다양한 장치를 활용했다. 어려운 어휘는 바로 옆에서 풀이했고, 본문 중간중간 주석을 달아 작품을 쉽게 이해할 수 있도록 구성했다. 수능·논술·내신을 위해서 ‘작품 길잡이’, ‘구성과 줄거리’, ‘생각해 볼까요?’ 등으로 작품을 상세히 분석
+출판사: 리베르
+ISBN: 9788965823599
+출간일시: 2022-12-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6249038&q=%EC%A4%91%EA%B3%A0%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EC%A4%91%EC%9E%A5%ED%8E%B8%EC%86%8C%EC%84%A4+40', 22000, 10.00, 19800, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6249038%3Ftimestamp%3D20260115151219', 173, 22, 'ACTIVATE', NULL),
+    (192, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '교동회관 밀실 살인사건(한국추리문학선 3)', '윤자영', '9791157766703', '‘올해의 과학교사상’을 수상한 작가의 본격 과학추리소설! 『교동회관 밀실 살인사건』은 등단 5년차의 추리소설가이자 고등학교에서 과학을 가르치는 교사인 윤자영의 장편으로, 추리에 방점을 둔 본격추리물이다. 하나. 강원도 깊은 산골의 폐교에서 열린 ‘실전형 추리 퀴즈게임’ 도중에 진짜 살인이 일어나고, 폭설로 밀폐공간이 된 폐교 내에서 추가 살인이 암시되자 게임 참가자인 추리소설가 당승표는 누가 어떻게 살인을 했는지 추리에 나선다. 그런데, 범인은 도대체 왜
+출판사: 책과나무
+ISBN: 9791157766703
+출간일시: 2019-01-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4856198&q=%EA%B5%90%EB%8F%99%ED%9A%8C%EA%B4%80+%EB%B0%80%EC%8B%A4+%EC%82%B4%EC%9D%B8%EC%82%AC%EA%B1%B4%28%ED%95%9C%EA%B5%AD%EC%B6%94%EB%A6%AC%EB%AC%B8%ED%95%99%EC%84%A0+3%29', 13800, 10.00, 12420, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4856198%3Ftimestamp%3D20220709154738', 176, 24, 'ACTIVATE', NULL),
+    (193, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설 이순신 (중학생이 꼭 읽어야 할 한국소설)', '이광수', '4801155571881', '일제 강정기 동아일보에 연재되었던 이순신 장군의 일대기를 그린 대하소설.
+출판사: IWELL(아이웰콘텐츠)
+ISBN: 4801155571881
+출간일시: 2014-08-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4454345&q=%EC%86%8C%EC%84%A4+%EC%9D%B4%EC%88%9C%EC%8B%A0+%28%EC%A4%91%ED%95%99%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%29', 5000, 5.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4454345%3Ftimestamp%3D20190228225004', 179, 26, 'ACTIVATE', NULL),
+    (194, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설 100인 100선 13(한국소설 100년)', '김영현, 김채원, 현길언, 김향숙', '9788958081135', '출판사: 일송미디어
+ISBN: 9788958081135
+출간일시: 2007-05-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=773062&q=%EC%86%8C%EC%84%A4+100%EC%9D%B8+100%EC%84%A0+13%28%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+100%EB%85%84%29', 9800, 10.00, 8820, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F773062%3Ftimestamp%3D20221025125134', 182, 28, 'ACTIVATE', NULL),
+    (195, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설 100인 100선 15(한국소설 100년)', '정찬, 김인숙, 송기원, 하창수, 구효서', '9788958081159', '출판사: 일송미디어
+ISBN: 9788958081159
+출간일시: 2007-05-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=772342&q=%EC%86%8C%EC%84%A4+100%EC%9D%B8+100%EC%84%A0+15%28%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+100%EB%85%84%29', 9800, 10.00, 8820, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772342%3Ftimestamp%3D20221025133222', 185, 30, 'ACTIVATE', NULL),
+    (196, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설 100인 100선 14(한국소설 100년)', '조성기, 박상우, 이순원, 이인성, 양귀자', '9788958081142', '출판사: 일송미디어
+ISBN: 9788958081142
+출간일시: 2007-05-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=772442&q=%EC%86%8C%EC%84%A4+100%EC%9D%B8+100%EC%84%A0+14%28%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+100%EB%85%84%29', 9800, 10.00, 8820, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772442%3Ftimestamp%3D20221025125129', 188, 32, 'ACTIVATE', NULL),
+    (197, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '2000년-2020년 한국소설문학연구', '석추영石秋英', '9791173964428', '산업화와 민주화를 거쳐 짧은 시간 안에 세계의 주목을 받는 국가로 성장했습니다. 21세기 한국 사회는 지속적인 경제 발전과 세계화, 정보화에 따른 역동적 변화를 겪으며 새로운 사회적 국면으로 이동하고 있습니다. 이러한 흐름 속에서 한국 소설은 날카로운 감수성과 현실을 응시하는 서사적 힘을 바탕으로 시대의 징후를 기록하는 중요한 역할을 담당해왔습니다. 21세기 한국문학을 이해하려면, 이 시대의 문학적 특징을 가장 잘 드러낼 수 있는 작품들이 무엇인지부터 고민해야
+출판사: 역락
+ISBN: 9791173964428
+출간일시: 2025-12-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7117345&q=2000%EB%85%84-2020%EB%85%84+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EB%AC%B8%ED%95%99%EC%97%B0%EA%B5%AC', 20000, 5.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7117345%3Ftimestamp%3D20260327125939', 191, 34, 'ACTIVATE', NULL),
+    (198, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '2000년-2020년 한국소설문학연구', '석추영', '9791173964404', '산업화와 민주화를 거쳐 짧은 시간 안에 세계의 주목을 받는 국가로 성장했습니다. 21세기 한국 사회는 지속적인 경제 발전과 세계화, 정보화에 따른 역동적 변화를 겪으며 새로운 사회적 국면으로 이동하고 있습니다. 이러한 흐름 속에서 한국 소설은 날카로운 감수성과 현실을 응시하는 서사적 힘을 바탕으로 시대의 징후를 기록하는 중요한 역할을 담당해왔습니다. 21세기 한국문학을 이해하려면, 이 시대의 문학적 특징을 가장 잘 드러낼 수 있는 작품들이 무엇인지부터 고민해야
+출판사: 역락
+ISBN: 9791173964404
+출간일시: 2025-12-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7105831&q=2000%EB%85%84-2020%EB%85%84+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EB%AC%B8%ED%95%99%EC%97%B0%EA%B5%AC', 20000, 10.00, 18000, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7105831%3Ftimestamp%3D20251227150543', 194, 36, 'ACTIVATE', NULL),
+    (199, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 소설의 추리 기법(쟁점으로 읽는 한국문학 4)', '박덕규, 차선일', '9791130801315', '기법을 활용해 흥미진진한 스토리를 이어가면서 보다 진지하게 인간의 내면을 탐구해온 우리 현대 소설을 주목하고 있다. 이들 한국적인 추리 서사의 양상과 형태를 진단하고 검토하는 논의를 한자리에 모아 그 문학적 의미와 새로운 가능성을 모색한다. 문학을 넘어 다양한 대중매체에서 위력을 발휘하고 있는 추리 서사의 위력! 염상섭, 박경리, 김유정, 이청준, 이문열 등의 대표작가들이 다룬 추리기법을 통해 한국 소설의 흥미진진한 스토리와 형이상학적 세계를 성찰한다
+출판사: 푸른사상
+ISBN: 9791130801315
+출간일시: 2014-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1537251&q=%ED%95%9C%EA%B5%AD+%EC%86%8C%EC%84%A4%EC%9D%98+%EC%B6%94%EB%A6%AC+%EA%B8%B0%EB%B2%95%28%EC%9F%81%EC%A0%90%EC%9C%BC%EB%A1%9C+%EC%9D%BD%EB%8A%94+%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99+4%29', 23500, 10.00, 21150, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1537251%3Ftimestamp%3D20220813164400', 197, 38, 'ACTIVATE', NULL),
+    (200, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '다시 읽고 싶은 한국 베스트 단편소설', '김동인, 현진건, 나도향, 김유정, 계용묵, 이상', '9788979444445', '『다시 읽고 싶은 한국 베스트 단편소설』은 학창 시절 누구나 한 번쯤은 읽어봤을 한국의 단편소설들 중에서 시간이 흐른 뒤에도 다시 한 번 읽어보고 싶은 대표 단편을 엄선하였다. 일제강점기에서부터 한국전쟁 이후까지의 시기에 발표된 주옥같은 작품들을 엮은 이 책은 우리나라의 아픈 역사를 대변하는 역사적 의미가 있는 작품들이다.
+출판사: 책만드는집
+ISBN: 9788979444445
+출간일시: 2013-08-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1110666&q=%EB%8B%A4%EC%8B%9C+%EC%9D%BD%EA%B3%A0+%EC%8B%B6%EC%9D%80+%ED%95%9C%EA%B5%AD+%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 12000, 10.00, 10800, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1110666%3Ftimestamp%3D20240423113412', 0, 40, 'ACTIVATE', NULL),
+    (201, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설 읽기 노트 양귀자 모순을 중심으로', '윤지한렛베일북스 편집부', '9791175725676', '양귀자의 장편소설 모순을 오늘의 시선으로 다시 읽어내는 비평 노트다. 25세 안진진의 사랑, 폭력과 결핍이 드리운 가족사, 어머니와 이모의 비밀과 화해를 따라가며 독자가 가장 궁금해하는 질문에 답한다. 왜 진진은 사랑 앞에서 작아지는가, 상처를 직면하는 순간 무엇이 달라지는가, 1998년 외환위기라는 시대의 그늘은 어떻게 인물들의 선택을 비춘 것인가. 저자는 작품의 핵심 장면과 문장을 차분히 해설하고, 사랑과 상처, 인간관계의 모순, 자기치유와 성장
+출판사: 스마트북
+ISBN: 9791175725676
+출간일시: 2025-11-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7065420&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0+%EB%85%B8%ED%8A%B8+%EC%96%91%EA%B7%80%EC%9E%90+%EB%AA%A8%EC%88%9C%EC%9D%84+%EC%A4%91%EC%8B%AC%EC%9C%BC%EB%A1%9C', 6500, 5.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7065420%3Ftimestamp%3D20251104103612', 3, 42, 'ACTIVATE', NULL),
+    (202, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '현실 고양을 꿈꾸는 한국소설 (한국 서사문학 특강 2)', '장미영', '9788995330081', '출판사: 글솟대
+ISBN: 9788995330081
+출간일시: 2004-11-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1438580&q=%ED%98%84%EC%8B%A4+%EA%B3%A0%EC%96%91%EC%9D%84+%EA%BF%88%EA%BE%B8%EB%8A%94+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%28%ED%95%9C%EA%B5%AD+%EC%84%9C%EC%82%AC%EB%AC%B8%ED%95%99+%ED%8A%B9%EA%B0%95+2%29', 18000, 10.00, 16200, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1438580%3Ftimestamp%3D20221025143053', 6, 44, 'ACTIVATE', NULL),
+    (203, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '돈의 생태계. 1: 정글 한국', '윤성학', '9788997348343', '윤성학 장편소설 『돈의 생태계』 제1권 《정글 한국》. 시장경제로의 거대한 변화 과정에 들어선 북한을 어떻게 보아야 할 것인가? 오랫동안 사회주의 체제전환을 연구한 저자가 북한이라는 무대를 통해 흥미진지한 이야기를 풀어 놓았다.
+출판사: 푸른영토
+ISBN: 9788997348343
+출간일시: 2014-12-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1488654&q=%EB%8F%88%EC%9D%98+%EC%83%9D%ED%83%9C%EA%B3%84.+1%3A+%EC%A0%95%EA%B8%80+%ED%95%9C%EA%B5%AD', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1488654%3Ftimestamp%3D20190130084743', 9, 46, 'ACTIVATE', NULL),
+    (204, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설의 공간/현대한국문학의 이론(김치수 문학전집 1)(양장본 HardCover)', '김치수', '9788932027852', '4인 공동 비평집의 형태로 출간된 《현대한국문학의 이론》과 김치수가 최초로 출간한 개인 비평집 《한국소설의 공간》으로 구성되어 있다. 《현대한국문학의 이론》은 "더 많은 공동의 땅"을 찾아 긴 여정을 함께 시작한 후 처음 내디뎠던 족적이 고스란히 기록되어 있으며, 《한국소설의 공간》에는 문학을 통해 역사와 자유를 숙고하려는 김치수의 비평적 고뇌가 선명하게 각인되어 있다.
+출판사: 문학과지성사
+ISBN: 9788932027852
+출간일시: 2016-07-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=495290&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EC%9D%98+%EA%B3%B5%EA%B0%84%2F%ED%98%84%EB%8C%80%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99%EC%9D%98+%EC%9D%B4%EB%A1%A0%28%EA%B9%80%EC%B9%98%EC%88%98+%EB%AC%B8%ED%95%99%EC%A0%84%EC%A7%91+1%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 20000, 10.00, 18000, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F495290%3Ftimestamp%3D20221011172701', 12, 48, 'ACTIVATE', NULL),
+    (205, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 현대소설 85', '김동인, 현진건, 최서해, 주요섭, 나도향', '9788986607727', '중고등학생을 위한 수능 내신에 꼭 필요한 『한국 현대소설 85』.수능과 내신 대비해서 수능과 학교 시험 등에서 출제 빈도가 높은 한국 현대소설들을 다루고 있다. 이 책은 크게 2부로 나뉜다. 교과서에서 일부만 다루고 있는 소설들의 원문을 수록한 제1부 「전문 수록」. 소설의 등장인물에 대한 정모를 제공하고 스스로 이해해 볼 수 있도록 도움을 주는 제2부 「이해와 감상」.
+출판사: 맑은창
+ISBN: 9788986607727
+출간일시: 2009-05-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1237393&q=%ED%95%9C%EA%B5%AD+%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4+85', 16000, 10.00, 14400, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1237393%3Ftimestamp%3D20241228114141', 15, 50, 'ACTIVATE', NULL),
+    (206, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '바로 보는 한국단편소설', '김동인, 황순원, 박완서, 성석제', '9788960010949', '우리가 세계를 바라보는 시각은 삐딱하게 보기, 거꾸로 보기, 색안경 쓰고 보기, 엇박자로 보기 등 여러 유형이 있습니다. 그러나 앞으로의 시대는 개인별 맞춤 학습의 시대입니다. 따라서 창의와 도전 정신에 들어맞는 학습은 ‘바보’, 곧 ‘바로 보고, 바르게 인식하는 시각’이 절대적으로 필요합니다. 그래서 우리 필진들은 여러분에게 바로 보게 하고 바로 읽힐, 바로 보는 『바보 한국단편소설』을 꾸몄습니다.
+출판사: 타임기획
+ISBN: 9788960010949
+출간일시: 2018-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=821748&q=%EB%B0%94%EB%A1%9C+%EB%B3%B4%EB%8A%94+%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 18800, 10.00, 16920, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F821748%3Ftimestamp%3D20251129110939', 18, 52, 'ACTIVATE', NULL),
+    (207, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '상록수(한국대표문학선 7)', '심훈, 방민호 (해설)', '9788994217451', '심훈의 장편소설 『상록수』. 「한국대표문학선」의 일곱 번째 작품으로 실제 농촌계몽운동에 헌신한 심재영과 최용신을 모델로 그리고 있다. 채영신과 박동혁이라는 두 주인공을 통해 민중 스스로 용기와 결단을 가지고 깨쳐 나가야 한다는 주체적 농촌계몽운동을 실현한 소설로 억압적 상황을 극복하기 위해 분투하는 두 젊은이의 모습을 통해 민족의 구원이라는 하나의 궁극적 메시지를 전달하고 있다.
+출판사: 재승출판
+ISBN: 9788994217451
+출간일시: 2013-12-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1413635&q=%EC%83%81%EB%A1%9D%EC%88%98%28%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EB%AC%B8%ED%95%99%EC%84%A0+7%29', 13200, 10.00, 11880, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1413635%3Ftimestamp%3D20220721001612', 21, 54, 'ACTIVATE', NULL),
+    (208, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국현대소설과 타자의 정치학', '김윤정', '9791167975676', '『한국현대소설과 타자의 정치학』은 20세기 한국 문학에서 중요한 위상을 차지하는 작가들의 여러 작품을 다뤘다. 특히 기존의 문학 연구가 보여준 전통적 남성 중심주의 시각에서 탈피하여 보다 더 적극적이고 능동적인 여성의 시각으로 현대소설에 내재한 근대성과 타자의 관계를 조망한다.
+출판사: 새미
+ISBN: 9791167975676
+출간일시: 2026-03-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7187522&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EA%B3%BC+%ED%83%80%EC%9E%90%EC%9D%98+%EC%A0%95%EC%B9%98%ED%95%99', 7000, 0.00, -1, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7187522%3Ftimestamp%3D20260328103653', 24, 56, 'ACTIVATE', NULL),
+    (209, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국이 싫어서(워터프루프북)', '장강명', '9788937438639', '의 소설을 담아 여름 해변이나 수영장뿐만 아니라 따뜻한 욕조 안, 비 내리는 카페의 테라스, 어디서든지 마음 놓고 독서를 즐길 수 있도록 만든 워터프루프북이다. 일반적인 종이와는 달리 나무가 아닌 돌로 만드는 재활용, 친환경 종이인 미네랄 페이퍼로 만든 책으로, 가볍게 휴대하고 물에 젖었을 때 신속하게 건조되도록 2권으로 분권했고 PVC 투명 파우치에 담아 보관할 수 있도록 구성했다.    사회 비판적 문제에서 SF까지 아우르는 다양한 소재, 흡인력 있는
+출판사: 민음사
+ISBN: 9788937438639
+출간일시: 2018-07-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=540522&q=%ED%95%9C%EA%B5%AD%EC%9D%B4+%EC%8B%AB%EC%96%B4%EC%84%9C%28%EC%9B%8C%ED%84%B0%ED%94%84%EB%A3%A8%ED%94%84%EB%B6%81%29', 15000, 10.00, 13500, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F540522%3Ftimestamp%3D20250610112832', 27, 58, 'ACTIVATE', NULL),
+    (210, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '검은 꽃(문학동네 한국문학전집 17)(양장본 HardCover)', '김영하', '9788954623391', '지난 20년간 문학동네를 통해 독자와 만나온 빛나는 작품들을 새롭게 선보이는 「문학동네 한국문학전집」 제17권 『검은 꽃』. 21세기 한국문학의 정전을 완성하고자 구성한 「문학동네 한국문학전집」의 열일곱 번째 작품은 1905년 멕시코로 떠난 한국인들의 이민사를 그려낸 장편소설이다. 지난 세기, 작고 나약했던 우리 민족이 통과해온 삶을 정면으로 바라보며 우리 민족이 겪은 수난의 여정을 생생하게 그려내 1900년대라는 시간을 뛰어넘어 우리에게 뜨거운 울림을
+출판사: 문학동네
+ISBN: 9788954623391
+출간일시: 2014-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=691335&q=%EA%B2%80%EC%9D%80+%EA%BD%83%28%EB%AC%B8%ED%95%99%EB%8F%99%EB%84%A4+%ED%95%9C%EA%B5%AD%EB%AC%B8%ED%95%99%EC%A0%84%EC%A7%91+17%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 15000, 10.00, 13500, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F691335%3Ftimestamp%3D20211023205936', 30, 60, 'ACTIVATE', NULL),
+    (211, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '미주한국소설', '미주한국소설가협회', '9791156290384', '미주한국소설가협회 2016년 연간 통권 3호 『미주한국소설』. 한국을 떠나 미주에 뿌리를 내린 이민사회에서 세상의 부조리 속에서 꿈을 꾸며 글을 쓰는 소설가들의 작품을 모아 엮은 책이다.
+출판사: 문학나무
+ISBN: 9791156290384
+출간일시: 2016-11-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1564686&q=%EB%AF%B8%EC%A3%BC%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 15000, 10.00, 13500, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1564686%3Ftimestamp%3D20251118110958', 33, 62, 'ACTIVATE', NULL),
+    (212, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '동백꽃 봄봄(한국 베스트 문학선)', '김유정', '9788979444759', '김유정 작품을 대표하는 「동백꽃」, 「봄봄」 외에도 독자들에게 생소한 작품까지 고루 담은 『동백꽃·봄봄』. 다양한 사투리, 옛말 등 풍부한 우리말을 많이 사용하였고 당시 식민지 사회의 열악하고 어두운 현실을 보여주며 구조적 모순을 제시하면서도 전통적인 우리 정서를 바탕에 놓고 서민들의 무지와 궁핍한 삶을 해학적으로 재구성한 작품들을 만나볼 수 있다.
+출판사: 책만드는집
+ISBN: 9788979444759
+출간일시: 2014-04-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1107813&q=%EB%8F%99%EB%B0%B1%EA%BD%83+%EB%B4%84%EB%B4%84%28%ED%95%9C%EA%B5%AD+%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EB%AC%B8%ED%95%99%EC%84%A0%29', 12000, 10.00, 10800, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1107813%3Ftimestamp%3D20200110135558', 36, 64, 'ACTIVATE', NULL),
+    (213, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '동백꽃 외(한국대표문학선 9)', '김유정', '9788994217499', '김유정의 중단편소설을 모아 엮은 『동백꽃 외』. 웃음을 불러일으키는 이면에 짙은 우수가 깔려 있는 김유정의 작품들을 만나볼 수 있다. 전통적인 우리 정서를 바탕에 깔며 서민들의 무지와 궁핍한 삶을 해학적으로 재구성한 《금 따는 콩밭》, 《총각과 맹꽁이》, 《땡볕》 등의 작품이 수록되어 있다. 당시 식민지 사회의 열악한 모습을 구조적 모순과 함께 제시하는 저자의 특징을 엿볼 수 있다.
+출판사: 재승출판
+ISBN: 9788994217499
+출간일시: 2014-04-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1421949&q=%EB%8F%99%EB%B0%B1%EA%BD%83+%EC%99%B8%28%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EB%AC%B8%ED%95%99%EC%84%A0+9%29', 12800, 10.00, 11520, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1421949%3Ftimestamp%3D20221025142645', 39, 66, 'ACTIVATE', NULL),
+    (214, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국단편소설 BEST 20 (평생 소장 소설)', '김유정이효석현진건 외 6인', '9791127233976', '한국단편소설 BEST 20 (평생 소장 소설)  [필독서] 현대문학 단편소설  *** 한 권으로 현대문학 읽기 ***  - 중.고등학생 필독서 - 국어 교과서 수록 작품 - 한국인 가장 좋아하는 소설 - 죽기 전에 꼭 읽어야 하는 단편소설 ******************************  1. 김유정 봄봄 / 동백꽃 / 땡볕 / 노다지  2. 김동인 감자 / 발가락이 닮았다 / 배따라기 / 붉은 산  3. 이상 날개  4. 나도향 물레방아 / 벙어리
+출판사: 부크크(Bookk)
+ISBN: 9791127233976
+출간일시: 2018-03-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4964328&q=%ED%95%9C%EA%B5%AD%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+BEST+20+%28%ED%8F%89%EC%83%9D+%EC%86%8C%EC%9E%A5+%EC%86%8C%EC%84%A4%29', 15900, 10.00, 15900, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4964328%3Ftimestamp%3D20250404131657', 42, 68, 'ACTIVATE', NULL),
+    (215, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '초등학생들에게 소설 읽는 재미와 감동을 주는 한국대표소설 3', '현진건, 계용묵, 김동인, 이상, 김동리', '9788963791395', '『초등학생들에게 소설읽는 재미와 감동을 주는 한국대표소설3』은 1920~1940년대 격변기의 시대상과 다양한 인물들의 삶을 보여 주며, 초등학생들에게 처음으로 소설 읽는 재미를 느끼게 해준다. 특히 이 책은 수능과 논술 등 진학을 위한 기초 공부에도 도움이 되도록 만들어졌다. 이 책에는 한국대표소설 6편이 수록되어 있으며 작품들은 원작을 최대한 살리되, 지금 잘 쓰지 않는 말은 맞춤법에 따라 고쳤으며, 각 작품 뒤에 줄거리, 작가 소개, 낱말 해석, 그리고
+출판사: 거인
+ISBN: 9788963791395
+출간일시: 2016-11-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=891208&q=%EC%B4%88%EB%93%B1%ED%95%99%EC%83%9D%EB%93%A4%EC%97%90%EA%B2%8C+%EC%86%8C%EC%84%A4+%EC%9D%BD%EB%8A%94+%EC%9E%AC%EB%AF%B8%EC%99%80+%EA%B0%90%EB%8F%99%EC%9D%84+%EC%A3%BC%EB%8A%94+%ED%95%9C%EA%B5%AD%EB%8C%80%ED%91%9C%EC%86%8C%EC%84%A4+3', 15000, 10.00, 13500, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F891208%3Ftimestamp%3D20260403110914', 45, 70, 'ACTIVATE', NULL),
+    (216, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '미주한국소설(통권 제15호)(2025)', '곰곰나루 편집부', '9772671427004', '미주한국소설은 미국과 캐나다에 거주하는 한국문학을 사랑하는 한국인 1세와 2세 소설가들의 뛰어난 작품으로 고국을 사랑하는 마음이 담긴 테마와 소재가 남다르다,  이 소설집은 한국문협, 한국소설가협회를 위시해 각 도서관과 대학국문과교수, 평론가, 등에 무료로 보내 자랑스러운 미주한인 소설가들의 작품을 알린다.  미주한국소설은 유명한 소설가는 물론, 회원 누구나 참여하여 한국문학의 한 가족이 되어 즐거움을 나누는 것을 추구한다.
+출판사: 곰곰나루
+ISBN: 9772671427004
+출간일시: 2025-07-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6985904&q=%EB%AF%B8%EC%A3%BC%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%28%ED%86%B5%EA%B6%8C+%EC%A0%9C15%ED%98%B8%29%282025%29', 18000, 5.00, 17100, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6985904%3Ftimestamp%3D20260201122037', 48, 72, 'ACTIVATE', NULL),
+    (217, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국 소설과 페미니즘', '이선옥', '9798987826898', '이 책은 일반 독자층을 대상으로 한 책으로, 전문적인 내용을 비전공인 일반 독자들도 쉽게 이해할 수 있도록 풀어쓴 교양 도서이다.
+출판사: 예림기획
+ISBN: 9798987826898
+출간일시: 2002-10-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1671883&q=%ED%95%9C%EA%B5%AD+%EC%86%8C%EC%84%A4%EA%B3%BC+%ED%8E%98%EB%AF%B8%EB%8B%88%EC%A6%98', 14000, 10.00, 12600, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1671883%3Ftimestamp%3D20250501154724', 51, 74, 'ACTIVATE', NULL),
+    (218, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '국어과 선생님이 뽑은 한국 고전 소설', '박지원', '9791186649688', '잘 반영하고 있어, 격조 높은 교양과 균형 잡힌 역사의식은 물론 문해력을 높여 문제를 해결하는 힘을 기르고 학습할 수 있다. 이에 교육과정 개편과 교과서 개정에 맞춰 논술시험과 대학 입시에 도움이 되었으면 하는 바람으로 고전 소설·신화·설화·가전체·패관 문학·수필 등 48편을 상고 시대부터 조선 후기까지 작품을 창작 연대순으로 수록했다. 작품마다 작가 소개, 작품 정리, 줄거리를 실었으며 한자나 어려운 단어는 괄호 안에 주석을 달아 원작의 표현과 내용을
+출판사: 북앤북
+ISBN: 9791186649688
+출간일시: 2023-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6260504&q=%EA%B5%AD%EC%96%B4%EA%B3%BC+%EC%84%A0%EC%83%9D%EB%8B%98%EC%9D%B4+%EB%BD%91%EC%9D%80+%ED%95%9C%EA%B5%AD+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 15800, 10.00, 14220, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6260504%3Ftimestamp%3D20260401124234', 54, 76, 'ACTIVATE', NULL),
+    (219, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '교과서 한국소설 핵심읽기', '한국독서철학교육연구소, 강민선, 고원재, 김민주, 선정완, 이영호', '9791192641843', '《교과서 한국소설 핵심읽기》는 중학 교과 과정에서 꼭 읽어야 할 한국의 소설 작품을 통해 지식을 확장하고 사고력과 논리력을 높일 수 있도록 구성되었다. 어린이와 청소년을 위한 독서·철학 교육 전문가인 한국독서철학교육연구소 이영호 소장과 강민선, 고원재, 김민주, 선정완, 이인환 등 다섯 명의 독서논술 전문 선생님이 예비 중학생, 중학생의 학습과 교양에 필수인 작품을 엄선하여 줄거리와 작가, 배경 지식을 짚은 뒤, 이해와 사고의 폭을 확장할 수 있도록 주제
+출판사: 애플북스
+ISBN: 9791192641843
+출간일시: 2025-04-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6891735&q=%EA%B5%90%EA%B3%BC%EC%84%9C+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%ED%95%B5%EC%8B%AC%EC%9D%BD%EA%B8%B0', 18500, 10.00, 16650, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6891735%3Ftimestamp%3D20250417191410', 57, 78, 'ACTIVATE', NULL),
+    (220, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '교과서 한국소설 핵심읽기', '한국독서철학교육연구소, 강민선, 고원재, 김민주, 선정완, [''이영호'' ''이인환'']', '9791192641874', '《교과서 한국소설 핵심읽기》는 중학 교과 과정에서 꼭 읽어야 할 한국의 소설 작품을 통해 지식을 확장하고 사고력과 논리력을 높일 수 있도록 구성되었다. 어린이와 청소년을 위한 독서·철학 교육 전문가인 한국독서철학교육연구소 이영호 소장과 강민선, 고원재, 김민주, 선정완, 이인환 등 다섯 명의 독서논술 전문 선생님이 예비 중학생, 중학생의 학습과 교양에 필수인 작품을 엄선하여 줄거리와 작가, 배경 지식을 짚은 뒤, 이해와 사고의 폭을 확장할 수 있도록 주제
+출판사: 애플북스
+ISBN: 9791192641874
+출간일시: 2025-04-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6899889&q=%EA%B5%90%EA%B3%BC%EC%84%9C+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%ED%95%B5%EC%8B%AC%EC%9D%BD%EA%B8%B0', 13000, 0.00, -1, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6899889%3Ftimestamp%3D20250425204928', 60, 80, 'ACTIVATE', NULL),
+    (221, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '전공영어 영미소설 읽기(6판)(영미문학 시리즈 2)', '유희태', '9791161320793', '[전공영어 영미소설 읽기―유희태 영미문학시리즈 2] 3판은 교원임용고사를 준비하는 수험생들을 위해 쓰였다. 영미소설은 18세기부터 시작해 21세기 현재까지 약 200년 동안의 짧지 않은 시간을 포괄하고 있다. 시험을 준비하는 수험생입장에선 방대한 분량의 소설작품을 읽는 것은 큰 부담일 수밖에 없다. 시간의 제약도 크고 독해 자체가 잘 되지 않는 것이 소설읽기의 큰 장애일 것이다. 그 이유로 해서, 영미소설은 대다수의 예비교사들에겐 막연한 두려움과 부담
+출판사: 위드북
+ISBN: 9791161320793
+출간일시: 2019-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4883522&q=%EC%A0%84%EA%B3%B5%EC%98%81%EC%96%B4+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0%286%ED%8C%90%29%28%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+%EC%8B%9C%EB%A6%AC%EC%A6%88+2%29', 34000, 10.00, 30600, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4883522%3Ftimestamp%3D20221025144644', 63, 82, 'ACTIVATE', NULL),
+    (222, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '유희태 영미문학 시리즈. 2: 전공영어 영미소설읽기(개정판 5판)', '유희태', '9791161320113', '- 독자대상 : 교원임용고사 수험생 - 구성: 문제 + 정답 및 해설 - 특징: ① 중등교원임용시험에 출제 가능성 높은 단편과 장편소설 엄선 ② 자세한 주석과 번역으로 문학뿐만 아니라 일반영어 실력까지 향상
+출판사: 위드북
+ISBN: 9791161320113
+출간일시: 2017-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1600809&q=%EC%9C%A0%ED%9D%AC%ED%83%9C+%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+%EC%8B%9C%EB%A6%AC%EC%A6%88.+2%3A+%EC%A0%84%EA%B3%B5%EC%98%81%EC%96%B4+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%BD%EA%B8%B0%28%EA%B0%9C%EC%A0%95%ED%8C%90+5%ED%8C%90%29', 34000, 10.00, 30600, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1600809%3Ftimestamp%3D20210815031142', 66, 84, 'ACTIVATE', NULL),
+    (223, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '현대 영미소설', '김일구', '9788994102061', '『현대 영미소설』은 19세기 및 20세기의 영국소설과 미국소설을 엄선하여 요약 정리한 책이다. 본문에서 다루고 있는 주요 정리내용 이외의 상호 관련된 내용이나 더 구체적인 내용은 각주로 처리하여 심화적인 내용파악이나 학습에 참고ㆍ응용할 수 있도록 하였고, 영국문학과 미국문학의 역사적 배경이나, 시대별·사조별 소설가들 및 작품들의 연대를 최대한 색인하여 구체적으로 명시했다. , 작품들의 경우에는 지면상 필요한 경우에 국한하여 한글로 번역해 놓은 것들
+출판사: 미래교육기획
+ISBN: 9788994102061
+출간일시: 2010-09-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1415768&q=%ED%98%84%EB%8C%80+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 34000, 10.00, 30600, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1415768%3Ftimestamp%3D20221025114036', 69, 86, 'ACTIVATE', NULL),
+    (224, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설', '제인 오스틴', '9788995381847', '출판사: 명지문고
+ISBN: 9788995381847
+출간일시: 2006-05-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1443326&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 20000, 10.00, 18000, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1443326%3Ftimestamp%3D20220929020825', 72, 88, 'ACTIVATE', NULL),
+    (225, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설을 통해 배우는 영문법(Step by Step)', '김현수', '9788994045153', '『영미소설을 통해 배우는 영문법』은 영미소설을 직접 번역하고 쓸 수 있는 능력을 길러주기 위해 영어소설을 문법이 부족한 학생도 영단어실력이부족한 사람도 배울 수 있도록 자세히 설명해서 직접 학생드링 스스로 영어를 자연스럽게 읽고 쓸 수 있도록 하기위해 영미소설 내용을 문법과 함께 자세히 설명해 놨다.
+출판사: 현영출판사
+ISBN: 9788994045153
+출간일시: 2015-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1409865&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%84+%ED%86%B5%ED%95%B4+%EB%B0%B0%EC%9A%B0%EB%8A%94+%EC%98%81%EB%AC%B8%EB%B2%95%28Step+by+Step%29', 15000, 10.00, 13500, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1409865%3Ftimestamp%3D20221025114233', 75, 90, 'ACTIVATE', NULL),
+    (226, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '20세기영미소설(독학학위제 독학사 영어영문학과 3단계)', 'iMBC 캠퍼스 독학학위제 연구회', '9788992248990', '- 독자대상 : 독학학위제(독학사) 영어영문학과 3단계(전공심화과정인정시험) 준비생  - 구성 : 이론 + 문제 + 정답 해설  - 특징 :  ① 한권으로 끝내는 이론 +문제풀이 통합교재  ② 시험 평가영역을 철저히 반영한 체계적인 이론 정리  ③ 출제경향 분석에 따른 적중률 높은 단원별 학습문제 풀이
+출판사: 지식과미래
+ISBN: 9788992248990
+출간일시: 2015-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1373833&q=20%EC%84%B8%EA%B8%B0%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28%EB%8F%85%ED%95%99%ED%95%99%EC%9C%84%EC%A0%9C+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%EB%8B%A8%EA%B3%84%29', 22000, 10.00, 19800, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1373833%3Ftimestamp%3D20230809142635', 78, 92, 'ACTIVATE', NULL),
+    (227, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설(독학학위제 독학사 영어영문학과 2단계)(iMBC 캠퍼스)', '정윤희', '9788963923109', '- 독자대상 : 독학학위제 독학사 영어영문학과 2단계 준비생 - 구성 : 이론 + 문제 - 특징 : ① 시험 평가영역을 철저히 반영한 체계적인 이론 정리 ② 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이 ③ 이해를 돕고 합격을 부르는 풍부한 부가 자료 ④ 권말 실전모의고사 수록
+출판사: 지식과미래
+ISBN: 9788963923109
+출간일시: 2015-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=893127&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28%EB%8F%85%ED%95%99%ED%95%99%EC%9C%84%EC%A0%9C+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29%28iMBC+%EC%BA%A0%ED%8D%BC%EC%8A%A4%29', 23000, 10.00, 20700, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F893127%3Ftimestamp%3D20211106145428', 81, 94, 'ACTIVATE', NULL),
+    (228, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설(2학기, 워크북포함)', '김보원, 신현욱', '9788920018763', '이 책은 방송대 영문과 학생들을 위한 강의 교재로, 대표적인 영미단편소설에 대한 강독과 감상을 목표로 한다. 선정된 8편의 작품은 모두 영미문학을 대표하는 단편소설로, 단순히 단편소설선집 형태로 작품을 수록한 것이 아니라 개별 작품을 꼼꼼히 읽고 깊이 있게 분석하기 위한 목적에서 엄선하여 작품을 추리고 이에 맞추어 책의 체재를 구성하였다.    이에 따라 먼저 1장에서는 본격적인 작품 감상에 들어가기 전에 ‘단편소설 입문’이란 주제하에 단편소설의
+출판사: 한국방송통신대학교출판문화원
+ISBN: 9788920018763
+출간일시: 2021-07-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5253201&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%282%ED%95%99%EA%B8%B0%2C+%EC%9B%8C%ED%81%AC%EB%B6%81%ED%8F%AC%ED%95%A8%29', 8400, 0.00, 8400, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5253201%3Ftimestamp%3D20230809170627', 84, 96, 'ACTIVATE', NULL),
+    (229, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어영문학과(독학학위제 독학사 4단계 통합본)(iMBC 캠퍼스)', 'iMBC 캠퍼스 독학학위제 연구회', '9788963920238', '- 독자대상 : 독학학위제 독학사 영어영문학과 4단계 준비생 - 구성 : 이론 + 문제 - 특징 : ① 시험 평가영역을 철저히 반영한 체계적인 이론 정리 ② 출제경향 분석에 따른 적중률 높은 단원별 학습문제 풀이
+출판사: 지식과미래
+ISBN: 9788963920238
+출간일시: 2015-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=891612&q=%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC%28%EB%8F%85%ED%95%99%ED%95%99%EC%9C%84%EC%A0%9C+%EB%8F%85%ED%95%99%EC%82%AC+4%EB%8B%A8%EA%B3%84+%ED%86%B5%ED%95%A9%EB%B3%B8%29%28iMBC+%EC%BA%A0%ED%8D%BC%EC%8A%A4%29', 37000, 10.00, 33300, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F891612%3Ftimestamp%3D20220701034932', 87, 98, 'ACTIVATE', NULL),
+    (230, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '2022 유희태 영미문학 2: 영미소설의 이해', '유희태', '9791167042439', '본서는 중등교사 임용시험 전공영어 영미문학을 대비하기 위한 수험서로, 《유희태 영미문학》 시리즈 중 두 번째에 해당하는 교재이다. 영미소설은 18세기부터 시작해 현재까지 약 300년 동안의 짧지 않은 역사를 가지고 있는 만큼 그에 상응하는 소설작품의 양도 방대하다. 본서는 상당한 분량의 소설작품과 시간 제약과의 싸움 속에서 시험을 치러야 하는 수험생들의 부담을 줄여주기 위해 출제 가능성이 높은 단편 및 장편소설을 엄선하였다. 또한 정확한 한글 번역과
+출판사: 박문각
+ISBN: 9791167042439
+출간일시: 2022-01-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5908839&q=2022+%EC%9C%A0%ED%9D%AC%ED%83%9C+%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+2%3A+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 23000, 10.00, 20700, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5908839%3Ftimestamp%3D20250214150748', 90, 100, 'ACTIVATE', NULL),
+    (231, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '유희태 영미문학 시리즈. 3: 영미소설 읽기(4판)', '유희태', '9788941481911', '『유희태 영미문학 시리즈 1―영미문학개론』, 『유희태 영미문학 시리즈 2―영미시 읽기』, 『유희태 영미문학 시리즈 4―문제은행 편』의 자매편으로 『영미문학개론』에서 일반론적으로 배운 소설 읽기를 이 교재에 있는 주요 작품들을 통해 좀 더 상세하고 깊이 있게 공부할 수 있을 것입니다.
+출판사: 박문각에듀스파
+ISBN: 9788941481911
+출간일시: 2014-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=573413&q=%EC%9C%A0%ED%9D%AC%ED%83%9C+%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+%EC%8B%9C%EB%A6%AC%EC%A6%88.+3%3A+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0%284%ED%8C%90%29', 33000, 10.00, 29700, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F573413%3Ftimestamp%3D20200813143119', 93, 102, 'ACTIVATE', NULL),
+    (232, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '시대에듀 독학사 영어영문학과 3·4단계 20세기 영미소설', '서지윤', '9791138392501', '본 교재는 독학사 시험을 준비하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다.  ㆍ단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 정리하여 수록하였습니다. ㆍ핵심이론 2025년 시험부터 적용된 개정 평가영역을 바탕으로, 시험에 출제될 수 있는 내용을 분석하여 ‘핵심이론’으로 구성하였습니다. ㆍ실전예상문제 해당 영역에 맞는 출제 포인트를 분석하여 구성한 ‘실전예상문제’를 수록하였습니다
+출판사: 시대고시기획
+ISBN: 9791138392501
+출간일시: 2026-01-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7002375&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%C2%B74%EB%8B%A8%EA%B3%84+20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 24000, 10.00, 21600, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7002375%3Ftimestamp%3D20250828142617', 96, 104, 'ACTIVATE', NULL),
+    (233, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, 'Charlie and the Chocolate Factory', '로알드 달, 퀸틴 블레이크', '9780142410318', '“Rich in humor, acutely observant, Dahl lets his imagination rip in fairyland.” -The New York Times   From the author of The BFG and Matilda!  Willy Wonka’s famous chocolate factory is opening at last! But only five lucky children will be allowed inside
+출판사: Viking Books for Young Readers
+ISBN: 9780142410318
+출간일시: 2007-08-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2245378&q=Charlie+and+the+Chocolate+Factory', 11600, 50.86, 5700, 1, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2245378%3Ftimestamp%3D20260318110906', 99, 106, 'ACTIVATE', NULL),
+    (234, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, 'The Wild Robot (Book 1)', '피터 브라운', '9780316382007', 'Wall-E meets Hatchet in this New York Times bestselling illustrated middle grade novel from Caldecott Honor winner Peter Brown  Can a robot survive in the wilderness?  When robot Roz opens her eyes for the first time, she discovers that she is all alone
+출판사: Little, Brown Books for Young Readers
+ISBN: 9780316382007
+출간일시: 2019-03-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5338441&q=The+Wild+Robot+%28Book+1%29', 12000, 41.67, 7000, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5338441%3Ftimestamp%3D20260120135952', 102, 108, 'ACTIVATE', NULL),
+    (235, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '노부영 세이펜 Baby''s Busy World (원서 & CD)', 'Dorling Kindersley', '9789191190943', '모든 책 내용이 교육적이면서도 재밌습니다! * 밝고 생생한 사진들이 풍성한 이야기 거리를 줍니다. * 아이들이 귀기울여 들을 수 있게 운율이 있고 크게 소리내서 읽어주는 교재로 적합합니다. * 색깔,모양, 그리고 다른 첫 개념이 간단한 질문으로 소개됩니다.  귀엽고 앙증맞은 실물사진과 밝고 선명한 색채가 돋보이는 예쁜 책입니다.  작은 얼굴에 조목조목 사랑스런 눈, 코, 입. 까꿍놀이며 첨벙첨벙 물놀이에 꺄르르 웃는가 하면, 장난감을 갖고 놀다
+출판사: Dorling Kindersley
+ISBN: 9789191190943
+출간일시: 2006-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5847970&q=%EB%85%B8%EB%B6%80%EC%98%81+%EC%84%B8%EC%9D%B4%ED%8E%9C+Baby%27s+Busy+World+%28%EC%9B%90%EC%84%9C+%26+CD%29', 27000, 40.74, 16000, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5847970%3Ftimestamp%3D20260310123214', 105, 110, 'ACTIVATE', NULL),
+    (236, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, 'A Good Girl''s Guide to Murder #1', '홀리 잭슨', '9781405293181', '''A fiendishly-plotted mystery that kept me guessing until the very end.'' - Laura Purcell, bestselling author of The Silent Companions  A debut YA crime thriller as addictive as Serial as compelling as Riverdale and as page-turning as One of Us Is Lying
+출판사: Electric Monkey
+ISBN: 9781405293181
+출간일시: 2019-05-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5415816&q=A+Good+Girl%27s+Guide+to+Murder+%231', 14500, 41.38, 8500, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5415816%3Ftimestamp%3D20260206140558', 108, 112, 'ACTIVATE', NULL),
+    (237, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '사례개념화 이해와 실제(원서)', 'Len Sperry, Jon Sperry', '9788999725739', '이 책은 인지행동치료, 정신역동 심리치료, Adler 심리치료, 수용전념치료, 생리심리사회적 접근에서 핵심 요소들을 포함한 사례개념화를 작성하는 데 도움을 주는 통합적 사례개념화 모형을 소개하고 있다. 또한 사례개념화, 상담계획, 상담개입, 문화적 민감성에 대한 최신 동향과 연구를 강조하고 있으며, 주요 사항을 구체적이고 설득력 있게 다룬 상담 사례를 제시하였다.
+출판사: 학지사
+ISBN: 9788999725739
+출간일시: 2022-01-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6062310&q=%EC%82%AC%EB%A1%80%EA%B0%9C%EB%85%90%ED%99%94+%EC%9D%B4%ED%95%B4%EC%99%80+%EC%8B%A4%EC%A0%9C%28%EC%9B%90%EC%84%9C%29', 22000, 1.00, 21780, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6062310%3Ftimestamp%3D20250829141111', 111, 114, 'ACTIVATE', NULL),
+    (238, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '노부영 Baby''s Busy World (원서 & CD)', 'DK', '9789919183639', '출판사: JYBooks
+ISBN: 9789919183639
+출간일시: 2015-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5166576&q=%EB%85%B8%EB%B6%80%EC%98%81+Baby%27s+Busy+World+%28%EC%9B%90%EC%84%9C+%26+CD%29', 27000, 34.81, 17600, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5166576%3Ftimestamp%3D20260310115934', 114, 116, 'ACTIVATE', NULL),
+    (239, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '바다(The Old Man and the Sea 원서 전문 수록 한정판)(새움 세계문학)(양장...', '어니스트 헤밍웨이', '9791190473507', '바른 번역으로 끌어올린 〈노인과 바다〉의 진정한 감동 헤밍웨이가 쓴 서술 구조 그대로의 번역으로 다시 태어났다!
+출판사: 새움
+ISBN: 9791190473507
+출간일시: 2020-12-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5551044&q=%EB%85%B8%EC%9D%B8%EA%B3%BC+%EB%B0%94%EB%8B%A4%28The+Old+Man+and+the+Sea+%EC%9B%90%EC%84%9C+%EC%A0%84%EB%AC%B8+%EC%88%98%EB%A1%9D+%ED%95%9C%EC%A0%95%ED%8C%90%29%28%EC%83%88%EC%9B%80+%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13800, 10.00, 12420, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5551044%3Ftimestamp%3D20220915010849', 117, 118, 'ACTIVATE', NULL),
+    (240, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '메그와 모그 원서 그림책 10권 박스 세트 : Meg and Mog 10 Books Collection', 'Helen Nicoll Jan Pienkowski (ILT)', '9780723294771', '출판사: Penguin Books
+ISBN: 9780723294771
+출간일시: 2008-08-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4885524&q=%EB%A9%94%EA%B7%B8%EC%99%80+%EB%AA%A8%EA%B7%B8+%EC%9B%90%EC%84%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85+10%EA%B6%8C+%EB%B0%95%EC%8A%A4+%EC%84%B8%ED%8A%B8+%3A+Meg+and+Mog+10+Books+Collection', 120000, 70.08, 35900, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4885524%3Ftimestamp%3D20231208173132', 120, 0, 'ACTIVATE', NULL),
+    (241, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '자유론 : On Liberty (영어 원서)', 'John Stuart Mill (존 스튜어트 밀)', '1400000300138', '"자유론 : On Liberty (영어 원서)  World Classic reading Book (세계 고전문학 리딩북)  * 꼭 읽어야만 하는 리딩북(영문판)  1) 서울대, 연세대, 고려대 추천 선정 도서! 2) 미국대학위원회 추천 도서 101권 필독서!!  ###[작가 소개]###  * 존 스튜어트 밀 John Stuart Mill (1806-1873) 공리자유주의의 대성자(大成者). 그의 사상은 영국의 전통적인 개인 자유의 존중을 기본으로 삼고
+출판사: 부크크(Bookk)
+ISBN: 1400000300138
+출간일시: 2018-02-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7991&q=%EC%9E%90%EC%9C%A0%EB%A1%A0+%3A+On+Liberty+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 11000, 5.00, 11000, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7991%3Ftimestamp%3D20190122102653', 123, 2, 'ACTIVATE', NULL),
+    (242, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '노부영 Whole World (원서&CD)', '크리스토퍼 코어', '9789919182717', '출판사: JYBooks
+ISBN: 9789919182717
+출간일시: 2013-09-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5166631&q=%EB%85%B8%EB%B6%80%EC%98%81+Whole+World+%28%EC%9B%90%EC%84%9C%26CD%29', 15000, 30.67, 10400, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5166631%3Ftimestamp%3D20260307115553', 126, 4, 'ACTIVATE', NULL),
+    (243, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '리스타트 일본어 : 라쇼몽 외 (원서 초급)', '바른일어연구회', '9788993480849', '영화 &lt;라쇼몽&gt;의 원작을 원서로 읽는 『리스타트 일본어(원서 초급)』. 이 책은 소설 &lt;라쇼몽&gt; 독해를 문장 분해 학습으로 구성함으로써 일본어 독해를 돕는다. 일본어 문형에 익숙하게끔 유도하는 문법 설명과 끊어 읽기 능력 향상을 위한 밑줄 설명은 학습에 도움을 준다. 일본어 능력시험 기출단어를 표시하여 강조하고 있다.
+출판사: 북스토리
+ISBN: 9788993480849
+출간일시: 2012-06-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1400590&q=%EB%A6%AC%EC%8A%A4%ED%83%80%ED%8A%B8+%EC%9D%BC%EB%B3%B8%EC%96%B4+%3A+%EB%9D%BC%EC%87%BC%EB%AA%BD+%EC%99%B8+%28%EC%9B%90%EC%84%9C+%EC%B4%88%EA%B8%89%29', 9800, 15.00, -1, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1400590%3Ftimestamp%3D20230227050654', 129, 6, 'ACTIVATE', NULL),
+    (244, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '노부영 Outdoor Opposites (원서&CD)', 'Brenda Williams Rachel Oldfield (ILT)', '9789919183516', '출판사: JYBooks
+ISBN: 9789919183516
+출간일시: 2016-01-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5166435&q=%EB%85%B8%EB%B6%80%EC%98%81+Outdoor+Opposites+%28%EC%9B%90%EC%84%9C%26CD%29', 15000, 30.67, 10400, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5166435%3Ftimestamp%3D20260307115552', 132, 8, 'ACTIVATE', NULL),
+    (245, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'BUSINESS ENGLISH', '김영규, 정우철', '9788975282768', '계명대학교 관광경영학과 교수 김영규, 정우철의 『BUSINESS ENGLISH』. 저자들이 미국과 영국에서 수학하면서 얻은 지식은 물론, 한국으로 돌아와 실무를 통해 얻은 경험을 바탕으로 완성한 비즈니스 영어 교재다. 비즈니스에 필요한 영어를 이해하는 데 도움이 되도록 구성했다. 보충적 설명은 한국어로 담았다.
+출판사: 두양사
+ISBN: 9788975282768
+출간일시: 2010-03-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1053599&q=BUSINESS+ENGLISH', 10000, 5.00, 9500, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1053599%3Ftimestamp%3D20221108012744', 135, 10, 'ACTIVATE', NULL),
+    (246, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', 'Andrea B Geffner', '9781438006963', '출판사: Barron''s Educational Series
+ISBN: 9781438006963
+출간일시: 2016-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3308821&q=Business+English', 28100, 20.00, 22480, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3308821%3Ftimestamp%3D20230207181540', 138, 12, 'ACTIVATE', NULL),
+    (247, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Communicating in Business : A Short Course for Business English Students', 'Simon Sweeney', '9780521549127', 'Communicating in Business is a short American English course for intermediate level students in or preparing for work who need to improve their communicative ability when socializing, telephoning, presenting, taking part in meetings and negotiating. Students analyze
+출판사: Cambridge
+ISBN: 9780521549127
+출간일시: 2004-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2448310&q=Communicating+in+Business+%3A+A+Short+Course+for+Business+English+Students', 25000, 10.00, 22500, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2448310%3Ftimestamp%3D20230918154729', 141, 14, 'ACTIVATE', NULL),
+    (248, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Market Leader: Intermediate Business English CourseBook', 'David Cotoon', '9781408236956', 'have made it a best seller. The course includes reading texts from the Financial Times? and case studies from the real world of business.  The 3rd edition Course Book contains:  - 100% new reading texts - 100% new case studies with opinions from successful consultants
+출판사: Prentice-Hall
+ISBN: 9781408236956
+출간일시: 2010-01-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2921725&q=Market+Leader%3A+Intermediate+Business+English+CourseBook', 58720, 60.49, 23200, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2921725%3Ftimestamp%3D20260310111734', 144, 16, 'ACTIVATE', NULL),
+    (249, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English Activities : Serious Fun for Business English Students', 'Cordell Jane', '9780521587341', 'This photocopiable resource is packed with interesting, ready-to-use activities. It offers a variety of pair and group activities to practise the most common functions and language of business, from socialising and eating out to negotiating and marketing
+출판사: Cambridge
+ISBN: 9780521587341
+출간일시: 2000-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2359923&q=Cambridge+Business+English+Activities+%3A+Serious+Fun+for+Business+English+Students', 81130, 29.74, 57000, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2359923%3Ftimestamp%3D20230918151726', 147, 18, 'ACTIVATE', NULL),
+    (250, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'New International Business English (Student s Book)', 'Leo Jones, Richard Alexander', '9781107632219', 'New International Business English is a best-selling course for upper intermediate (B2) level learners who need to use English in their day-to-day work. In this revised edition, all four language skills listening, speaking, reading and writing are developed through
+출판사: CAMBRIDGE
+ISBN: 9781107632219
+출간일시: 2012-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2897238&q=New+International+Business+English+%28Student+s+Book%29', 27000, 10.00, 24300, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2897238%3Ftimestamp%3D20230919010244', 150, 20, 'ACTIVATE', NULL),
+    (251, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', '정은주, 고인숙, 심재황', '9791196789015', '▶ Business English에 관한 내용을 담은 전문서적입니다.
+출판사: 코스모미디어
+ISBN: 9791196789015
+출간일시: 2020-03-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5254258&q=Business+English', 16000, 15.00, 16000, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5254258%3Ftimestamp%3D20250924124913', 153, 22, 'ACTIVATE', NULL),
+    (252, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', 'Geffner Andrea B', '9780764143274', 'traditional business letters, reports, and memos to e-mail and other electronic communications. The author emphasizes that effective business English begins with mastering grammar and sentence structure, and presents a brush-up review of grammar and correct English usage
+출판사: Barron''s Educational Series
+ISBN: 9780764143274
+출간일시: 2010-04-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2322701&q=Business+English', 26600, 15.00, 22610, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2322701%3Ftimestamp%3D20230918151722', 156, 24, 'ACTIVATE', NULL),
+    (253, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', 'Guffey Mary Ellen', '9780324366068', 'Mary Ellen Guffey''s BUSINESS ENGLISH, 9e is the fast track to success in building language skills. With more than thirty years of classroom experience in business communications, Dr. Guffey knows what students need -- and in BUSINESS ENGLISH, the market-leading
+출판사: Cengage Learning
+ISBN: 9780324366068
+출간일시: 2021-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2446536&q=Business+English', 205560, 5.00, -1, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2446536%3Ftimestamp%3D20230918225737', 159, 26, 'ACTIVATE', NULL),
+    (254, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', '조동인, 이중희', '9788965410591', '『Business English』는 Business English에 늘 접하고 있거나 혹은 취업을 위해 Business English를 준비하는 직장이들을 위해 만들어진 책이다. 구성은 강의 파트와 샘플파트로 크게 나누었으며 강의한 내용을 샘플파트에서 적절한 샘플을 찾아 각 개인이 자신에게 맞는 부분을 적용해 볼 수 있도록 구성하였다. 강의파트는 총 16장으로, 샘플파트는 총 4장으로 되어있어 현대 직장생활에서 많이 활용할 수 있는 실용 샘플을 위주로
+출판사: 진영사
+ISBN: 9788965410591
+출간일시: 2011-08-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=913902&q=Business+English', 12000, 10.00, 12000, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F913902%3Ftimestamp%3D20221025145055', 162, 28, 'ACTIVATE', NULL),
+    (255, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', '사공철', '9788955064766', '『Business English』는 취업을 위한 영어회화부터 실무에서 사용하는 프레젠테이션 영어, 미팅 영어, 출장 영어, 전화 영어 등 다양한 비즈니스 영어를 정리한 책이다. 예제와 함께 평가문제, 주요 용어 등을 자세하게 수록하여 실무에 도움을 준다.
+출판사: 동인
+ISBN: 9788955064766
+출간일시: 2011-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=702976&q=Business+English', 24000, 10.00, 21600, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702976%3Ftimestamp%3D20221025145636', 165, 30, 'ACTIVATE', NULL),
+    (256, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', 'Guffey Mary Ellen', '9781133627500', '출판사: South Western Educational Publ
+ISBN: 9781133627500
+출간일시: 2013-07-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3163930&q=Business+English', 298540, 0.00, 329140, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3163930%3Ftimestamp%3D20190218045332', 168, 32, 'ACTIVATE', NULL),
+    (257, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, '돈의 심리학(30만 부 기념 스페셜 에디션)', '모건 하우절', '9791191056372', '월스트리트저널에서 10년 넘게 금융과 투자에 대한 글을 써온 칼럼니스트이자 콜라보레이티브 펀드 파트너로 활동중인 모건 하우절의 첫 책이다. 출간 즉시 아마존 투자 분야 1위를 차지했고 개인 투자자부터 전문 컨설턴트까지 극찬 세례를 받으며 명실상부 ‘2020 아마존 최고의 금융도서’로 평가받는다. 《돈의 심리학》은 총 20개 스토리로 구성되어 있다. ‘스토리텔링의 천재’ ‘소설가의 기술을 가진 금융 작가’라는 별명답게 모건 하우절이 들려주는 20
+출판사: 인플루엔셜
+ISBN: 9791191056372
+출간일시: 2023-11-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5558360&q=%EB%8F%88%EC%9D%98+%EC%8B%AC%EB%A6%AC%ED%95%99%2830%EB%A7%8C+%EB%B6%80+%EA%B8%B0%EB%85%90+%EC%8A%A4%ED%8E%98%EC%85%9C+%EC%97%90%EB%94%94%EC%85%98%29', 19800, 10.00, 17820, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5558360%3Ftimestamp%3D20260120142131', 171, 34, 'ACTIVATE', NULL),
+    (258, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, '돈의 심리학(50만 부 기념 뉴 에디션)', '모건 하우절', '9791168343443', '출간과 동시에 전 세계 금융계에 큰 반향을 일으키며 “투자의 패러다임을 바꾼 책”이라는 찬사를 받은 《돈의 심리학》이 국내 누적 판매 50만 부를 돌파하며 뉴 에디션으로 돌아왔다. 이번 50만 부 기념 에디션에는 저자 모건 하우절이 새롭게 집필한 ‘두 번째 보너스 스토리’가 수록되었다. 저자는 2021년 출간 이후 급변하는 시장을 지속적으로 관찰하며 한 가지 사실을 더욱 분명하게 확신하게 되었다. 부의 원칙은 변하지 않지만, 사람들은 늘 같은 실수
+출판사: 인플루엔셜
+ISBN: 9791168343443
+출간일시: 2026-01-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7120183&q=%EB%8F%88%EC%9D%98+%EC%8B%AC%EB%A6%AC%ED%95%99%2850%EB%A7%8C+%EB%B6%80+%EA%B8%B0%EB%85%90+%EB%89%B4+%EC%97%90%EB%94%94%EC%85%98%29', 24800, 10.00, 22320, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7120183%3Ftimestamp%3D20260212121721', 174, 36, 'ACTIVATE', NULL),
+    (259, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, '몰입의 즐거움(리커버판)', '미하이 칙센트미하이', '9788973378869', '출간 20주년 기념 스페셜 에디션 &amp; 첫 전자책 출시 전 세계 독자들에게 사랑받은 인문서의 바이블   “무의미한 일상을 보내고 있다고 느낀다면, 몰입을 주목하라!”  전 세계 독자들에게 사랑받아온 인문서의 바이블 『몰입의 즐거움』이 국내 출간 20주년을 맞아 새로운 디자인의 표지와, 현대에 맞는 한글 표기법으로 전면 수정하여 다시 출간되었다. 그리고 이번에 재출간되는 스페셜 에디션과 함께 전자책도 출시하여 독자들을 찾아갈 예정이다. 심리학
+출판사: 해냄출판사
+ISBN: 9788973378869
+출간일시: 2021-05-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1020218&q=%EB%AA%B0%EC%9E%85%EC%9D%98+%EC%A6%90%EA%B1%B0%EC%9B%80%28%EB%A6%AC%EC%BB%A4%EB%B2%84%ED%8C%90%29', 19000, 10.00, 17100, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1020218%3Ftimestamp%3D20260116110734', 177, 38, 'ACTIVATE', NULL),
+    (260, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'The Psychology of Money', '모건 하우절', '9780857197689', 'where personal history, your own unique view of the world, ego, pride, marketing, and odd incentives are scrambled together.  In The Psychology of Money, award-winning author Morgan Housel shares 19 short stories exploring the strange ways people think about money
+출판사: Harriman House
+ISBN: 9780857197689
+출간일시: 2020-09-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5420298&q=The+Psychology+of+Money', 26900, 39.78, 16200, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5420298%3Ftimestamp%3D20260123140833', 180, 40, 'ACTIVATE', NULL),
+    (261, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, '게으른 완벽주의자를 위한 심리학', '헤이든 핀치', '9791192312200', '할 일을 미루는 사람들이 있다. 그들은 미룰 수 있을 때까지 미루다가, 더 이상 미룰 수 없을 때쯤 “지금 안 하면 죽음이다”하며 벼락치기로 일을 처리한다. 지금 미루면 나중에 더 큰 스트레스를 받고, 작업의 질은 떨어지며, 마음의 안정을 어지럽히는 등 결과가 뻔히 보이지만 미루는 사람들. 그들은 능력도 있고, 하려고 노력도 하지만, 이러면 안 된다는 것을 알면서도, 안 한다. 이들은 일면 게을러 보인다. 미루는 사람 스스로도 자신이 게으른 사람
+출판사: 시크릿하우스
+ISBN: 9791192312200
+출간일시: 2022-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6136610&q=%EA%B2%8C%EC%9C%BC%EB%A5%B8+%EC%99%84%EB%B2%BD%EC%A3%BC%EC%9D%98%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%8B%AC%EB%A6%AC%ED%95%99', 17000, 10.00, 15300, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6136610%3Ftimestamp%3D20250906141158', 183, 42, 'ACTIVATE', NULL),
+    (262, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, '내가 그린 그린green', '이채현', '9791190067652', '들려주는 유일한 소통의 도구, 그것이 바로 색(色)이다.  MBTI? 심리검사? 저자는 가장 나다운 모습이 무엇인지, 내가 원하는 것이 무엇인지 발견할 수 있었던 결정적 계기는 바로 ‘컬러’였다고 말한다. 색채심리(Color Psychology)는 색채를 통해 사람의 타고난 성격과 외부에서는 보이지 않는 무의식을 들여다보게 함은 물론, 스트레스 요인과 방어기제에 대한 치유 또한 진행할 수 있게 한다. 색채심리가 아니면 할 수 없고, 알 수 없는 자신을 만나는 일
+출판사: 책인사
+ISBN: 9791190067652
+출간일시: 2023-03-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6306430&q=%EB%82%B4%EA%B0%80+%EA%B7%B8%EB%A6%B0+%EA%B7%B8%EB%A6%B0green', 16800, 10.00, 15120, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6306430%3Ftimestamp%3D20240614152535', 186, 44, 'ACTIVATE', NULL),
+    (263, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'Psychology', 'Bonior Andrea', '9781623157081', 'a convincing, thorough, and funny overview of why we are the way we are.  ―Dave Haaga, Ph.D., Department Chair and Professor of Psychology, American University      Why do we do the things we do, think the thoughts we think, and feel the ways that we feel? Dr
+출판사: Zephyros Press
+ISBN: 9781623157081
+출간일시: 2016-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3450314&q=Psychology', 18000, 15.00, 18000, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3450314%3Ftimestamp%3D20230719165517', 189, 46, 'ACTIVATE', NULL),
+    (264, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'Psychology (Paperback)', 'Gleitman', '9780393116823', 'and research, and reimagined with new pedagogy, figures, and technology.    James Gross, co-author of the text and Director of the Psychology One Teaching Program at Stanford University, believes in an integrated approach that looks at multiple perspectives to
+출판사: Norton
+ISBN: 9780393116823
+출간일시: 2010-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2806760&q=Psychology+%28Paperback%29', 85400, 0.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2806760%3Ftimestamp%3D20260131110849', 192, 48, 'ACTIVATE', NULL),
+    (265, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'Psychology', 'Wayne Weiten', '9781305498204', '출판사: Cengage Learning
+ISBN: 9781305498204
+출간일시: 2018-06-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3219412&q=Psychology', 54000, 5.00, 205540, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3219412%3Ftimestamp%3D20260131110925', 195, 50, 'ACTIVATE', NULL),
+    (266, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'A Textbook for Cognitive, Educational, Lifespan and Applied Psychology', 'Metcalfe Janet', '9781412939720', '출판사: Sage
+ISBN: 9781412939720
+출간일시: 2008-12-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2436354&q=Metacognition+%3A+A+Textbook+for+Cognitive%2C+Educational%2C+Lifespan+and+Applied+Psychology', 134140, 6.23, 125780, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2436354%3Ftimestamp%3D20230918205749', 198, 52, 'ACTIVATE', NULL),
+    (267, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'AP Psychology', 'Weseley Allyson J, McEntarffer Robert', '9781506262086', 'Barron''s AP Psychology is updated for the May 2020 exam and organized according to the new nine units of the AP Psychology course. Written by active AP Psychology teachers, this guide has the in-depth content review and practice you need to feel prepared for
+출판사: Barrons Educational Series
+ISBN: 9781506262086
+출간일시: 2020-01-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5079116&q=AP+Psychology', 31400, 25.00, 23550, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5079116%3Ftimestamp%3D20230918200052', 1, 54, 'ACTIVATE', NULL),
+    (268, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, '마이어스의 심리학(11판)', 'David G Myers, C Nathan DeWall', '9788968665400', 'David G. Myers와 C. Nathan DeWall이 저술한 『마이어스의 심리학』. 최신 연구와 심리학의 다양한 주제들을 폭넓게 다루고 있는 심리학 개론서이다. 체제와 제시방식을 개선한 개정판이다.
+출판사: 시그마프레스
+ISBN: 9788968665400
+출간일시: 2015-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=946471&q=%EB%A7%88%EC%9D%B4%EC%96%B4%EC%8A%A4%EC%9D%98+%EC%8B%AC%EB%A6%AC%ED%95%99%2811%ED%8C%90%29', 39000, 3.00, 37830, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F946471%3Ftimestamp%3D20220818181626', 4, 56, 'ACTIVATE', NULL),
+    (269, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'A Practical Approach to VLSI System on Chip (Soc) Design', 'Chakravarthi Veena S.', '9783030230487', '출판사: Springer
+ISBN: 9783030230487
+출간일시: 2019-10-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5552406&q=A+Practical+Approach+to+VLSI+System+on+Chip+%28Soc%29+Design', 135440, 5.00, 135440, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5552406%3Ftimestamp%3D20230719171320', 7, 58, 'ACTIVATE', NULL),
+    (270, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Design', 'Helfand Jessica', '9780300205091', '출판사: Yale University Press
+ISBN: 9780300205091
+출간일시: 2016-12-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3482797&q=Design', 34000, 20.00, 27200, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3482797%3Ftimestamp%3D20230616152803', 10, 60, 'ACTIVATE', NULL),
+    (271, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, '월간 디자인 DESIGN 524호(2022년 2월호)', '디자인하우스 편집부', '9788970413846', '여전히 포스터의 힘은 규격화한 2차원 지면에 있다고 믿는 디자이너에겐 미안하지만 이번 호는 모션 포스터로서 그래픽 디자인의 새로운 가능성을 가늠해본다. 하지만 특정 형식이나 방법론을 강요하는 것은 아니다. 그보다는 각자만의 이론과 스타일을 정립해 스스로 오리지널리티를 찾아야 한다고 말한다. 이 ''21세기 포스터 감상법''을 펼친 독자들은 이제 아날로그와 디지털은 더 이상 양립하는 개념이 아니며 교차한다는 사실을 선명하게 깨닫게 될 것이다.
+출판사: 디자인하우스
+ISBN: 9788970413846
+출간일시: 2022-01-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5960383&q=%EC%9B%94%EA%B0%84+%EB%94%94%EC%9E%90%EC%9D%B8+DESIGN+524%ED%98%B8%282022%EB%85%84+2%EC%9B%94%ED%98%B8%29', 15000, 5.00, 14250, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5960383%3Ftimestamp%3D20250531160417', 13, 62, 'ACTIVATE', NULL),
+    (272, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, '월간 디자인 DESIGN 508호(2020년 10월호)', '월간 디자인 편집부', '9788970413686', '『월간 디자인』은 디자인하우스에서 발간하고 1976년에 창간된 월간지이다. 디자이너와 디자인의 가치를 알리고 소개하는 일을 해왔으며, 전문 디자이너를 비롯해 오피니언 리더들에게 앞선 디자인에 관한 최신 콘텐츠를 제공한다.
+출판사: 디자인하우스
+ISBN: 9788970413686
+출간일시: 2020-09-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5481133&q=%EC%9B%94%EA%B0%84+%EB%94%94%EC%9E%90%EC%9D%B8+DESIGN+508%ED%98%B8%282020%EB%85%84+10%EC%9B%94%ED%98%B8%29', 15000, 10.00, 13500, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5481133%3Ftimestamp%3D20250531153001', 16, 64, 'ACTIVATE', NULL),
+    (273, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, '디자인 유어 라이프(Design Your Life)', '빌 버넷, 데이브 에번스', '9788937889240', '『디자인 유어 라이프(Design Your Life)』는 오디세이 계획 뿐 아니라, 자신의 현재 상태를 점검할 수 있는 건강?사랑?놀이?일 계기판, 자신이 어떤 일에 열정을 갖고 에너지를 얻을 수 있는지 알아보는 ‘행복일기’, 최대한 많은 아이디어를 생각해낼 수 있는 마인드 맵 등 독자가 직접 인생 디자인 과정에 참여해볼 수 있는 다양한 견본 양식을 본문 안에 제공한다. 이 책은 사회에 첫 발을 내딛는 청년들뿐만 아니라, 앞으로의 10년을 준비하고 싶은
+출판사: 와이즈베리
+ISBN: 9788937889240
+출간일시: 2017-01-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=550579&q=%EB%94%94%EC%9E%90%EC%9D%B8+%EC%9C%A0%EC%96%B4+%EB%9D%BC%EC%9D%B4%ED%94%84%28Design+Your+Life%29', 15000, 10.00, 13500, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F550579%3Ftimestamp%3D20250712110444', 19, 66, 'ACTIVATE', NULL),
+    (274, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, '월간 디자인 DESIGN 506호(2020년 8월호)', '월간 디자인 편집부', '9771227116003', '『월간 디자인』은 디자인하우스에서 발간하고 1976년에 창간된 월간지이다. 디자이너와 디자인의 가치를 알리고 소개하는 일을 해왔으며, 전문 디자이너를 비롯해 오피니언 리더들에게 앞선 디자인에 관한 최신 콘텐츠를 제공한다.
+출판사: 디자인하우스
+ISBN: 9771227116003
+출간일시: 2020-08-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3752093&q=%EC%9B%94%EA%B0%84+%EB%94%94%EC%9E%90%EC%9D%B8+DESIGN+506%ED%98%B8%282020%EB%85%84+8%EC%9B%94%ED%98%B8%29', 15000, 24.00, 11400, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3752093%3Ftimestamp%3D20221214155647', 22, 68, 'ACTIVATE', NULL),
+    (275, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Surface Design Bible-CATIA V5(실무활용을 위한)(CD1장포함)', '김태규, 전영집', '9788971633373', '『Surface Design Bible-CATIA V5』는 고난이도 및 고급형상의 설계에 반드시 필요한 Surface Design에 대한 책이다. 프로그램의 고급기능인 Generative Shape Design의 모든 명령어와 CATIA의 필수 기능 등으로 구성되었다. 세부적이고 체계적으로 설명하여 초보자는 물론 실무자에게도 유용하다.
+출판사: 대영사
+ISBN: 9788971633373
+출간일시: 2012-12-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=986410&q=Surface+Design+Bible-CATIA+V5%28%EC%8B%A4%EB%AC%B4%ED%99%9C%EC%9A%A9%EC%9D%84+%EC%9C%84%ED%95%9C%29%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29', 23000, 15.00, 23000, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F986410%3Ftimestamp%3D20220410080224', 25, 70, 'ACTIVATE', NULL),
+    (276, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Fundamentals of Digital Logic with VHDL Design', 'Brown Stephen', '9780071268806', '출판사: McGraw Hill
+ISBN: 9780071268806
+출간일시: 2009-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2850348&q=Fundamentals+of+Digital+Logic+with+VHDL+Design', 39000, 0.00, 39000, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2850348', 28, 72, 'ACTIVATE', NULL),
+    (277, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Edward Bawden and Eric Ravilious: Design', 'Ravilious Eric', '9781851495009', 'their creativity, featuring designs for wallpaper, posters, book jackets, trade cards and Wedgwood ceramics, to name but a few. "Design" opens with an informed and engaging essay by Peyton Skipwith, who, from the late 1960s, acted as Edward Bawden''s principal dealer
+출판사: ACC Distribution
+ISBN: 9781851495009
+출간일시: 2011-08-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2567501&q=Edward+Bawden+and+Eric+Ravilious%3A+Design', 23170, 12.13, 20360, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2567501%3Ftimestamp%3D20190214213247', 31, 74, 'ACTIVATE', NULL),
+    (278, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Org Design for Design Orgs', 'Merholz Peter', '9781491938409', 'Design has become the key link between users and today’s complex and rapidly evolving digital experiences, and designers are starting to be included in strategic conversations about the products and services that enterprises ultimately deliver. This has led
+출판사: Oreilly
+ISBN: 9781491938409
+출간일시: 2016-09-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3578304&q=Org+Design+for+Design+Orgs', 57960, 47.55, 30400, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3578304%3Ftimestamp%3D20241217113952', 34, 76, 'ACTIVATE', NULL),
+    (279, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Engineering Design Methods : Strategies for Product Design', 'Nigel Cross', '9780470519264', 'Written in a clear and readable style by an experienced author of teaching texts, Engineering Design Methods is an integrated design textbook that presents specific methods within an overall strategy from concept to detail design. It also outlines the nature
+출판사: Wiley
+ISBN: 9780470519264
+출간일시: 2008-06-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2468640&q=Engineering+Design+Methods+%3A+Strategies+for+Product+Design', 39000, 15.00, 39000, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2468640%3Ftimestamp%3D20240224113135', 37, 78, 'ACTIVATE', NULL),
+    (280, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 10, 'Digital Design', 'Vahid', '9780470531082', 'Unique with its RTL-early organization, Vahid''s text supports instructors wishing to develop strong design skills in their students. The emergence of parallel processing, multicore processors and FPGAs are blurring the lines between hardware and software and
+출판사: Wiley
+ISBN: 9780470531082
+출간일시: 2010-03-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2552503&q=Digital+Design', 50000, 0.00, 50000, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2552503%3Ftimestamp%3D20230715222346', 40, 80, 'ACTIVATE', NULL),
+    (281, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '시대에듀 독학사 영어영문학과 2·4단계 19세기 영미소설', '서지윤', '9791138381932', '본 교재는 독학사 시험을 준비하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다.  ·단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 정리하여 수록하였습니다. ·핵심이론 2025년 시험부터 적용된 개정 평가영역을 바탕으로, 시험에 출제될 수 있는 내용을 분석하여 ‘핵심이론’으로 구성하였습니다. ·실전예상문제 해당 영역에 맞는 출제 포인트를 분석하여 구성한 ‘실전예상문제’를 수록하였습니다
+출판사: 시대고시기획
+ISBN: 9791138381932
+출간일시: 2025-04-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6852891&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%C2%B74%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 25000, 10.00, 22500, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6852891%3Ftimestamp%3D20250301145447', 43, 82, 'ACTIVATE', NULL),
+    (282, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 단어사전', '박규병', '9791159630415', '『영미소설 단어사전』은 원서에 자주 나오는 문어체 영어를 하나씩 알아가며 저절로 이야기 속 단어의 향기에 익숙해질 수 있도록 구성했다. 아는 단어들을 발견하며 느끼는 반가움이 자신감으로, 자신감이 즐거움으로 거듭날 수 있도록 도와준다.
+출판사: 아람출판사
+ISBN: 9791159630415
+출간일시: 2016-06-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1594814&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 16000, 10.00, 14400, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1594814%3Ftimestamp%3D20250829110253', 46, 84, 'ACTIVATE', NULL),
+    (283, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '역사 속의 영미소설', '조애리', '9791194890379', '이 책은 역사와 관련하여 영미소설을 분석한 작업의 성과물이다. 소설과 역사의 관계를 한마디로 정의할 수는 없지만 ‘역사 속’이라고 한 것은 소설이 역사적 맥락에서 배태되었으며 동시에 역사를 만들어가는 중요한 동력이라는 의미에서이다. 소설은 각 역사 단계에서 대두되는 문제항에 대면하여 혼신의 힘으로 고민하고 해결책을 탐색할 뿐 아니라 영향력 있는 담론으로서 역사를 만들어가기도 한다
+출판사: 도서출판 동인
+ISBN: 9791194890379
+출간일시: 2025-07-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6967962&q=%EC%97%AD%EC%82%AC+%EC%86%8D%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 15000, 15.00, -1, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6967962%3Ftimestamp%3D20260326131944', 49, 86, 'ACTIVATE', NULL),
+    (284, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 속의 여성, 결혼, 그리고 삶', '김현숙', '9791194890829', '【대한민국 학술원 추천 우수학술도서 선정】 소설 속에는 여러 가지 삶의 형태들이 나타난다. 그 중에서도 이 책은 여성의 삶에 주목한다. 19, 20세기 영미소설 속에서 여성의 삶은 어떻게 투영되어 있는지, 결혼은 그들의 삶에 어떤 영향을 주었는지, 영미작가들은 여성의 삶은 어떤 시각으로 바라보았는지 조목조목 들여다본다.
+출판사: 도서출판 동인
+ISBN: 9791194890829
+출간일시: 2025-07-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6982249&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%86%8D%EC%9D%98+%EC%97%AC%EC%84%B1%2C+%EA%B2%B0%ED%98%BC%2C+%EA%B7%B8%EB%A6%AC%EA%B3%A0+%EC%82%B6', 12000, 0.00, -1, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6982249%3Ftimestamp%3D20250726143809', 52, 88, 'ACTIVATE', NULL),
+    (285, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '강의실 밖으로 나온 영미소설', '여국현', '9791198392466', '문학작품을 만나는 가장 좋은 방법은 원본 텍스트나 번역본을 직접 읽는 것이다. 그러나 독자들은 여러 가지 한계로 그러지 못하는 경우가 많다. 특히 외국어로 된 장편 소설의 경우는 그럴 가능성이 크다.  『강의실 밖으로 나온 영미소설』은 문학작품 읽고 싶었지만 어떤 작품부터 시작해야 할지 막막했던 독자, 작품과 작가에 대해 알고 싶은 독자, 효율적으로 문학작품을 읽고 싶은 독자들을 위해 18세기에서 20세기 대표적인 영미 소설 21편의 플롯을 꼼꼼하게 소개
+출판사: 득수
+ISBN: 9791198392466
+출간일시: 2024-04-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6612179&q=%EA%B0%95%EC%9D%98%EC%8B%A4+%EB%B0%96%EC%9C%BC%EB%A1%9C+%EB%82%98%EC%98%A8+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 25000, 10.00, 22500, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6612179%3Ftimestamp%3D20250508163845', 55, 90, 'ACTIVATE', NULL),
+    (286, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '시대에듀 독학사 영어영문학과 3·4단계 20세기 영미소설', '서지윤', '9791138399555', '본 교재는 독학사 시험을 준비하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다.  ㆍ단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 정리하여 수록하였습니다. ㆍ핵심이론 2025년 시험부터 적용된 개정 평가영역을 바탕으로, 시험에 출제될 수 있는 내용을 분석하여 ‘핵심이론’으로 구성하였습니다. ㆍ실전예상문제 해당 영역에 맞는 출제 포인트를 분석하여 구성한 ‘실전예상문제’를 수록하였습니다
+출판사: 시대고시기획
+ISBN: 9791138399555
+출간일시: 2025-08-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7010806&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%C2%B74%EB%8B%A8%EA%B3%84+20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 16800, 10.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7010806%3Ftimestamp%3D20250830103724', 58, 92, 'ACTIVATE', NULL),
+    (287, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 소설 속 장르', '한국근대영미소설학회', '9788983963727', '이 책은 영문과 학부생이나 대학원생뿐 아니라 일반 대중들이 영미 소설 속 각 하부장르의 정의와 특징, 그리고 그 계보를 이해하고 이를 바탕으로 영미소설사를 개관해볼 수 있게 이끄는 안내서로 의도되었다. 일반 독자뿐 아니라 영문학 전공자들도 그간 소설 속 각 하부장르에 대한 용어를 사용해왔으나 그 특징 및 역사적 성격과 계보에 대해서 다소 막연한 이해에 머물러 온 것이 사실이다. 영미 소설 속 각 하부장르에 관한 이해를 돕는 책이 그사이 발간된 적이
+출판사: 신아사
+ISBN: 9788983963727
+출간일시: 2019-12-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5172764&q=%EC%98%81%EB%AF%B8+%EC%86%8C%EC%84%A4+%EC%86%8D+%EC%9E%A5%EB%A5%B4', 16000, 1.00, 15840, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172764%3Ftimestamp%3D20220613180407', 61, 94, 'ACTIVATE', NULL),
+    (288, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설강의', '정태진', '9788986175332', '영미작가의 작품과 비평가의 평론에 관한 글모음. &lt;청춘&gt;에 나타난 말로우의 정신적 여행, &lt;죽은 사람들의&gt;의 구조와 동정, &lt;더버빌가의 테스&gt;에 나타난 이 미지, 헨리 제임스의 소설이론 등 8편의 연구글을 묶 었다.
+출판사: 동인
+ISBN: 9788986175332
+출간일시: 1997-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1227739&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B0%95%EC%9D%98', 7000, 10.00, 6300, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1227739%3Ftimestamp%3D20231103170644', 64, 96, 'ACTIVATE', NULL),
+    (289, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 단어사전', 'BRYAN PARK', '9788960004993', '원서 읽기가 쉬워지는 『영미소설 단어사전』은 세계 주요 영영 사전의 Literary Word(문학 작품에 자주 등장하는 단어) 370여 개를 엄선하여 〈제인 에어〉, 〈지킬 박사와 하이드 씨〉, 〈이상한 나라의 앨리스〉 등 주옥같은 영미 소설 20편 속의 용례를 통해 소개하는 책이다. 작품의 이해도를 높이기 위해 본문은 작품순으로 구성하였다.  20편의 소설에서 해당 단어가 사용된 부분을 인용해 그 단어의 의미와 맥락을 전달하고자 하였다. 인용 부분
+출판사: 넥서스
+ISBN: 9788960004993
+출간일시: 2008-12-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=821312&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 12000, 5.00, -1, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F821312%3Ftimestamp%3D20230907133345', 67, 98, 'ACTIVATE', NULL),
+    (290, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'SD에듀 독학사 영어영문학과 2단계 19세기 영미소설', '서지윤', '9791138331425', '도서 특징 이 책은 독학사 시험에 응시하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다. ▶ 단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 수록하였습니다. ▶ 핵심이론 다년간 출제된 독학학위제 평가영역을 철저히 분석하여 시험에 꼭 출제되는 내용을 ‘핵심이론’으로 선별하여 수록하였으며, 중요도 체크 및 이론 안의 ‘더 알아두기’를 통해 심화 학습과 학습 내용 정리를 효율적으로 할 수
+출판사: 시대고시기획
+ISBN: 9791138331425
+출간일시: 2023-01-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6203667&q=SD%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 25000, 10.00, 22500, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6203667%3Ftimestamp%3D20250301145022', 70, 100, 'ACTIVATE', NULL),
+    (291, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 단어사전', 'BRYAN PARK', '4808960004993', '원서에 자주 나오는 단어는 따로 있다!  원서 읽기가 쉬워지는 『영미소설 단어사전』은 세계 주요 영영 사전의 Literary Word(문학 작품에 자주 등장하는 단어) 370여 개를 엄선하여 〈제인 에어〉, 〈지킬 박사와 하이드 씨〉, 〈이상한 나라의 앨리스〉 등 주옥같은 영미 소설 20편 속의 용례를 통해 소개하는 책이다. 작품의 이해도를 높이기 위해 본문은 작품순으로 구성하였다.  20편의 소설에서 해당 단어가 사용된 부분을 인용해 그 단어의
+출판사: 넥서스
+ISBN: 4808960004993
+출간일시: 2009-04-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4372436&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 7200, 15.00, -1, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4372436%3Ftimestamp%3D20190228115831', 73, 102, 'ACTIVATE', NULL),
+    (292, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '20세기 영미소설', 'JOSEPH CONRAD 외', '9788995381861', '출판사: 명지문고
+ISBN: 9788995381861
+출간일시: 2007-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1438392&q=20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 20000, 0.00, -1, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1438392%3Ftimestamp%3D20190130014214', 76, 104, 'ACTIVATE', NULL),
+    (293, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해', '심상욱', '9788984481336', '출판사: 전주대학교출판부
+ISBN: 9788984481336
+출간일시: 2010-02-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1191964&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 12000, 5.00, 11400, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1191964%3Ftimestamp%3D20221025115050', 79, 106, 'ACTIVATE', NULL),
+    (294, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '현대영미소설연구', '김용철', '2004051003506', '출판사: 신아사
+ISBN: 2004051003506
+출간일시: 1982-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=147314&q=%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC', 9000, 10.00, -1, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F147314%3Ftimestamp%3D20251205125541', 82, 108, 'ACTIVATE', NULL),
+    (295, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해', '유희태', '9788996123101', '출판사: 비욘드
+ISBN: 9788996123101
+출간일시: 2009-01-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1459265&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 28000, 15.00, -1, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1459265%3Ftimestamp%3D20190130043038', 85, 110, 'ACTIVATE', NULL),
+    (296, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해', '박태영', '9788941443988', '출판사: 박문각
+ISBN: 9788941443988
+출간일시: 2006-03-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=571891&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 16000, 0.00, -1, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571891%3Ftimestamp%3D20190123204758', 88, 112, 'ACTIVATE', NULL),
+    (297, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설과 도시인문학', '정희원', '9791188350056', '서울시립대 도시인문학연구소에 출간하는 도시인문학총서 제 25권. 영국소설 전공자인 필자가 도시인문학적 시각에서 영미소설을 분석한 연구결과를 모은 저서이다. 책의 1부에서는 빅토리아 시대의 대표적 재현 양식인 도시 스케치(urban sketch) 장르를 통해 디킨즈가 재현하고 있는 런던과 타자의 삶에 대해 고민해본 뒤 이후 1920년대 버지니아 울프와 1960년대 아녜스 바르다에게 런던과 파리는 각각 어떤 공간이었는지 생각해본다. 책의 2부에서는 대서양
+출판사: 라움
+ISBN: 9791188350056
+출간일시: 2018-05-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3753269&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EB%8F%84%EC%8B%9C%EC%9D%B8%EB%AC%B8%ED%95%99', 17000, 10.00, 15300, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3753269%3Ftimestamp%3D20250119113942', 91, 114, 'ACTIVATE', NULL),
+    (298, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '역사속의 영미소설', '조애리', '9788955064575', '『역사속의 영미소설』은 역사와 관련하여 영미소설을 분석한 책이다. 대부분 19세기 영미 소설을 다루고 있다. 소설과 역사의 관계를 한 마디로 정의할 수는 없지만 ''역사 속''은 소설이 역사적 맥락에서 배태되었으며 동시에 역사를 만들어가는 중요한 동력이라는 의미이다. 소설은 각 역사 단계에서 대두되는 문제항에 대면하여 혼신의 힘으로 고민하고 해결책을 탐색할 뿐 아니라 영향력 있는 담론으로서 역사를 만들어가기도 한다.
+출판사: 동인
+ISBN: 9788955064575
+출간일시: 2010-10-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=702759&q=%EC%97%AD%EC%82%AC%EC%86%8D%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 15000, 10.00, 13500, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702759%3Ftimestamp%3D20230906151600', 94, 116, 'ACTIVATE', NULL),
+    (299, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '현대 영미소설의 이해', '이상옥 외', '9788988996416', '마크 트웨인, 토머스 하디, 조셉 콘라드, E.M.포스터, 제임스 조이스, 버지니아 울프, D.M.로렌스, 윌리엄 포크너, 어니스트 헤밍웨이, 존 파울즈의 대표작이나 문제작을 다룬다. 현대의 영미 소설가들 가운데 문학사적으로 특히 중요한 작가의 작품들을 선별하여, 각 작가들의 작품 세계에 깊이 천착한 바 있는 국내 영문학자들의 논의와 분석을 모았다.
+출판사: 아침이슬
+ISBN: 9788988996416
+출간일시: 2004-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1287284&q=%ED%98%84%EB%8C%80+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 15000, 10.00, 13500, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1287284%3Ftimestamp%3D20250617113304', 97, 118, 'ACTIVATE', NULL),
+    (300, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 명장면 읽기', '황치복', '9791186778135', '▶ 이 책은 영미소설론에 대해 다룬 개론서입니다. 영미소설 읽기의 기초적이고 전반적인 내용을 학습할 수 있도록 구성했습니다.
+출판사: 한빛문화
+ISBN: 9791186778135
+출간일시: 2016-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1639111&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%AA%85%EC%9E%A5%EB%A9%B4+%EC%9D%BD%EA%B8%B0', 20000, 0.00, 20000, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1639111%3Ftimestamp%3D20230210142657', 100, 0, 'ACTIVATE', NULL),
+    (301, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 소설과 영화의 만남', '고영란', '9788955068283', '이 책은 원작의 창조적 재해석이라는 관점에서 총 15편의 각색작품을 원작과 비교 고찰한다. 각색 영화를 하나의 독립된 재현 형식으로 받아들이는 가운데 원작을 주제 면과 기법 면에서 어떻게 새롭게 재해석해서 창조적으로 변형했는지를 살펴보는 것이다. 이를 네 개의 카테고리, 즉 첫째 감춰진 이야기 드러내기, 둘째 현대화와 창조적 변형, 셋째 단순화 및 선택과 집중, 넷째 원작의 충실한 재현과 그 성패로 나눠 살펴보았다. 이를 통해 예술작품으로서의 영화
+출판사: 동인
+ISBN: 9788955068283
+출간일시: 2020-06-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5412563&q=%EC%98%81%EB%AF%B8+%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%98%81%ED%99%94%EC%9D%98+%EB%A7%8C%EB%82%A8', 18000, 10.00, 16200, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5412563%3Ftimestamp%3D20220705155410', 103, 2, 'ACTIVATE', NULL),
+    (302, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 소설해제(제2판)', '라종혁', '9788998239152', '[영미 소설 해제 ]은 [영미소설해제] 초판(2012년)을 개정한 증보판으로서, 토머스 모어, 로런스 스턴, 윌리엄 고드윈, 앤 래드클립, 너새녈 호손, 제임스 조이스, 윌리엄 포크너 등의 작품들을 다루었다. 구체적인 작품들로는 [유토피아], [트리스트럼 섄디], [캘립 윌리엄스], [우돌포 성의 미스터리], [주홍글자], [젊은 예술가의 초상], [음향과 분노], [압살롬! 압살롬!] 등이다.
+출판사: 도서출판DRM연구원
+ISBN: 9788998239152
+출간일시: 2014-09-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4490738&q=%EC%98%81%EB%AF%B8+%EC%86%8C%EC%84%A4%ED%95%B4%EC%A0%9C%28%EC%A0%9C2%ED%8C%90%29', 8300, 10.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4490738%3Ftimestamp%3D20251114103740', 106, 4, 'ACTIVATE', NULL),
+    (303, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설과 젠더', '조애리', '4808993047141', '『19세기 영미소설과 젠더』는  이후 쓴 글들 중 젠더에 초점을 맞춘 여덟 편의 글을 모았다. 구체적으로 19세기 영미 소설 속에서 나타나는 젠더를 어떻게 이해할 것인가가 논의의 핵심을 두고 있으며, 젠더 이데올로기가 구성되고 작동되는 과정을 다각적으로 바라본다.
+출판사: LIE
+ISBN: 4808993047141
+출간일시: 2013-11-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4608391&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%A0%A0%EB%8D%94', 8400, 15.00, -1, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4608391%3Ftimestamp%3D20190301183146', 109, 6, 'ACTIVATE', NULL),
+    (304, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 분석(2012)(Beyond)', '유희태', '9788941476962', '- 독자대상 : 교원임용고시 수험생 - 구성 : 이론 + 문제 - 특징 : ① 영미소설에 대해 구체적이며 체계적으로 분석함 ② 이해를 돕기 위한 Actual Test를 수록함
+출판사: 박문각
+ISBN: 9788941476962
+출간일시: 2012-03-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=573150&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EB%B6%84%EC%84%9D%282012%29%28Beyond%29', 33000, 10.00, 29700, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F573150%3Ftimestamp%3D20190123205953', 112, 8, 'ACTIVATE', NULL),
+    (305, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '오 헨리 단편소설 선집, 놀라운 반전 결말 영미문학 소설', '오 헨리', '9791169179362', '오 헨리 단편소설 선집, 놀라운 반전 결말 영미문학 소설 세계 숨은 명작 발굴 시리즈  * 영미문학 읽기 * 고전문학 읽기  오 헨리(O. Henry)는 미국 문학사에서 가장 뛰어난 단편소설 작가 중 한 명으로, 그의 작품들은 유머, 풍자, 기발한 반전으로 유명합니다. 그의 작품은 인간 본성, 사랑, 희생, 정의, 그리고 인간관계를 다루는 주제를 중심으로 하며, 각 이야기는 독자들에게 독특한 교훈과 감동을 선사합니다.  《오 헨리의 작품 특징》 놀라운 반전
+출판사: 본투비
+ISBN: 9791169179362
+출간일시: 2025-02-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6835498&q=%EC%98%A4+%ED%97%A8%EB%A6%AC+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%84%A0%EC%A7%91%2C+%EB%86%80%EB%9D%BC%EC%9A%B4+%EB%B0%98%EC%A0%84+%EA%B2%B0%EB%A7%90+%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+%EC%86%8C%EC%84%A4', 8000, 5.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6835498%3Ftimestamp%3D20250205154354', 115, 10, 'ACTIVATE', NULL),
+    (306, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대영미소설 속 질병, 재난, 공동체', '한국근대영미소설학회', '9791193320099', '『근대 영미소설 속 질병, 재난, 공동체』는 최근 펜데믹의 위기와 기록적인 기후 재난의 시대에 문학과 공동체의 역할을 모색하는 차원에서 기획되었다. 현재 재난은 전 지구적인 현상이 되었고 전 지구 공동체가 공동의 노력을 기울여 재난 상황에 대처하고 위기를 극복해야 한다는 인식을 하게 되었다. 이 책은 근대 영문학에 투영된 재난과 재난 서사를 되돌아봄으로써 21세기 현재 상황을 객관적으로 점검하고 해법을 찾는 시간을 갖고자 한다. 이 책에서 다루는 작품
+출판사: 신아사
+ISBN: 9791193320099
+출간일시: 2023-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6472115&q=%EA%B7%BC%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%86%8D+%EC%A7%88%EB%B3%91%2C+%EC%9E%AC%EB%82%9C%2C+%EA%B3%B5%EB%8F%99%EC%B2%B4', 17000, 1.00, 16830, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6472115%3Ftimestamp%3D20231115145738', 118, 12, 'ACTIVATE', NULL),
+    (307, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '시대에듀 독학사 영어영문학과 2·4단계 19세기 영미소설', '서지윤', '9791138390217', '본 교재는 독학사 시험을 준비하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다.  ·단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 정리하여 수록하였습니다. ·핵심이론 2025년 시험부터 적용된 개정 평가영역을 바탕으로, 시험에 출제될 수 있는 내용을 분석하여 ‘핵심이론’으로 구성하였습니다. ·실전예상문제 해당 영역에 맞는 출제 포인트를 분석하여 구성한 ‘실전예상문제’를 수록하였습니다
+출판사: 시대고시기획
+ISBN: 9791138390217
+출간일시: 2025-03-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6859594&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%C2%B74%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 17500, 15.00, -1, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6859594%3Ftimestamp%3D20250313155347', 121, 14, 'ACTIVATE', NULL),
+    (308, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '페미니즘 시각에서 영미소설 읽기', '박희진 외', '9788952103734', '출판사: 서울대학교출판부
+ISBN: 9788952103734
+출간일시: 2002-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=632214&q=%ED%8E%98%EB%AF%B8%EB%8B%88%EC%A6%98+%EC%8B%9C%EA%B0%81%EC%97%90%EC%84%9C+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0', 16000, 0.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632214%3Ftimestamp%3D20190124030645', 124, 16, 'ACTIVATE', NULL),
+    (309, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '모비딕(영미소설 해설총서 4)', '김옥례', '9788983965004', '출판사: 신아사
+ISBN: 9788983965004
+출간일시: 2005-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1176008&q=%EB%AA%A8%EB%B9%84%EB%94%95%28%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%95%B4%EC%84%A4%EC%B4%9D%EC%84%9C+4%29', 12000, 1.00, 11880, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1176008%3Ftimestamp%3D20220929051040', 127, 18, 'ACTIVATE', NULL),
+    (310, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해(교원임용)', '유희태 편', '9788941424826', '출판사: 박문각
+ISBN: 9788941424826
+출간일시: 2001-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=571106&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4%28%EA%B5%90%EC%9B%90%EC%9E%84%EC%9A%A9%29', 27000, 10.00, -1, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571106%3Ftimestamp%3D20190123204154', 130, 20, 'ACTIVATE', NULL),
+    (311, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '현대 영미 소설비평의 특성', '안진수', '9788977271296', '출판사: 현대미학사
+ISBN: 9788977271296
+출간일시: 1999-02-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1082033&q=%ED%98%84%EB%8C%80+%EC%98%81%EB%AF%B8+%EC%86%8C%EC%84%A4%EB%B9%84%ED%8F%89%EC%9D%98+%ED%8A%B9%EC%84%B1', 10000, 5.00, 9500, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1082033%3Ftimestamp%3D20221025115105', 133, 22, 'ACTIVATE', NULL),
+    (312, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '트리스트람 섄디(영미소설 해설총서 1)', '로렌스 스턴', '9788983964779', '출판사: 신아사
+ISBN: 9788983964779
+출간일시: 2005-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1177834&q=%ED%8A%B8%EB%A6%AC%EC%8A%A4%ED%8A%B8%EB%9E%8C+%EC%84%84%EB%94%94%28%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%95%B4%EC%84%A4%EC%B4%9D%EC%84%9C+1%29', 12000, 1.00, 11880, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177834%3Ftimestamp%3D20220917080016', 136, 24, 'ACTIVATE', NULL),
+    (313, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 서술방법과 구조', '고영란', '9788995911181', '[머리말]    이 책은 필자가 과거 학회지에 발표한 논문 중에서 영미소설의 서술방법과 구조를 다룬 논문만을 골라 한데 묶어 놓은 것으로, 각 세기별로 문학성을 인정받은 영국소설 9편과 미국소설 2편, 총 11편에 관한 연구이다. [양장본]
+출판사: 국학자료원
+ISBN: 9788995911181
+출간일시: 2007-10-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1459760&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%84%9C%EC%88%A0%EB%B0%A9%EB%B2%95%EA%B3%BC+%EA%B5%AC%EC%A1%B0', 20000, 10.00, 18000, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1459760%3Ftimestamp%3D20251107110827', 139, 26, 'ACTIVATE', NULL),
+    (314, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설과 영화의 상호텍스트성 연구', '윤천기, 강관수', '9788955069914', '이 책은 여섯 편의 영미소설과 그것을 각색한 영화 사이의 상호텍스트성의 몇 가지 양상을 논한다. 상호텍스트성의 문제는 복잡하지만, 소설과 영화 각색에 대한 상호텍스트적인 연구는 두 예술 영역이 독자나 관객에게 동일한 일을 수행하며 ‘동등한 이웃’으로서의 문화적 지위를 가진다는 것을 전제로 한다. 소설과 영화의 유동성과 상호텍스트성의 맥락에서 영화 제작자들이 위대한 작가들의 소설을 어떻게 영화 형식으로 작품화했는지에 초점을 맞춘다
+출판사: 도서출판 동인
+ISBN: 9788955069914
+출간일시: 2024-08-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6709022&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%98%81%ED%99%94%EC%9D%98+%EC%83%81%ED%98%B8%ED%85%8D%EC%8A%A4%ED%8A%B8%EC%84%B1+%EC%97%B0%EA%B5%AC', 12000, 10.00, -1, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6709022%3Ftimestamp%3D20260326131840', 142, 28, 'ACTIVATE', NULL),
+    (315, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해. 1(2008)(유희태)', '유희태', '9788941444282', '출판사: 박문각
+ISBN: 9788941444282
+출간일시: 2008-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=571913&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4.+1%282008%29%28%EC%9C%A0%ED%9D%AC%ED%83%9C%29', 29000, 10.00, 26100, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571913%3Ftimestamp%3D20190123204813', 145, 30, 'ACTIVATE', NULL),
+    (316, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '물질 물질성의 담론과 영미소설 읽기', '조일제, 김상구, 김용규, 이효석, 정혜옥', '9788955063233', '물질성에 대한 탈근대적인 새로운 시각들을 살펴보는 책. 이를 토대로 기존의 정전화된 문학텍스트를 새로운 각도에서 이해하고 탈근대의 텍스트를 보다 정확히 수용하고자 했다. 근대를 대표하는 동시에 근대의 가치를 근대 속에서 질문하는 D.H.로렌스, 버지니아 울프, 제임스 조이스, 폴 오스터, 도리스 레씽, 리처드 파워즈, 데이빗 월러스, 안젤라 카터, 그리고 이창래 등 영미권 소설가들의 텍스트를 통해 정신/물질의 이분법의 한계를 극복하는 새로운 윤리학
+출판사: 동인
+ISBN: 9788955063233
+출간일시: 2007-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=702988&q=%EB%AC%BC%EC%A7%88+%EB%AC%BC%EC%A7%88%EC%84%B1%EC%9D%98+%EB%8B%B4%EB%A1%A0%EA%B3%BC+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0', 13000, 10.00, 11700, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702988%3Ftimestamp%3D20230905161727', 148, 32, 'ACTIVATE', NULL),
+    (317, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설과 영화의 상호텍스트성 연구', '윤천기, 강관수', '9788955066661', '상호텍스트성의 문제는 복잡하고 광범위하지만, 소설과 영화 각색에 대한 상호텍스트적인 연구는 기본적으로 두 예술 영역이 상호 대립적인 관계나 상하 관계가 아니라 동일한 기호 체계 안에 있는 독자적인 요소임을 전제로 한다. 그 둘은 독자가 관객에게 동일한 일을 수행하며 ''동등한 이웃''으로서의 문화적 지위를 가졌다고 믿기 때문이다. 이 책은 영미소설과 영화의 상호텍스트성을 연구하고 있다.
+출판사: 동인
+ISBN: 9788955066661
+출간일시: 2015-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=703192&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%98%81%ED%99%94%EC%9D%98+%EC%83%81%ED%98%B8%ED%85%8D%EC%8A%A4%ED%8A%B8%EC%84%B1+%EC%97%B0%EA%B5%AC', 12000, 10.00, 10800, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703192%3Ftimestamp%3D20211229101723', 151, 34, 'ACTIVATE', NULL),
+    (318, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '무명의 주드(영미소설 해설총서 6)', '고영란', '9788983966940', '「영미소설 해설총서」시리즈 『토마스 하디 무명의 주드』. 이 시리즈는 영미의 가장 대표적인 소설들을 선정하여 각 작품에 대한 깊은 있는 이해를 제공한다. 작가 소개, 작품의 배경 소개, 작품 본문에 대한 장별 해석 및 주석을 달고, 등장인물 소개와 분석, 작품의 언어 및 기교 분석, 토론 주제 및 생각거리 제시, 참고문헌 등을 모두 제공한다.
+출판사: 신아사
+ISBN: 9788983966940
+출간일시: 2010-07-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175235&q=%EB%AC%B4%EB%AA%85%EC%9D%98+%EC%A3%BC%EB%93%9C%28%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%95%B4%EC%84%A4%EC%B4%9D%EC%84%9C+6%29', 10000, 1.00, 9900, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175235%3Ftimestamp%3D20220708161051', 154, 36, 'ACTIVATE', NULL),
+    (319, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '술라(서숙 교수의 영미소설 특강 5)', '서숙', '9788973009930', '이 책은 이화여자대학교 서숙 교수(영어영문학 전공)가 자신의 강의록을 소설별로 펴내는 《서숙 교수의 영미소설 특강》 시리즈의 다섯 번째 책으로, 노벨문학상 수상 작가 토니 모리슨의 대표작 『술라Sula』 강의를 담고 있다.
+출판사: 이화여자대학교출판부
+ISBN: 9788973009930
+출간일시: 2013-12-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1015361&q=%EC%88%A0%EB%9D%BC%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+5%29', 9000, 5.00, 8550, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1015361%3Ftimestamp%3D20220825195325', 157, 38, 'ACTIVATE', NULL),
+    (320, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설', '김보원, 신현욱', '9788920043222', '이 책은 영미단편소설 대표작에 대한 강독과 감상을 목표로 한다. 선정된 아홉 편의 작품은 모두 영미문학을 대표하는 단편소설로, 단순히 단편소설선집 형태로 작품을 수록한 것이 아니라 개별 작품을 꼼꼼히 읽고 깊이 있게 분석하기 위한 목적에서 엄선하여 작품을 추리고 이에 맞추어 책의 체재를 구성하였다. 본격적인 작품 감상에 들어가기 전에 ‘단편소설 입문’이란 주제로 단편소설의 장르적 특성에 대해 살펴본다. 단편소설 이론으로는 초기적 성과에 해당하는 미국
+출판사: 한국방송통신대학교출판문화원
+ISBN: 9788920043222
+출간일시: 2024-08-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6119668&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 13100, 0.00, 13100, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6119668%3Ftimestamp%3D20250709143101', 160, 40, 'ACTIVATE', NULL),
+    (321, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '네이티브 스피커(서숙 교수의 영미소설 특강 10)', '서숙', '9791158903558', '전 이화여자대학교 서숙 교수가 자신의 강의록을 소설별로 펴내는 〈서숙 교수의 영미소설 특강〉 시리즈의 열 번째 책으로, 대표적인 한국계 미국 작가 이창래의 소설 『네이티브 스피커Native Speaker』(1995)(국내 번역서 제목: 영원한 이방인)의 강의를 담고 있다.  이창래의 『네이티브 스피커』는 재미교포 헨리 박이 교포 정치인 존 광(John Kwang)의 성공과 좌절을 후일담 형식으로 들려주는 이야기로, 이방인과 미국인의 경계에 위치한
+출판사: 이화여자대학교출판문화원
+ISBN: 9791158903558
+출간일시: 2020-01-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5226781&q=%EB%84%A4%EC%9D%B4%ED%8B%B0%EB%B8%8C+%EC%8A%A4%ED%94%BC%EC%BB%A4%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+10%29', 12000, 5.00, 11400, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5226781%3Ftimestamp%3D20221001182730', 163, 42, 'ACTIVATE', NULL),
+    (322, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '제인에어(영미소설 해설총서 3)', '조애리', '9788983964908', '출판사: 신아사
+ISBN: 9788983964908
+출간일시: 2005-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1179086&q=%EC%A0%9C%EC%9D%B8%EC%97%90%EC%96%B4%28%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%95%B4%EC%84%A4%EC%B4%9D%EC%84%9C+3%29', 10000, 1.00, 9900, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1179086%3Ftimestamp%3D20220823194648', 166, 44, 'ACTIVATE', NULL),
+    (323, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 속의 여성 결혼 그리고 삶', '김현숙', '9788955062793', '출판사: 동인
+ISBN: 9788955062793
+출간일시: 2006-02-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=702940&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%86%8D%EC%9D%98+%EC%97%AC%EC%84%B1+%EA%B2%B0%ED%98%BC+%EA%B7%B8%EB%A6%AC%EA%B3%A0+%EC%82%B6', 12000, 10.00, 10800, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702940%3Ftimestamp%3D20221025123445', 169, 46, 'ACTIVATE', NULL),
+    (324, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '20세기 영미소설(독학사 영어영문학과 3단계)', '조혜진', '9788997311453', '- 독자대상 : 독학사 준비생  - 특징 :  ① 20세기 영미소설 11명의 작가와 작품을 다룸  ② 영미문학을 대표하는 작가들의 생애와 문학적인 특징, 대표작 분석
+출판사: 나무독학사
+ISBN: 9788997311453
+출간일시: 2015-03-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1486005&q=20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%EB%8B%A8%EA%B3%84%29', 23200, 10.00, 20880, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1486005%3Ftimestamp%3D20221107220815', 172, 48, 'ACTIVATE', NULL),
+    (325, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설(독학사 영어영문학과 2단계)', '조혜진', '9788997311415', '- 독자대상 : 독학사 준비생 - 특징 : 영어의 말소리를 분석하고 그에 관한 여러 이론 소개
+출판사: 나무독학사
+ISBN: 9788997311415
+출간일시: 2015-03-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1481547&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29', 21000, 5.00, -1, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481547%3Ftimestamp%3D20190130074444', 175, 50, 'ACTIVATE', NULL),
+    (326, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '소음과 분노(서숙 교수의 영미소설 특강 7)', '서숙', '9791158901691', '이화여자대학교 영어영문학과에서 30여 년 동안 영미소설을 강의한 서숙 교수가 자신의 강의록을 소설별로 엮은 독특한 형식의 시리즈 「서숙 교수의 영미소설 특강」 제7권 『소음과 분노』. ''소음과 분노''는 남북전쟁 이후 미국 남부의 한 명문가의 몰락을 통해 전통적인 가치와 기존 질서의 붕괴를 그린 작품으로, 무엇보다 서술의 연속성을 거부하고 ‘의식의 흐름’ 기법 등을 통해 새로운 소설 유형을 구축한 모더니즘 소설의 걸작으로 평가받는 소설이다. 저자는
+출판사: 이화여자대학교출판문화원
+ISBN: 9791158901691
+출간일시: 2016-07-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1587275&q=%EC%86%8C%EC%9D%8C%EA%B3%BC+%EB%B6%84%EB%85%B8%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+7%29', 9000, 5.00, 8550, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1587275%3Ftimestamp%3D20220410083131', 178, 52, 'ACTIVATE', NULL),
+    (327, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '주홍글자 (서숙 교수의 영미소설 특강 1)', '서숙', '9788973006588', '출판사: 이화여자대학교출판부
+ISBN: 9788973006588
+출간일시: 2005-12-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1013031&q=%EC%A3%BC%ED%99%8D%EA%B8%80%EC%9E%90+%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+1%29', 8000, 5.00, 7600, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1013031%3Ftimestamp%3D20220922040240', 181, 54, 'ACTIVATE', NULL),
+    (328, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '2022 iMBC 캠퍼스 독당i 독학사 영어영문학 2단계 19세기 영미소설', '이다현', '9788963929484', '“독당i”독학사 합격은 당연히 iMBC 캠퍼스 -독자대상 : 독학학위제(독학사) 영어영문학과 2단계(전공기초과정인정시험) 준비생 -구성 : 국가평생교육진흥원 독학학위제 시험 평가영역에 준한 이론과 문제 -특징 1. 최신 평가영역과 기출 경향을 완벽히 반영한 이론+문제풀이 통합교재 2. 영어영문학과 전문 교수진의 체계적인 강의, 해설 3. 시험 평가영역을 철저히 반영한 체계적인 이론 정리 4. 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이
+출판사: 지식과미래
+ISBN: 9788963929484
+출간일시: 2022-02-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5883196&q=2022+iMBC+%EC%BA%A0%ED%8D%BC%EC%8A%A4+%EB%8F%85%EB%8B%B9i+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99+2%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 23000, 10.00, 20700, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5883196%3Ftimestamp%3D20240103184053', 184, 56, 'ACTIVATE', NULL),
+    (329, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '분노의 포도(서숙 교수의 영미소설 특강 8)', '서숙', '9791158902513', '전 이화여자대학교 서숙 교수가 자신의 강의록을 소설별로 펴내는 [서숙 교수의 영미소설 특강] 시리즈의 여덟 번째 책으로, 존 스타인벡의 대표작 『분노의 포도The Grapes of Wrath』 강의를 담고 있다. 『분노의 포도』(1939)는 1930년대 미국 대공황 시대를 배경으로, 미국 중서부 농촌 지역이 붕괴하면서 서부 캘리포니아로 일자리를 찾아 떠나는 조드 일가의 고된 피난길, 캘리포니아에 도착해서 이들이 겪는 차별과 굶주림, 대지주들의 횡포, 노동자
+출판사: 이화여자대학교출판문화원
+ISBN: 9791158902513
+출간일시: 2017-11-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1585493&q=%EB%B6%84%EB%85%B8%EC%9D%98+%ED%8F%AC%EB%8F%84%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+8%29', 10000, 5.00, 9500, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1585493%3Ftimestamp%3D20220410075949', 187, 58, 'ACTIVATE', NULL),
+    (330, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '오늘을 잡아라 점원(서숙 교수의 영미소설 특강 9)', '서숙', '9791158902995', '전 이화여자대학교 서숙 교수가 자신의 강의록을 소설별로 펴내는 &lt;서숙 교수의 영미소설 특강&gt; 시리즈의 아홉 번째 책으로, 대표적인 미국 유대계 작가들의 소설, 솔 벨로의 『오늘을 잡아라Seize the Day』(1956)와 버나드 말라머드의 『점원The Assistant』(1957)의 강의를 담고 있다.  솔 벨로의『오늘을 잡아라』는 맨해튼을 배경으로 성공한 의사 출신의 아버지, 아내와 별거 중인 실직한 중년의 아들, 그리고 정체불명의
+출판사: 이화여자대학교출판문화원
+ISBN: 9791158902995
+출간일시: 2019-01-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4865054&q=%EC%98%A4%EB%8A%98%EC%9D%84+%EC%9E%A1%EC%95%84%EB%9D%BC+%EC%A0%90%EC%9B%90%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+9%29', 12000, 5.00, 11400, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4865054%3Ftimestamp%3D20220922035901', 190, 60, 'ACTIVATE', NULL),
+    (331, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'SD에듀 독학사 영어영문학과 2단계 19세기 영미소설', '서지윤', '9791138336628', '도서 특징 이 책은 독학사 시험에 응시하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다. ▶ 단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 수록하였습니다. ▶ 핵심이론 다년간 출제된 독학학위제 평가영역을 철저히 분석하여 시험에 꼭 출제되는 내용을 ‘핵심이론’으로 선별하여 수록하였으며, 중요도 체크 및 이론 안의 ‘더 알아두기’를 통해 심화 학습과 학습 내용 정리를 효율적으로 할 수
+출판사: 시대고시기획
+ISBN: 9791138336628
+출간일시: 2022-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6858082&q=SD%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 17500, 15.00, -1, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6858082%3Ftimestamp%3D20250521223246', 193, 62, 'ACTIVATE', NULL),
+    (332, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '토니 모리슨(현대영미소설학회 작가총서 2)', '김미현, 이명호', '9788955063806', '출판사: 동인
+ISBN: 9788955063806
+출간일시: 2009-01-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=703422&q=%ED%86%A0%EB%8B%88+%EB%AA%A8%EB%A6%AC%EC%8A%A8%28%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%ED%95%99%ED%9A%8C+%EC%9E%91%EA%B0%80%EC%B4%9D%EC%84%9C+2%29', 18000, 0.00, -1, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703422%3Ftimestamp%3D20221025123426', 196, 64, 'ACTIVATE', NULL),
+    (333, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설(EBS 독학사 영어영문학과 2단계)', '독학사연구회', '9788992248518', '출판사: 지식과미래
+ISBN: 9788992248518
+출간일시: 2010-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1369490&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28EBS+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29', 21000, 5.00, -1, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1369490%3Ftimestamp%3D20190128041003', 199, 66, 'ACTIVATE', NULL),
+    (334, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '태양은 다시 떠오른다(서숙 교수의 영미소설 특강 6)', '서숙', '9791185909271', '이화여자대학교 영어영문학과에서 30여 년 동안 영미소설을 강의한 서숙 교수가 자신의 강의록을 소설별로 엮은 독특한 형식의 시리즈 「서숙 교수의 영미소설 특강」 제6권 『태양은 다시 떠오른다』. 이 책은 1차 대전 참전 후 신문사 특파원으로 파리에 와 있는 제이크, 그의 애인 브렛, 미국에서 건너온 작가 로버트 등, 파리에서 카페와 술집을 전전하며 무기력하고 암울한 생활을 하던 주인공 일행이 태양과 투우의 나라 스페인으로 여행을 가면서 새로운 가치에
+출판사: 이화여자대학교출판부
+ISBN: 9791185909271
+출간일시: 2015-04-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1627759&q=%ED%83%9C%EC%96%91%EC%9D%80+%EB%8B%A4%EC%8B%9C+%EB%96%A0%EC%98%A4%EB%A5%B8%EB%8B%A4%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+6%29', 9000, 5.00, 8550, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1627759%3Ftimestamp%3D20220410084555', 2, 68, 'ACTIVATE', NULL),
+    (335, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '조지프 콘래드(현대영미소설학회 작가총서 3)(양장본 HardCover)', '왕은철', '9788955065053', '영미작가에 대한 논문들을 모아 엮은 포괄적인 연구서「현대영미소설학회 작가총서」제3권『조지프 콘래드』. 폴란드 출신의 영국 소설가 조지프 콘래드에 관한 국내 논문을 엮은 책이다. 조지프 콘래드는 앙드레 지드, 토마스 만, T.S. 엘리엇, 그레이엄 그린, 어니스트 헤밍웨이 등 수많은 작가들에게 영향을 끼쳤으며, 동시대 혹은 후대 작가들에게 헤럴드 블룸이 말한 ''영향력에 관한 불안감''을 느끼게 만든 위대한 작가였다. 본문은 국내학자들에 의한 콘래드의
+출판사: 동인
+ISBN: 9788955065053
+출간일시: 2012-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=703486&q=%EC%A1%B0%EC%A7%80%ED%94%84+%EC%BD%98%EB%9E%98%EB%93%9C%28%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%ED%95%99%ED%9A%8C+%EC%9E%91%EA%B0%80%EC%B4%9D%EC%84%9C+3%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 28000, 10.00, 25200, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703486%3Ftimestamp%3D20220810174224', 5, 70, 'ACTIVATE', NULL),
+    (336, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '윌리엄 포크너(현대영미소설학회 작가총서 4)(양장본 HardCover)', '황은주', '9788955065428', '『윌리엄 포크너』는 현재까지의 국내 연구동향을 반영할 수 있도록 다섯 개의 장으로 나누어 구성하였다. 제1장에 포크너의 초기작품을 다룬 두 편의 논문을 실었으며 2장에선 정신분석학적 접근법으로 포크너의 작품을 분석한 세 편의 논문을 실었다. 3장은 포크너의 문학을 미국사회에 대한 비판으로 읽어내는 세 편의 논문을 실었다.
+출판사: 동인
+ISBN: 9788955065428
+출간일시: 2013-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=703053&q=%EC%9C%8C%EB%A6%AC%EC%97%84+%ED%8F%AC%ED%81%AC%EB%84%88%28%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%ED%95%99%ED%9A%8C+%EC%9E%91%EA%B0%80%EC%B4%9D%EC%84%9C+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 28000, 10.00, 25200, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703053%3Ftimestamp%3D20220524161647', 8, 72, 'ACTIVATE', NULL),
+    (337, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '英米小說の讀み方.樂しみ方 (영미소설 읽는 방법)', '林文代', '9784000222808', '출판사: 岩波書店
+ISBN: 9784000222808
+출간일시: 2021-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2428639&q=%E8%8B%B1%E7%B1%B3%E5%B0%8F%E8%AA%AA%E3%81%AE%E8%AE%80%E3%81%BF%E6%96%B9.%EF%A5%9C%E3%81%97%E3%81%BF%E6%96%B9+%28%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EB%8A%94+%EB%B0%A9%EB%B2%95%29', 42040, 36.42, 26730, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2428639%3Ftimestamp%3D20190214035908', 11, 74, 'ACTIVATE', NULL),
+    (338, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '허클베리 핀의 모험(서숙 교수의 영미소설 특강 3)', '서숙', '9788973008568', '출판사: 이화여자대학교출판부
+ISBN: 9788973008568
+출간일시: 2009-12-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1015269&q=%ED%97%88%ED%81%B4%EB%B2%A0%EB%A6%AC+%ED%95%80%EC%9D%98+%EB%AA%A8%ED%97%98%28%EC%84%9C%EC%88%99+%EA%B5%90%EC%88%98%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%ED%8A%B9%EA%B0%95+3%29', 9000, 5.00, 8550, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1015269%3Ftimestamp%3D20220823185911', 14, 76, 'ACTIVATE', NULL),
+    (339, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설', '김보원, 신현욱', '4809050202015', '이 책은 방송대 영문과 학생들을 위한 강의 교재로, 대표적인 영미단편소설에 대한 강독과 감상을 목표로 한다. 선정된 8편의 작품은 모두 영미문학을 대표하는 단편소설로, 단순히 단편소설선집 형태로 작품을 수록한 것이 아니라 개별 작품을 꼼꼼히 읽고 깊이 있게 분석하기 위한 목적에서 엄선하여 작품을 추리고 이에 맞추어 책의 체재를 구성하였다.  이에 따라 먼저 1장에서는 본격적인 작품 감상에 들어가기 전에 ‘단편소설 입문’이란 주제하에 단편소설의 장르적
+출판사: 한국방송통신대학교출판문화원
+ISBN: 4809050202015
+출간일시: 2016-08-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4515448&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 6000, 15.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4515448%3Ftimestamp%3D20190301061022', 17, 78, 'ACTIVATE', NULL),
+    (340, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'iMBC 캠퍼스 독당i 독학사 영어영문학과 3단계 20세기 영미소설', '이다현', '9788963929637', '-독자대상 : 독학학위제(독학사) 영어영문학과 3단계(전공심화과정인정시험) 준비생 -구성 : 국가평생교육진흥원 독학학위제 시험 평가영역에 준한 이론과 문제 -특징 1. 최신 평가영역과 기출 경향을 완벽히 반영한 이론+문제풀이 통합교재 2. 영어영문학과 전문 교수진의 체계적인 강의, 해설 3. 시험 평가영역을 철저히 반영한 체계적인 이론 정리 4. 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이
+출판사: 지식과미래
+ISBN: 9788963929637
+출간일시: 2022-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6015044&q=iMBC+%EC%BA%A0%ED%8D%BC%EC%8A%A4+%EB%8F%85%EB%8B%B9i+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%EB%8B%A8%EA%B3%84+20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 22000, 10.00, 19800, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6015044%3Ftimestamp%3D20240103232208', 20, 80, 'ACTIVATE', NULL),
+    (341, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설', '한국방송통신대학교 편집부', '9788920043345', '출판사: 한국방송통신대학교출판문화원
+ISBN: 9788920043345
+출간일시: 2024-07-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6690856&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 0, 5.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6690856%3Ftimestamp%3D20240831160536', 23, 82, 'ACTIVATE', NULL),
+    (342, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설과 젠더(L I E영문학 총서 제22권)(양장본 HardCover)', '조애리', '9788993047141', '『19세기 영미소설과 젠더』는 &lt;성ㆍ역사ㆍ소설&gt; 이후 쓴 글들 중 젠더에 초점을 맞춘 여덟 편의 글을 모았다. 구체적으로 19세기 영미 소설 속에서 나타나는 젠더를 어떻게 이해할 것인가가 논의의 핵심을 두고 있으며, 젠더 이데올로기가 구성되고 작동되는 과정을 다각적으로 바라본다.
+출판사: LIE
+ISBN: 9788993047141
+출간일시: 2010-11-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1397620&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%A0%A0%EB%8D%94%28L+I+E%EC%98%81%EB%AC%B8%ED%95%99+%EC%B4%9D%EC%84%9C+%EC%A0%9C22%EA%B6%8C%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1397620%3Ftimestamp%3D20220511170057', 26, 84, 'ACTIVATE', NULL),
+    (343, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설 산책', '박병주', '9788947275132', '『영미 단편소설 산책』은 영문학을 처음으로 접하는 학생들에게 영미 단편소설 강독을 통해서 21세기 과학기술 시대가 요구하는 비판적이고 창의적 사고능력을 지닌 지성인을 양성하기 위해서 편집되었다. 특히 저자가 소설 작품 하나, 하나마다 작가 소개 및 작품 해설을 달아서 학생들이 작품을 쉽게 이해할 수 있도록 했다.
+출판사: 형설출판사
+ISBN: 9788947275132
+출간일시: 2014-08-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=610344&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%82%B0%EC%B1%85', 15000, 15.00, -1, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F610344%3Ftimestamp%3D20190124004959', 29, 86, 'ACTIVATE', NULL),
+    (344, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'iMBC 캠퍼스 독당i 독학사 4단계 영어영문학 통합본 2: 고급영어 / 영미소설', '김유민, 이다현', '9788963926285', '“독당i”독학사 합격은 당연히 iMBC 캠퍼스  -독자대상 : 독학학위제(독학사) 영어영문학과 4단계(학위취득인정시험) 준비생 -구성 : 국가평생교육진흥원 독학학위제 시험 평가영역에 준한 이론과 문제  -특징 1. 최신 평가영역과 기출 경향을 완벽히 반영한 이론+문제풀이 통합교재 2. 영어영문학과 전문 교수진의 체계적인 강의, 해설 3. 시험 평가영역을 철저히 반영한 체계적인 이론 정리 4. 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이
+출판사: 지식과미래
+ISBN: 9788963926285
+출간일시: 2022-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6099448&q=iMBC+%EC%BA%A0%ED%8D%BC%EC%8A%A4+%EB%8F%85%EB%8B%B9i+%EB%8F%85%ED%95%99%EC%82%AC+4%EB%8B%A8%EA%B3%84+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99+%ED%86%B5%ED%95%A9%EB%B3%B8+2%3A+%EA%B3%A0%EA%B8%89%EC%98%81%EC%96%B4+%2F+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 21000, 10.00, 18900, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6099448%3Ftimestamp%3D20240103223940', 32, 88, 'ACTIVATE', NULL),
+    (345, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설 산책', '최한용', '4808947241434', '출판사: 형설출판사
+ISBN: 4808947241434
+출간일시: 2009-07-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4396813&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%82%B0%EC%B1%85', 0, 5.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4396813%3Ftimestamp%3D20190228151912', 35, 90, 'ACTIVATE', NULL),
+    (346, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설의 이해', '박병주, 유인호, 신진범', '9788947275217', '[영미 단편소설 산책]이 세상에 태어난 지 어느덧 6년이란 세월이 흘렀다. 최근의 6년 사이에 과거의 60년 이상의 시간에 버금 될 만큼 많은 정보가 쏟아져 나오고 학생들이 요구하는 영어학습도 빠른 속도로 변하고 있다. 필자는 그동안 학생들에게 [단편소설]을 강의하면서 수정 보완이 필요하다고 판단되어 개정판을 내게 되었다. 특히 이 개정판은 과학기술 시대의 도래를 예견한 H. G. Wells의 작품을 수록했으며 E. A. Poe나 O Henry의 경우
+출판사: 형설출판사
+ISBN: 9788947275217
+출간일시: 2014-08-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=610349&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 15000, 3.00, 14550, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F610349%3Ftimestamp%3D20190124005000', 38, 92, 'ACTIVATE', NULL),
+    (347, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설 모음집', '김유석', '9788994265162', '『영미 단편소설 모음집』은 중등교원임용고사를 준비하는 예비교사들이나 대학에서 공부하는 영문과 학생들을 위한 영미단편 소설 33작품들을 엮어 놓은 모음집이다. 작가의 출생년도 순으로 작품을 배열하고 작품개요, 작가소개, 작품해설, 작품의 시대적 배경 등을 함께 제시하며 작품 이해를 도왔다.
+출판사: 교육의창
+ISBN: 9788994265162
+출간일시: 2013-12-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1417446&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EB%AA%A8%EC%9D%8C%EC%A7%91', 25000, 15.00, 25000, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1417446%3Ftimestamp%3D20220907185009', 41, 94, 'ACTIVATE', NULL),
+    (348, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 여성소설의 이해', '나영균 외', '2002374007799', '제인 오스틴에서 앨리스 워커까지 19-20세기 영미 여 성작가 17인의 삶과 주요작품을 고찰한 저서.
+출판사: 민음사
+ISBN: 2002374007799
+출간일시: 1994-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=85324&q=%EC%98%81%EB%AF%B8+%EC%97%AC%EC%84%B1%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 12000, 0.00, -1, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F85324%3Ftimestamp%3D20251205121553', 44, 96, 'ACTIVATE', NULL),
+    (349, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편 소설의 이해 1', '최한용', '9788984391420', '출판사: 조선대학교출판부
+ISBN: 9788984391420
+출간일시: 2005-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1187722&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4+1', 8000, 5.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1187722%3Ftimestamp%3D20190127055524', 47, 98, 'ACTIVATE', NULL),
+    (350, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설의 정신분석', '이우권 편', '2008288012171', '출판사: 형설출판사
+ISBN: 2008288012171
+출간일시: 1984-09-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=260532&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%A0%95%EC%8B%A0%EB%B6%84%EC%84%9D', 8500, 10.00, -1, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F260532%3Ftimestamp%3D20251205140744', 50, 100, 'ACTIVATE', NULL),
+    (351, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '원어로 읽는 명작 영미단편소설', '백낙승, 이영애', '9788971572450', '출판사: 강원대학교출판부
+ISBN: 9788971572450
+출간일시: 2008-08-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=983697&q=%EC%9B%90%EC%96%B4%EB%A1%9C+%EC%9D%BD%EB%8A%94+%EB%AA%85%EC%9E%91+%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 12000, 15.00, -1, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F983697%3Ftimestamp%3D20220825211057', 53, 102, 'ACTIVATE', NULL),
+    (352, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설선집(계명교양총서 21)', '김인수', '9788975851575', '입신출세를 하겠다는 야망과 허영심에 사로잡힌 인간 의 단면을 보여주고 있는 &lt;20년 후&gt;와 국화를 가꾸는 일과 집안일을 하는 등 평범한 일상에 불만족한 엘리 사가 떠돌이 장사꾼을 보고 자유에로의 동경을 품어본다는 &lt;국화&gt; 등 영미단편소설 일곱 편을 담았다.
+출판사: 계명대학교출판부
+ISBN: 9788975851575
+출간일시: 1999-02-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1063387&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%84%A0%EC%A7%91%28%EA%B3%84%EB%AA%85%EA%B5%90%EC%96%91%EC%B4%9D%EC%84%9C+21%29', 4500, 0.00, 6650, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1063387%3Ftimestamp%3D20220930205300', 56, 104, 'ACTIVATE', NULL),
+    (353, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설 강독(중등임용고시대비)', '김유석', '9788991004863', '출판사: 고원
+ISBN: 9788991004863
+출간일시: 2007-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1336591&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EA%B0%95%EB%8F%85%28%EC%A4%91%EB%93%B1%EC%9E%84%EC%9A%A9%EA%B3%A0%EC%8B%9C%EB%8C%80%EB%B9%84%29', 14000, 5.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1336591%3Ftimestamp%3D20220929035157', 59, 106, 'ACTIVATE', NULL),
+    (354, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '연애소설: 영미편', '나다니엘 호손, 도리스 레싱', '9788973008636', '『연애소설(영미편)』은 주제를 기쁨(연宴)ㆍ슬픔(애哀)ㆍ소외(소疎)ㆍ담론(설說) 의 네 가지로 나누어, 프랜시스 베이컨, 나다니엘 호손, 버지니아 울프, F. 스콧 피츠제럴드, 도리스 레싱 등 16세기부터 20세기에 이르기까지 여러 시기를 어우르는 저명한 작가들의 다양한 작품들을 소개함으로써, 그동안 사랑에 대한 생각은 어떻게 변해왔는지, 영국과 미국, 여성과 남성 작가들이 그리고 있는 사랑의 모습은 어떻게 다른지 비교하면서 감상할 수 있다
+출판사: 글빛
+ISBN: 9788973008636
+출간일시: 2010-01-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1015271&q=%EC%97%B0%EC%95%A0%EC%86%8C%EC%84%A4%3A+%EC%98%81%EB%AF%B8%ED%8E%B8', 12000, 5.00, 11400, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1015271%3Ftimestamp%3D20240122195223', 62, 108, 'ACTIVATE', NULL),
+    (355, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 범죄소설의 형성과 전개', '계정민', '9791165162450', '함께 존재했다. 콘래드는 장르적 승인을 위한 범죄소설의 협상과 타협에 대한 혐오를 「비밀요원」을 통해 표출했고, 「비밀요원」은 장르적 이탈과 해제의 열망으로 가득하고 추리소설 문법에 대한 악의적 훼손으로 점철된다.  하드보일드 추리소설은 영미 범죄소설 중에서 장르적 자존감이 가장 낮았고, 낮은 자존감은 저열한 방식의 협상과 타협으로 이어졌다. 선정적이고 부도덕한 범죄소설이라는 낙인에서 벗어나기 위해 하드보일드 추리소설은 여성 혐오를 동원했다. 하드보일드 추리
+출판사: 계명대학교출판부
+ISBN: 9791165162450
+출간일시: 2025-01-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6829254&q=%EC%98%81%EB%AF%B8+%EB%B2%94%EC%A3%84%EC%86%8C%EC%84%A4%EC%9D%98+%ED%98%95%EC%84%B1%EA%B3%BC+%EC%A0%84%EA%B0%9C', 26000, 15.00, 26000, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6829254%3Ftimestamp%3D20251029152046', 65, 110, 'ACTIVATE', NULL),
+    (356, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설 글쓰기. The Book of Short Story-Writing: An Art or a Trade...', 'N Bryllion Fagin', '9791168200494', '영미 단편소설 글쓰기. The Book of Short Story-Writing: An Art or a Trade?, by N. Bryllion Fagin  단편소설 이야기의 글쓰기에 대해서 쓴 책. 그 것이 예술인지 상업성 거래 인지의 의문에 대해서 기술. 목차의 아래 내용이 주된 내용. Title: Short Story-Writing: An Art or a Trade? Author: N. Bryllion Fagin  I OVERTURE 서곡 II
+출판사: 뉴가출판사
+ISBN: 9791168200494
+출간일시: 2021-10-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5881819&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EA%B8%80%EC%93%B0%EA%B8%B0.+The+Book+of+Short+Story-Writing%3A+An+Art+or+a+Trade%3F%2C+by+N.+Bryllion+Fagin', 15000, 0.00, -1, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5881819', 68, 112, 'ACTIVATE', NULL),
+    (357, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '다섯 편의 걸작 단편 추리 소설 1. (영미 클래식 미스터리 걸작선)', '휴 월폴, 에드먼드 클러리휴 벤틀리, 로드 던세이니, 리처드 오스틴 프리먼, 메리 로버츠 라인하트', '9791185924878', '오스틴 프리먼) 5. 립스틱 (메리 로버츠 라인하트)  그 중 하나만을 골라 간단히 1.은가면에 대하여서 평을 하자면:  번역을 교정하며 또다시 읽으며 느끼게 되는 것……인간이 얼마나 무서운 존재인가 하는 것. 그리고 이 작품이 그저 소설에 불과하지만 세상을 살다 보면 실제로 그런 인간을 정말 마주치게 된다는 섬찍함을 제대로 그려내고 있다. 또한 그런 사악함에 이용당하는 선량한 인간성에 대한 분노와 동정. 여태껏 내가 번역하거나 읽은 작품 중 가장 소름 끼치는
+출판사: 판도라
+ISBN: 9791185924878
+출간일시: 2019-12-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5159390&q=%EB%8B%A4%EC%84%AF+%ED%8E%B8%EC%9D%98+%EA%B1%B8%EC%9E%91+%EB%8B%A8%ED%8E%B8+%EC%B6%94%EB%A6%AC+%EC%86%8C%EC%84%A4+1.+%28%EC%98%81%EB%AF%B8+%ED%81%B4%EB%9E%98%EC%8B%9D+%EB%AF%B8%EC%8A%A4%ED%84%B0%EB%A6%AC+%EA%B1%B8%EC%9E%91%EC%84%A0%29', 3900, 5.00, -1, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5159390', 71, 114, 'ACTIVATE', NULL),
+    (358, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미문학 46 Selected  American Short Storied : 미국단편 소설선집', '신아사 편집부', '2004051001427', '&lt;&lt;영미 문학 시리즈&gt;&gt;는 주요 영미 문학 작품을 원작의 참맛 그대로 느껴볼 수 있는 책이다. 시리즈 각 권별로 차이는 있지만, 작가와 작품 등에 관한 간단한 소개를 하고(주로 우리말로 소개하고 있지만, 영어 원문으로 되어 있는 경우도 있음), 문학 작품 텍스트를 영어 원문 그대로 실었다. 영문 텍스트 밑에는 주요 어휘 및 어구, 내용을 이해하는 데 도움을 주는 참고사항에 대한 우리말 뜻풀이(주석)를 달아 놓았다. 필요한 경우 영어
+출판사: 신아사
+ISBN: 2004051001427
+출간일시: 1986-02-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=147012&q=%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+46+Selected++American+Short+Storied+%3A+%EB%AF%B8%EA%B5%AD%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4%EC%84%A0%EC%A7%91', 10000, 10.00, 10000, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F147012%3Ftimestamp%3D20251205125530', 74, 116, 'ACTIVATE', NULL),
+    (359, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '핵전 이후 미국소설에서의 묵시록적 비전(한국영미문화학회 총서 5)', '김일구', '9788990503084', '과학과 인문학의 조화로운 만남을 본격적으로 모색하기 시작했던 과학자이면서 소설가였던 스노우(C.P. Snow)의 두 문화(즉 과학과 문학)에 관한 담론의 연장. 후기자본주의의 과학기술에 적대적이면서 자연친화적인 에코토피아적 경향의 소설과 첨단 도구에 의한 자연의 정복을 극대화하여 기술 이상향을 꿈꾸는 ㅌ0크노피아적 경향의 소설, 마지막으로 양 극단적인 전략이 혼재한 중간적 공간으로서 일상생활의 실천의 장이 되고 있는 대중 소비 사회 속에서 이미지의 범람을
+출판사: 글월마로니
+ISBN: 9788990503084
+출간일시: 2003-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1330984&q=%ED%95%B5%EC%A0%84+%EC%9D%B4%ED%9B%84+%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EC%97%90%EC%84%9C%EC%9D%98+%EB%AC%B5%EC%8B%9C%EB%A1%9D%EC%A0%81+%EB%B9%84%EC%A0%84%28%ED%95%9C%EA%B5%AD%EC%98%81%EB%AF%B8%EB%AC%B8%ED%99%94%ED%95%99%ED%9A%8C+%EC%B4%9D%EC%84%9C+5%29', 8000, 15.00, -1, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1330984%3Ftimestamp%3D20221025133820', 77, 118, 'ACTIVATE', NULL),
+    (360, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '앨리스 애덤스', '부스 타킹턴', '9791196893903', '부스 타킹턴의 1922년 퓰리처 수상작 는 중산층 집안 출신의 발랄하고 아름다운 앨리스 애덤스가 상류 사회 진출과 꿈에 그리던 이상형 아서 러셀과의 결혼을 위해 자신의 배경을 거짓으로 꾸며 내는 과정에서 겪는 희비극적인 사건과 이를 통한 그녀의 성찰을 그렸다. 또한 제1차 세계대전 직후 미국에서 이뤄진 급격한 산업 발전과 팽배하는 물질주의가 한 가정에 미친 영향을 사실적으로 담아냈다.
+출판사: 코호북스
+ISBN: 9791196893903
+출간일시: 2019-12-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5165791&q=%EC%95%A8%EB%A6%AC%EC%8A%A4+%EC%95%A0%EB%8D%A4%EC%8A%A4', 8000, 0.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5165791', 80, 0, 'ACTIVATE', NULL),
+    (361, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '기묘한 이야기', '찰스 디킨스, 너대니얼 호손', '9791130816999', '영미문학 단편소설집인 『기묘한 이야기』가 푸른사상의 〈세계문학전집 3〉으로 출간되었다. 19세기부터 20세기 초까지 영미문학을 대표하는 거장들의 단편소설을 한 권의 소설집으로 묶었다. 봄, 여름, 가을, 겨울, 사계절의 분위기에 어울리는 작품들을 엮어 문학과 인생을 순환하는 계절의 의미와 함께 성찰해 볼 수 있는 독특한 선집이다.
+출판사: 푸른사상
+ISBN: 9791130816999
+출간일시: 2020-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5456619&q=%EA%B8%B0%EB%AC%98%ED%95%9C+%EC%9D%B4%EC%95%BC%EA%B8%B0', 15500, 10.00, 13950, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5456619%3Ftimestamp%3D20260116141009', 83, 2, 'ACTIVATE', NULL),
+    (362, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '대지의 노래', '한은원', '9788968177477', '사하라 사막을 떠올려 봅니다.    그 사막에 서면, 고통으로 가득 차 있는 듯한 이 대지의 삶이 사실은 얼마나 눈부신지 느낄 수 있을 겁니다. 알제리 출신 작가 카뮈가 말했듯이, 사막과도 같은 삶의 한복판에서 우리가 마주치는 것은 “메마른 무의미가 아니라 수수께끼, 다시 말해서 눈이 부셔서 제대로 판독하지 못하는 어떤 의미”입니다. 그리고 “그것을 이해하고자 하기 때문에 결국은 그것을 견디어 내게 되는 것”이겠지요.    수많은 모래알의 인연
+출판사: 한국문화사
+ISBN: 9788968177477
+출간일시: 2019-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4905967&q=%EB%8C%80%EC%A7%80%EC%9D%98+%EB%85%B8%EB%9E%98', 19000, 5.00, 18050, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4905967%3Ftimestamp%3D20231027182550', 86, 4, 'ACTIVATE', NULL),
+    (363, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '사랑의 무게', '한은원', '9788968174599', '『사랑의 무게』는 “삶” 속에서, “사람”들을 만나고, “사랑”한 기록이다. “삶”과 “사람”은 각 11편씩으로 이루어져 있지만, “사랑”편은 하나 더 많다. 1편 더 많은 “사랑”편의 마지막 글이 “사랑의 무게”이다. 34편의 영미시를 읽어나가면서, 시인들이 삶과 어떠한 씨름을 하고 있으며 그 씨름에서 얻게되는 사랑의 의미가 무엇인지 살펴보고 그 의미를 지금의 삶에서 이해하기 위해서 34편의 우리 시대 서구 소설과 함께 읽었다.
+출판사: 한국문화사
+ISBN: 9788968174599
+출간일시: 2017-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=941209&q=%EC%82%AC%EB%9E%91%EC%9D%98+%EB%AC%B4%EA%B2%8C', 15000, 5.00, 14250, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F941209%3Ftimestamp%3D20231027165146', 89, 6, 'ACTIVATE', NULL),
+    (364, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'Women and the Common Life : Love, Marriage & Feminism', 'Lasch Christopher/ Lasch-Quin', '9780393316971', '출판사: W.W.Norton
+ISBN: 9780393316971
+출간일시: 1997-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1720650&q=Women+and+the+Common+Life+%3A+Love%2C+Marriage+%26+Feminism', 25980, 11.82, 22910, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1720650%3Ftimestamp%3D20190131220140', 92, 8, 'ACTIVATE', NULL),
+    (365, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '20세기 미국소설 강의', '한국근대영미소설학회', '9788983963741', '문체로 기술하여 가벼운 마음으로 읽어나갈 수 있게 했다. 다른 한편으로는 작품을 깊이 있게 이해하는 가운데 삶에 대한 성찰로까지 이어지는 생각거리를 제공해주고자 했다. 이 책을 통해 영미문학을 전공하는 대학생이나 대학원생뿐 아니라 영미 소설에 관심이 있는 일반 독자들 또한 20세기 미국소설을 심도 있게 이해하고 각 작품을 시대별로 일별해볼 수 있기를 기대한다. 이 책이 심화된 소설 분석의 길잡이뿐 아니라 일반 독자들이 편하게 20세기 대표적 미국소설을 감상
+출판사: 신아사
+ISBN: 9788983963741
+출간일시: 2019-12-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5172757&q=20%EC%84%B8%EA%B8%B0+%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4+%EA%B0%95%EC%9D%98', 15000, 1.00, 14850, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172757%3Ftimestamp%3D20220706184305', 95, 10, 'ACTIVATE', NULL),
+    (366, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '20세기 영국소설 강의', '한국근대영미소설학회', '9788983963734', '있게 이해하는 가운데 삶에 대한 성찰로까지 이어지는 생각거리를 제공해주고자 했다. 학문적인 전문성과 대중성 그리고 인문학적 사고의 고양이라는 세 가지 목표 사이에서 균형을 이루면서 독자에게 삶에 대한 의미의 뜻깊은 발견과 이로 인한 보람을 안겨주고자한 것이다. 이 책을 통해 영미문학을 전공하는 대학생이나 대학원생뿐 아니라 영미 소설에 관심이 있는 일반 독자들 또한 20세기 영국소설을 심도 있게 이해하고 각 작품을 시대별로 일별해볼 수 있기를 기 대한다
+출판사: 신아사
+ISBN: 9788983963734
+출간일시: 2019-12-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5172766&q=20%EC%84%B8%EA%B8%B0+%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4+%EA%B0%95%EC%9D%98', 17000, 1.00, 16830, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172766%3Ftimestamp%3D20220809182754', 98, 12, 'ACTIVATE', NULL),
+    (367, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '18세기 영국소설 강의', '근대영미소설학회', '9788983960788', '18세기 영국소설세계를 주요 작가를 중심으로 해설한 전공서. 18세기의 주요사상과 18세기의 주요사상을 먼저 기술하고 다니엘 디포우, 조나단 스위프트, 사무엘 리차드슨, 헨리 필딩, 토비아스 스몰렛 등 주요 작가를 중심으로 영국소설을 살폈다.
+출판사: 신아사
+ISBN: 9788983960788
+출간일시: 1999-09-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175939&q=18%EC%84%B8%EA%B8%B0+%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4+%EA%B0%95%EC%9D%98', 13000, 1.00, 12870, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175939%3Ftimestamp%3D20251217110917', 101, 14, 'ACTIVATE', NULL),
+    (368, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어권 탈식민주의 소설연구', '한국현대영미소설학회', '9788983967824', '『영어권 탈식민주의 소설연구』는 최근 영어권 소설 연구 분야의 탈식민주의적 비평 관점을 반영하는 동시에 영어로 쓰인 전 세계 작품들을 연구 대상으로 하고 있다는 점에서 주목할 만한 책이다. 나라별로는 아프리카, 인도, 카리브해, 호주, 캐나다, 그리고 영국이 포함되었으며, 시간적으로는 2차 세계대전 종전 후 많은 식민지들이 외형적으로 독립을 이룬 시점부터 출간된 작품들을 모두 포함하였다. 그리고 가급적이면 부커상 수상작들을 논의 대상으로 삼았다
+출판사: 신아사
+ISBN: 9788983967824
+출간일시: 2012-12-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1174495&q=%EC%98%81%EC%96%B4%EA%B6%8C+%ED%83%88%EC%8B%9D%EB%AF%BC%EC%A3%BC%EC%9D%98+%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC', 15000, 1.00, 14850, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174495%3Ftimestamp%3D20220818011204', 104, 16, 'ACTIVATE', NULL),
+    (369, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '미국소설과 서술기법', '한국근대영미소설학회', '9788983968760', '『미국소설과 서술기법』은 18세기부터 20세기 후반에 걸쳐서 출판된 미국소설 중에서 12편을 골라 해당 소설에서 구사된 서술기법을 집중적으로 살펴본 글의 모음집이다. 다양한 서술기법 및 그 창조적인 조합이 미국소설의 주제를 효과적으로 드러내는데 어떻게 활용되고 있는지 또는 당대의 사회적·문화적·인식론적 맥락에서 어떤 의미를 갖는지를 시대별·작품별로 일별해 볼 수 있도록 하나로 묶었다.
+출판사: 신아사
+ISBN: 9788983968760
+출간일시: 2014-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1173170&q=%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%84%9C%EC%88%A0%EA%B8%B0%EB%B2%95', 15000, 1.00, 14850, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1173170%3Ftimestamp%3D20230201143108', 107, 18, 'ACTIVATE', NULL),
+    (370, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 미국소설 강의', '한국근대영미소설학회', '9788983964397', '이 책은 일반 독자층을 대상으로 한 책으로, 전문적인 내용을 비전공인 일반 독자들도 쉽게 이해할 수 있도록 풀어쓴 교양 도서이다.
+출판사: 신아사
+ISBN: 9788983964397
+출간일시: 2003-08-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175198&q=19%EC%84%B8%EA%B8%B0+%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4+%EA%B0%95%EC%9D%98', 12000, 1.00, 11880, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175198%3Ftimestamp%3D20230809181220', 110, 20, 'ACTIVATE', NULL),
+    (371, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '미국소설 명장면 모음집', '한국근대영미소설학회', '9788983964670', '19세기부터 20세기까지 미국의 주요 소설가 24명을 선별하여 각 작가의 대표적 작품의 주요 장면을 발췌하여 전공학자들의 해설및 주석을 함께 묶었다. 또 각 시대를 개관할 수 있는 2편의 글도 덧붙였다. 고전에 해당되는 영국 소설을 통해 고급영어, 향기 있는 영어, 검증된 문체와 수사학을 접할수 있다. 나아가 명작이 담고 있는 삶과 세상에 대한 통찰력, 다양한 사상을 경험하는 계기가 된다.
+출판사: 신아사
+ISBN: 9788983964670
+출간일시: 2004-09-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175396&q=%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4+%EB%AA%85%EC%9E%A5%EB%A9%B4+%EB%AA%A8%EC%9D%8C%EC%A7%91', 15000, 1.00, 14850, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175396%3Ftimestamp%3D20230417133822', 113, 22, 'ACTIVATE', NULL),
+    (372, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영국소설 명장면 모음집', '한국근대영미소설학회', '9788983964663', '18세기부터 현대까지 영국의 주요 소설가 32명을 선별하여 각 작가의 대표적 작품의 주요 장면을 발췌하여 전공학자들의 해설및 주석을 함께 묶었다. 또 각 시대를 개관할 수 있는 3편의 글도 덧붙였다. 고전에 해당되는 영국 소설을 통해 고급영어, 향기 있는 영어, 검증된 문체와 수사학을 접할수 있다. 나아가 명작이 담고 있는 삶과 세상에 대한 통찰력, 다양한 사상을 경험하는 계기가 된다.
+출판사: 신아사
+ISBN: 9788983964663
+출간일시: 2004-09-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1183900&q=%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4+%EB%AA%85%EC%9E%A5%EB%A9%B4+%EB%AA%A8%EC%9D%8C%EC%A7%91', 18000, 1.00, 17820, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1183900%3Ftimestamp%3D20231108165102', 116, 24, 'ACTIVATE', NULL),
+    (373, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영국소설강의', '근대영미소설학회', '9788937411342', '출판사: 민음사
+ISBN: 9788937411342
+출간일시: 1998-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=538101&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4%EA%B0%95%EC%9D%98', 15000, 5.00, -1, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F538101%3Ftimestamp%3D20190123171734', 119, 26, 'ACTIVATE', NULL),
+    (374, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영국 소설 강의', '근대영미소설학회', '9788983960757', '출판사: 신아사
+ISBN: 9788983960757
+출간일시: 1999-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1174772&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EA%B5%AD+%EC%86%8C%EC%84%A4+%EA%B0%95%EC%9D%98', 13000, 5.00, 12350, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174772%3Ftimestamp%3D20220831024328', 122, 28, 'ACTIVATE', NULL),
+    (375, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '기억과 회복의 서사(트라우마 소설연구 2)', '한국근대영미소설학회', '9788983969095', '『기억과 회복의 서사』은 문학작품을 통해 트라우마를 논하고 있는 책이다. ''문학이란 무엇인가''란 난제를 새롭게 접근하여 비평가들에게 문학이 무엇이어야 하며 어떻게 써야 할지를 생각하게 한다. 또한 트라우마를 통해 문학을 읽으면 삶의 상처에 대한 작가의 고민과 이를 작품으로 치유하려는 노력을 엿볼수 있다.
+출판사: 신아사
+ISBN: 9788983969095
+출간일시: 2015-08-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1179118&q=%EA%B8%B0%EC%96%B5%EA%B3%BC+%ED%9A%8C%EB%B3%B5%EC%9D%98+%EC%84%9C%EC%82%AC%28%ED%8A%B8%EB%9D%BC%EC%9A%B0%EB%A7%88+%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC+2%29', 14000, 1.00, 13860, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1179118%3Ftimestamp%3D20220514170203', 125, 30, 'ACTIVATE', NULL),
+    (376, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헨리 제임스의 소설', '전남대학교 영미문화연구소', '9788955069709', '영미문화연구소 총서 3. 이 책에 참여한 필자들은 헨리 제임스 독회를 구성하여 그의 소설을 함께 읽으며, 그의 감정과 생각에 공감하거나 비판하고 그것이 제시하는 사회현상을 파악하고, 그의 글의 스타일이 가진 힘과 가치를 체험하는 시간을 가져왔다. 그러한 문학적 체험의 결과물로 이 책을 출간했다. 각각의 작품에 대한 연구주제 또한 개인의식의 문제로부터 사랑과 결혼․자녀 양육 등의 가족 문제, 사회와 문화의 현상, 서술 기법에 관한 것 등 고르게 다루고 있다
+출판사: 도서출판 동인
+ISBN: 9788955069709
+출간일시: 2024-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6671798&q=%ED%97%A8%EB%A6%AC+%EC%A0%9C%EC%9E%84%EC%8A%A4%EC%9D%98+%EC%86%8C%EC%84%A4', 26000, 0.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6671798%3Ftimestamp%3D20260326131927', 128, 32, 'ACTIVATE', NULL),
+    (377, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헨리 제임스의 소설: 변화중인 의식', '전남대학교 영미문화연구소', '9788955067972', '▶ 헨리 제임스의 소설에 관한 내용을 담은 전문서적입니다.
+출판사: 동인
+ISBN: 9788955067972
+출간일시: 2018-12-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4869368&q=%ED%97%A8%EB%A6%AC+%EC%A0%9C%EC%9E%84%EC%8A%A4%EC%9D%98+%EC%86%8C%EC%84%A4%3A+%EB%B3%80%ED%99%94%EC%A4%91%EC%9D%B8+%EC%9D%98%EC%8B%9D', 26000, 10.00, 23400, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4869368%3Ftimestamp%3D20230425175244', 131, 34, 'ACTIVATE', NULL),
+    (378, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '공포와 일탈의 상상력', '한국근대영미소설학회', '9788983969248', '『공포와 일탈의 상상력』은 인간과 사회의 초상으로서의 고딕소설에 대해 정리한 책이다. ''숭고한 인간본성의 회복'', ''이데올로기적 혼란과 공포를 다룬 고딕소설'', ''고딕과 디스토피아적 상상력 속의 생명윤리'', ''고딕과 탈근대적 주체성'' 등을 주제로 고딕소설을 연구한다.
+출판사: 신아사
+ISBN: 9788983969248
+출간일시: 2015-12-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1179013&q=%EA%B3%B5%ED%8F%AC%EC%99%80+%EC%9D%BC%ED%83%88%EC%9D%98+%EC%83%81%EC%83%81%EB%A0%A5', 16000, 1.00, 15840, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1179013%3Ftimestamp%3D20220410082723', 134, 36, 'ACTIVATE', NULL),
+    (379, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대의 시선에서 보는 식물, 동물, 행성 서사', '한국근대영미소설학회', '9791173421068', '출판사: 신아사
+ISBN: 9791173421068
+출간일시: 2025-08-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6999433&q=%EA%B7%BC%EB%8C%80%EC%9D%98+%EC%8B%9C%EC%84%A0%EC%97%90%EC%84%9C+%EB%B3%B4%EB%8A%94+%EC%8B%9D%EB%AC%BC%2C+%EB%8F%99%EB%AC%BC%2C+%ED%96%89%EC%84%B1+%EC%84%9C%EC%82%AC', 14000, 15.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6999433%3Ftimestamp%3D20250815103754', 137, 38, 'ACTIVATE', NULL),
+    (380, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대의 시선에서 보는 식물, 동물, 행성 서사', '한국근대영미소설학회', '9791173420931', '살아가는 세상이 더 복잡해지고 과학기술 발전이 더욱 정교해질수록, 우리 중 일부는 근대영미소설에 재현된 식물과 동물, 나아가 행성에 대해 다른 관점으로 라보게 될 것이다. 일례로, 수 도널드슨과 윌 킴리카는 2011년 『주폴리스』에서 동물 권리를 위한 정치 이론을 펼친다. 저자는 1824년 마차용 말의 학대를 막기 위해 결성된 동물학대방지협회에서 시작된 운동이 현재 수많은 동물 애호 단체가 생겨나게 했고, 동물에 대한 윤리적 대우를 논하는 공적 논의
+출판사: 신아사
+ISBN: 9791173420931
+출간일시: 2025-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6964001&q=%EA%B7%BC%EB%8C%80%EC%9D%98+%EC%8B%9C%EC%84%A0%EC%97%90%EC%84%9C+%EB%B3%B4%EB%8A%94+%EC%8B%9D%EB%AC%BC%2C+%EB%8F%99%EB%AC%BC%2C+%ED%96%89%EC%84%B1+%EC%84%9C%EC%82%AC', 18000, 1.00, 17820, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6964001%3Ftimestamp%3D20250814143825', 140, 40, 'ACTIVATE', NULL),
+    (381, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대의 여행과 모험 그리고 서사', '한국근대영미소설학회', '9791193320105', '여행 서사에서, 특히 근대의 여행기에서, 여행가의 시선은 인종과 민족을 구분하며 지배 문화의 단일성을 반영할 수밖에 없었을 것이다. 남성 여행가의 지도 제작을 목적으로 하는 여행과 마찬가지로, 여성 여행가들 또한 남성 담론의 식민주의 글쓰기를 드러낸다. 백인 여성은 근대의 백인 남성 시선이나 담론에서 보호받아야 하는 존재로 간주 됨에도 불구하고, 그녀 또한 식민지배자의 지위를 점한 상태에서 비서구인을 바라볼 수밖에 없기 때문이다. 이는 여행 글
+출판사: 신아사
+ISBN: 9791193320105
+출간일시: 2023-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6485857&q=%EA%B7%BC%EB%8C%80%EC%9D%98+%EC%97%AC%ED%96%89%EA%B3%BC+%EB%AA%A8%ED%97%98+%EA%B7%B8%EB%A6%AC%EA%B3%A0+%EC%84%9C%EC%82%AC', 17000, 1.00, 16830, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6485857%3Ftimestamp%3D20240514153407', 143, 42, 'ACTIVATE', NULL),
+    (382, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '사랑이야기', '한국근대영미소설학회', '9788983966735', '문자와 영상이 어떻게 교류하고 상호 보완하며 발전하는지를 보여주는 「영화로 읽는 영미소설」시리즈 제1권 『사랑이야기』. 영화화된 소설들을 분석하여 소설이 어떻게 영화에 컨텐츠를 제공하는지를 보여주는 책이다. &lt;오만과 편견&gt;, &lt;지성과 감성&gt;, &lt;제인에어&gt;, &lt;폭풍의 언덕&gt;, &lt;테스&gt; 등을 통해 영화가 어떻게 소설에 대한 해석을 제공하고 있는지 보여준다.
+출판사: 신아사
+ISBN: 9788983966735
+출간일시: 2010-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1174008&q=%EC%82%AC%EB%9E%91%EC%9D%B4%EC%95%BC%EA%B8%B0', 12000, 1.00, 11880, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174008%3Ftimestamp%3D20230905201442', 146, 44, 'ACTIVATE', NULL),
+    (383, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '상처와 치유의 서사', '한국근대영미소설학회', '9788983968227', '『상처와 치유의 서사』은 문학작품을 통해 트라우마를 논하고 있는 책이다. ''문학이란 무엇인가''란 난제를 새롭게 접근하여 비평가들에게 문학이 무엇이어야 하며 어떻게 써야 할지를 생각하게 한다. 또한 트라우마를 통해 문학을 읽으면 삶의 상처에 대한 작가의 고민과 이를 작품으로 치유하려는 노력을 엿볼수 있다.
+출판사: 신아사
+ISBN: 9788983968227
+출간일시: 2013-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1177442&q=%EC%83%81%EC%B2%98%EC%99%80+%EC%B9%98%EC%9C%A0%EC%9D%98+%EC%84%9C%EC%82%AC', 14000, 1.00, 13860, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177442%3Ftimestamp%3D20230809171904', 149, 46, 'ACTIVATE', NULL),
+    (384, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영국소설사', 'JOHN RICHETTI', '9788983961211', '출판사: 신아사
+ISBN: 9788983961211
+출간일시: 2000-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175177&q=%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4%EC%82%AC', 29000, 0.00, -1, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175177%3Ftimestamp%3D20190127041437', 152, 48, 'ACTIVATE', NULL),
+    (385, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '미국소설사', 'EMORY ELLIOTT 외', '9788983961662', '출판사: 신아사
+ISBN: 9788983961662
+출간일시: 2001-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1177711&q=%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EC%82%AC', 29000, 5.00, -1, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177711%3Ftimestamp%3D20190127043445', 155, 50, 'ACTIVATE', NULL),
+    (386, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '고성의 괴사건 : 해외 추리소설 시리즈', '존 딕슨 카 저자', '9791192616421', '베스트셀러 영미추리소설 시리즈
+출판사: 진태출판사
+ISBN: 9791192616421
+출간일시: 2023-06-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6884937&q=%EA%B3%A0%EC%84%B1%EC%9D%98+%EA%B4%B4%EC%82%AC%EA%B1%B4+%3A+%ED%95%B4%EC%99%B8+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%EC%8B%9C%EB%A6%AC%EC%A6%88', 7000, 10.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6884937%3Ftimestamp%3D20250404165655', 158, 52, 'ACTIVATE', NULL),
+    (387, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '고독한 은행가(삼인사해외신작소설 003)', '딕 프랜시스', '2003047000017', '출판사: 삼인사
+ISBN: 2003047000017
+출간일시: 1991-04-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=110128&q=%EA%B3%A0%EB%8F%85%ED%95%9C+%EC%9D%80%ED%96%89%EA%B0%80%28%EC%82%BC%EC%9D%B8%EC%82%AC%ED%95%B4%EC%99%B8%EC%8B%A0%EC%9E%91%EC%86%8C%EC%84%A4+003%29', 4500, 15.00, -1, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F110128%3Ftimestamp%3D20251205123203', 161, 54, 'ACTIVATE', NULL),
+    (388, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '데미안(소설 사진을 만나다 해외 단편선 2)', '헤르만 헤세', '9788958611646', '사진작가 홍성덕과 함께 읽는 데미안. 『데미안』은 헤르만 헤세가 정신분석학의 영향을 받아 자기탐구의 길을 개척했다는 평을 받고 있는 성장소설이다. 신앙이 깊고 성결하며 예의바른 부모가 속한 밝은 세계와 부랑자, 주정뱅이, 강도 등 악의 세계가 교직하는 경계에서 주인공 싱클레어가 데미안이라는 수수께끼 소년의 영향을 받아 참된 자아를 찾는 과정을 그리고 있다.
+출판사: 청년정신
+ISBN: 9788958611646
+출간일시: 2017-03-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=786106&q=%EB%8D%B0%EB%AF%B8%EC%95%88%28%EC%86%8C%EC%84%A4+%EC%82%AC%EC%A7%84%EC%9D%84+%EB%A7%8C%EB%82%98%EB%8B%A4+%ED%95%B4%EC%99%B8+%EB%8B%A8%ED%8E%B8%EC%84%A0+2%29', 7500, 10.00, 6750, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F786106%3Ftimestamp%3D20220617023123', 164, 56, 'ACTIVATE', NULL),
+    (389, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '노인과 바다(소설 사진을 만나다 해외 단편선 1)', '어니스트 헤밍웨이', '9788958611608', '소설 사진을 만나다 해외 단편선 제1권 『노인과 바다』. 전문 번역문학이 아닌 시와 소설, 인물 평전, 여행 에세이 등의 글을 주로 쓰면서 쉽고 아름다운 문장 쓰기에 천착했던 역자는, 이 책을 통해 『노인과 바다』의 작가 어니스트 헤밍웨이가 문장을 통해 표현하고자 했던 의도를, 최대한 단정하면서도 정돈된 우리 문장으로 되살려내는 데 방점을 찍었으며 또한 문학적 감성을 사진과 함께 즐기고자 구현했다.
+출판사: 청년정신
+ISBN: 9788958611608
+출간일시: 2016-06-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=785802&q=%EB%85%B8%EC%9D%B8%EA%B3%BC+%EB%B0%94%EB%8B%A4%28%EC%86%8C%EC%84%A4+%EC%82%AC%EC%A7%84%EC%9D%84+%EB%A7%8C%EB%82%98%EB%8B%A4+%ED%95%B4%EC%99%B8+%EB%8B%A8%ED%8E%B8%EC%84%A0+1%29', 6000, 10.00, 5400, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F785802%3Ftimestamp%3D20221011174646', 167, 58, 'ACTIVATE', NULL),
+    (390, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'A Man''s Past Story at SSEC', '향암香庵 이희관 Robert Rhee', '9788924207897', '대학 졸업 전 상상그룹 공채 시험 합격해 상상전자 수원공장 Motor 생산과를 시작으로 1980년 해외본부 가전 부품 수출과에서 전 세계 시장을 개척하다 1985년 홍콩지점에 발령받고 당시 외교관계가 없던 중공 시장을, 냉장고를 위주로 시장 개척하다가 1989년 중국 출장 중 교통사고로 퇴사할 때까지 직장 생활과 홍콩에서 창업하게 된 흔적의 기억을 더듬어 실화 소설로 써 본 생생한 어느 상상 맨의 수출애국심을 발휘했던 현장과 주인공의 인생 이야기다. 경험은
+출판사: 퍼플
+ISBN: 9788924207897
+출간일시: 2026-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7193855&q=A+Man%27s+Past+Story+at+SSEC', 22000, 10.00, 22000, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7193855%3Ftimestamp%3D20260408153358', 170, 60, 'ACTIVATE', NULL),
+    (391, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '내게 너무 과분한 그녀들 3: 방학 그리고 첫 해외여행', '일월', '9788964307878', '일월 현대판타지 장편소설 『내게 너무 과분한 그녀들』 제3권 &lt;방학 그리고 첫 해외여행&gt;. 이계를 평정하고 돌아온 파멸의 마도사의 아들. 존재 그 자체가 인과율에 어긋나는 남자 박재성. 세계는 그를 버그로 판단하고 지우기 위해 불운을 부과한다. 아버지와 함께 이계를 평정한 광휘의 기사. 민주성. 그와 결혼하여 현재 세계로 넘어온 하이엘프 에바 그린. 그리고 그들의 딸이자 소중한 친구 하프엘프 민하미. 지나치게 아름다운 그녀, 그리고 계속되는
+출판사: 어울림(어울림출판사)
+ISBN: 9788964307878
+출간일시: 2012-03-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=901267&q=%EB%82%B4%EA%B2%8C+%EB%84%88%EB%AC%B4+%EA%B3%BC%EB%B6%84%ED%95%9C+%EA%B7%B8%EB%85%80%EB%93%A4+3%3A+%EB%B0%A9%ED%95%99+%EA%B7%B8%EB%A6%AC%EA%B3%A0+%EC%B2%AB+%ED%95%B4%EC%99%B8%EC%97%AC%ED%96%89', 8000, 10.00, 7200, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F901267%3Ftimestamp%3D20230519203300', 173, 62, 'ACTIVATE', NULL),
+    (392, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '코레아 황제 시카고 공주', '로버트 바', '9788987351735', '해외에서 첫 발견된 조선 배경의 로맨틱 모험소설 《A Chicago Princess》의 완역판 『코레아 황제 시카고 공주』. 코난 도일, 마크 트웨인과 함께 당대 최고 거장으로 추앙되는 추리, 탐정, 풍자 소설가 로버트 바의 대표작으로, 100년이 훌쩍 지난 지금까지도 문단의 호평과 함께 세계 독자들의 끊임없는 사랑을 받고 있다. 초대형 유람선으로 세계를 돌며 각 나라의 왕, 황제들과 허물없는 교제를 원한 시카고 대재벌의 절세미인 외동딸이 유럽, 일본
+출판사: 책과길
+ISBN: 9788987351735
+출간일시: 2016-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1255124&q=%EC%BD%94%EB%A0%88%EC%95%84+%ED%99%A9%EC%A0%9C+%EC%8B%9C%EC%B9%B4%EA%B3%A0+%EA%B3%B5%EC%A3%BC', 12800, 0.00, -1, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1255124%3Ftimestamp%3D20190127120214', 176, 64, 'ACTIVATE', NULL),
+    (393, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '어느 삼성 맨의 지난 이야기', '향암香庵 이희관', '9788924125467', '국내 굴지의 가전제품 제조 S 전자에서 나 역시 모든 열정과 청춘을 쏟았지만, 그때 그 시절에 누구보다 대단한 노력을 발휘했던 후배의 한 사람으로서 여전히 기억 속에 자리 잡고 있는데 오래전부터 지난 세월의 경험을 후배나 젊은이들에게 전달과 나눔을 실천하고 싶다는 [자리이타 自利利他] 정신을 말 해오던 터라 이제[어느 삼성 맨의 지난 이야기]라는 해외시장 개척 실화 소설 출판하고자 한다는 말을 듣고 다시 지난 시간을 되새기며 우리나라 산업일꾼과 수출 일
+출판사: 퍼플
+ISBN: 9788924125467
+출간일시: 2024-04-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6601799&q=%EC%96%B4%EB%8A%90+%EC%82%BC%EC%84%B1+%EB%A7%A8%EC%9D%98+%EC%A7%80%EB%82%9C+%EC%9D%B4%EC%95%BC%EA%B8%B0', 15000, 5.00, 15000, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6601799%3Ftimestamp%3D20260307123912', 179, 66, 'ACTIVATE', NULL),
+    (394, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '아프리카 탄자니아에서 중앙아시아 우즈벡까지', '김우영', '9791190168694', '한국해외봉사단 KOICA 한류체험 장편소설 『아프리카 탄자니아에서 중앙아시아 우즈벡까지』.
+출판사: 개미
+ISBN: 9791190168694
+출간일시: 2023-09-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6434603&q=%EC%95%84%ED%94%84%EB%A6%AC%EC%B9%B4+%ED%83%84%EC%9E%90%EB%8B%88%EC%95%84%EC%97%90%EC%84%9C+%EC%A4%91%EC%95%99%EC%95%84%EC%8B%9C%EC%95%84+%EC%9A%B0%EC%A6%88%EB%B2%A1%EA%B9%8C%EC%A7%80', 15000, 10.00, 13500, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6434603%3Ftimestamp%3D20240403170740', 182, 68, 'ACTIVATE', NULL),
+    (395, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '소설 파는 남자', '이구용', '9788989420699', '한국 문학을 해외에 수출하기 위해 고군분투하는 출판 저작권 에이전트 이구용. 그가 직접 우리 문학을 해외에 수출한 과정에 대한 이야기를 풀어놓는다. 김영하, 신경숙, 조경란, 한강 등 해외 출판 시장으로 성공적으로 진출했거나 진출을 목전에 두고 있는 작가들과 작품에 관한 느낌을 수록하였다. 또한 해외 진출 전략을 구상중이거나 한국 문학으로는 훌륭하지만 세계인이 즐기기에는 한계를 지닌 작품에 대한 에이전트의 고민과 에이전트로서 미래에 도전하고 싶은 과제
+출판사: 한국출판마케팅연구소
+ISBN: 9788989420699
+출간일시: 2010-12-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1300512&q=%EC%86%8C%EC%84%A4+%ED%8C%8C%EB%8A%94+%EB%82%A8%EC%9E%90', 15000, 10.00, 13500, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1300512%3Ftimestamp%3D20220524161727', 185, 70, 'ACTIVATE', NULL),
+    (396, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '절규', '이영묵', '9791186545706', '제1회 창조문예 해외동포문학상 수상작!  “하나님, 갈 길을 잃은 어린양이 아버지의 보살핌을 호소하고 있습니다. 이 어린양에게 거친 세상을 헤쳐 나갈 수 있는 용기와 지혜를 주옵소서!”  뭉크의 ‘절규’를 보고 영감을 받아 일필휘지로 써 내려간 느와르 소설 〈절규〉는 월간 《창조문예》 2018년 8월호부터 2019년 4월호까지 9회에 걸쳐 연재된 소설이다. ‘진혼곡(김준석 이야기)’, ‘상엿소리(박기동 이야기)’, ‘엘레지(한지인 이야기)’, ‘내 몸매
+출판사: 창조문예사
+ISBN: 9791186545706
+출간일시: 2019-08-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5064696&q=%EC%A0%88%EA%B7%9C', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5064696%3Ftimestamp%3D20211124151231', 188, 72, 'ACTIVATE', NULL),
+    (397, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '플랫랜드 : Flatland (‘최초 SF 소설’ - 영어 원서)', 'Edwin A Abbott (에드윈 A 애보트)', '1400000309490', '플랫랜드 : Flatland (‘최초 SF 소설’ - 영어 원서)  World Classic Reading Book (세계 고전문학 리딩북)  1. 최초 SF 소설 2. 수학 기반 소설(Mathematical Fiction) 3. "플랫랜드" 작품을 준 분야  1) 문학 《평면세계》Charles Howard Hinton, 1905년 《Sphereland》 Dionys Burger, 1965년 《Geometry, Relativity, and the Fourth
+출판사: 부크크(Bookk)
+ISBN: 1400000309490
+출간일시: 2018-06-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=8778&q=%ED%94%8C%EB%9E%AB%EB%9E%9C%EB%93%9C+%3A+Flatland+%28%E2%80%98%EC%B5%9C%EC%B4%88+SF+%EC%86%8C%EC%84%A4%E2%80%99+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 12200, 5.00, 12200, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F8778%3Ftimestamp%3D20190122103302', 191, 74, 'ACTIVATE', NULL),
+    (398, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '권으로 읽는 ‘셰익스피어’ 명작 소설 : Tales from Shakespeare (영어 원서)', 'Charles Lamb and Mary Lamb  Shakespeare', '1400000313190', '한 권으로 읽는 ‘셰익스피어’ 명작 소설 : Tales from Shakespeare (영어 원서)  World Classic reading Book (세계 고전문학 리딩북)  - 한 권으로 끝내는 셰익스피어 희곡 소설 20편 - 셰익스피어 4대 비극 + 5대 희극 수록 - 미국대학위원회(SAT) 추천 작품 - 쉽게 읽을 수 있도록 이야기 구성(소설)  01.THE TEMPEST  (템페스트) 02. A MIDSUMMER NIGHT''s DREAM  (한여름
+출판사: 부크크(Bookk)
+ISBN: 1400000313190
+출간일시: 2018-07-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=9033&q=%ED%95%9C+%EA%B6%8C%EC%9C%BC%EB%A1%9C+%EC%9D%BD%EB%8A%94+%E2%80%98%EC%85%B0%EC%9D%B5%EC%8A%A4%ED%94%BC%EC%96%B4%E2%80%99+%EB%AA%85%EC%9E%91+%EC%86%8C%EC%84%A4+%3A+Tales+from+Shakespeare+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 15800, 10.00, 15800, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F9033%3Ftimestamp%3D20190122103501', 194, 76, 'ACTIVATE', NULL),
+    (399, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '미국 BEST 단편소설 : The Best American Humorous Short Stories (영어 원서)', 'Mark Twain et al (마크 트웨인 외 17명)', '1400000310298', '미국 BEST 단편소설 : The Best American Humorous Short Stories (영어 원서)  World Classic Reading Book (세계 고전문학 리딩북)  * 미국 베스트(BEST) 단편소설 모음집 18편  * 마크 트웨인 Mark Twain (1835-1910) 미국 소설가. 본명은 S. L. 클레멘스 (Samuel L. Clemens). [톰 소여의 모험&gt; [허클베리 핀의 모험] [왕자와 거지] 등의 작품
+출판사: 부크크(Bookk)
+ISBN: 1400000310298
+출간일시: 2018-07-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=9000&q=%EB%AF%B8%EA%B5%AD+BEST+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%3A+The+Best+American+Humorous+Short+Stories+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 14100, 15.00, 14100, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F9000%3Ftimestamp%3D20190122103446', 197, 78, 'ACTIVATE', NULL),
+    (400, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '베스트 단편소설 : Tolstoy for the...Select tales from Tolstoy (영어 원서)', 'Leo Tolstoy (톨스토이)', '1400000309704', '톨스토이 베스트 단편소설 : Tolstoy for the young-Select tales from Tolstoy (영어 원서) (원제: 젊은이를 위한 톨스토이 BEST 단편소설)  World Classic reading Book (세계 고전문학 리딩북)  1. "톨스토이" 작가 - 미국대학위원회(SAT) "전쟁과 평화" 작품 101권 선정 추천도서! - 서울대/연세대/고려대 "안나 카레이나"작품 선정 추천도서!!  2. 톨스토이 러시아 작가 "영문판"  러시아
+출판사: 부크크(Bookk)
+ISBN: 1400000309704
+출간일시: 2018-06-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=8949&q=%ED%86%A8%EC%8A%A4%ED%86%A0%EC%9D%B4+%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%3A+Tolstoy+for+the+young-Select+tales+from+Tolstoy+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 12600, 0.00, 12600, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F8949%3Ftimestamp%3D20190122103427', 0, 80, 'ACTIVATE', NULL),
+    (401, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '원서 이기는 영단어', '한일', '9791155092781', '『원서 이기는 영단어』는 원서를 읽거나 미드, 영화를 볼 때 제대로 파악하지 못했던 영단어의 정확한 뜻과 쓰임새를 친절하게 설명해주는 영단어책이다. 영어학자들이 뽑은 가장 효과적인 어휘 학습법인 ‘유사어 학습법’을 제시하고, 풍부한 에피소드, 단어와 연결되어 단숨에 뜻이 떠오르는 삽화와 사진을 수록해 학습의 재미를 더하고 있다.
+출판사: 로그인
+ISBN: 9791155092781
+출간일시: 2014-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1548606&q=%EC%9B%90%EC%84%9C+%EC%9D%B4%EA%B8%B0%EB%8A%94+%EC%98%81%EB%8B%A8%EC%96%B4', 14800, 5.00, -1, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1548606%3Ftimestamp%3D20221025143128', 3, 82, 'ACTIVATE', NULL),
+    (402, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '초급 번역패턴 500 플러스', '김명철', '9788967908270', '미드, 애니, 소설, 원서를 처음 시작할 때 알아야 할 번역의 핵심이 담긴 기본서. 번역에 필요한 필수패턴 103개와 그에 해당하는 실제 번역패턴 600여 개가 수록되어, 어디서도 볼 수 없었던 실전 번역의 패턴을 접할 수 있다.
+출판사: 넥서스
+ISBN: 9788967908270
+출간일시: 2014-04-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=939587&q=%EC%B4%88%EA%B8%89+%EB%B2%88%EC%97%AD%ED%8C%A8%ED%84%B4+500+%ED%94%8C%EB%9F%AC%EC%8A%A4', 14500, 10.00, 13050, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F939587%3Ftimestamp%3D20230608154405', 6, 84, 'ACTIVATE', NULL),
+    (403, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어원서 공포소설 나이트 랜드 The Night Land', 'Dr K 엮음', '9791170560142', '쉬운 일은 아닙니다. 바빠서라고들 하죠. 맞습니다.  그렇지만 오랫동안 사랑 받고 있는 작품들을 그냥 지나치기엔 아쉬움이 많습니다. 원작에는 어떤 것이 들어있을까. 궁금하시다면 당신이 처음 만나는 원작, 이 책으로 만나보세요.  원서로 읽으면 더 깊이 보인다  그런데 영어라서 부담이 된다고요?  그렇게 어렵지 않습니다. 어려운 단어라고는 특수한 상황을 묘사한 대목 정도라고 할 수 있습니다. 그 동안의 영어 실력이라면 충분히 소화할 수 있는 정도의 난이도입니다
+출판사: 유페이퍼
+ISBN: 9791170560142
+출간일시: 2023-10-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6460077&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+%EA%B3%B5%ED%8F%AC%EC%86%8C%EC%84%A4+%EB%82%98%EC%9D%B4%ED%8A%B8+%EB%9E%9C%EB%93%9C+The+Night+Land', 2500, 15.00, -1, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6460077', 9, 86, 'ACTIVATE', NULL),
+    (404, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '플랫랜드 Flatland (영어 원서 읽기  최초 수학 추리소설 & SF소설 장르 개척)', 'Edwin A Abbott (에드윈 A 애보트)', '9791163103882', '플랫랜드 Flatland (영어 원서 읽기: 최초 수학 추리소설 &amp; SF소설 장르 개척) 플랫랜드(Flatland: A Romance of Many Dimensions))는 1884년에 영국 빅토리아 시대의 신학자이자 교육자였던 에드윈 A. 애보트(Edwin A. Abbott, 1838-1926)가 지은 수학 소설(Mathematical Fiction)인 동시에 최초의 SF소설이다. 신선하고 매력적인 이야기로 많은 사람의 사랑을 받은 이 책
+출판사: 유페이퍼
+ISBN: 9791163103882
+출간일시: 2018-08-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3740647&q=%ED%94%8C%EB%9E%AB%EB%9E%9C%EB%93%9C+Flatland+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C+%EC%9D%BD%EA%B8%B0++%EC%B5%9C%EC%B4%88+%EC%88%98%ED%95%99+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%26+SF%EC%86%8C%EC%84%A4+%EC%9E%A5%EB%A5%B4+%EA%B0%9C%EC%B2%99%29', 4000, 0.00, -1, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3740647', 12, 88, 'ACTIVATE', NULL),
+    (405, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '플랫랜드 : Flatland (‘최초 SF 소설’ - 영어 원서)', 'Edwin A Abbott (에드윈 A 애보트)', '9791127241346', '플랫랜드 : Flatland (‘최초 SF 소설’ - 영어 원서)  World Classic Reading Book (세계 고전문학 리딩북)  1. 최초 SF 소설 2. 수학 기반 소설(Mathematical Fiction) 3. "플랫랜드" 작품을 준 분야  1) 문학 《평면세계》Charles Howard Hinton, 1905년 《Sphereland》 Dionys Burger, 1965년 《Geometry, Relativity, and the Fourth
+출판사: 부크크(Bookk)
+ISBN: 9791127241346
+출간일시: 2018-06-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4964517&q=%ED%94%8C%EB%9E%AB%EB%9E%9C%EB%93%9C+%3A+Flatland+%28%E2%80%98%EC%B5%9C%EC%B4%88+SF+%EC%86%8C%EC%84%A4%E2%80%99+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 12200, 5.00, 12200, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4964517%3Ftimestamp%3D20250404131736', 15, 90, 'ACTIVATE', NULL),
+    (406, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '이솝우화_영어 원서로 보는 고전 소설', '이솝', '9791162671764', '영어로 쓰여진 이솝우화 82편을 수록하였습니다.
+출판사: 달꽃
+ISBN: 9791162671764
+출간일시: 2021-07-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5804270&q=%EC%9D%B4%EC%86%9D%EC%9A%B0%ED%99%94_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 10.00, -1, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5804270', 18, 92, 'ACTIVATE', NULL),
+    (407, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '주홍글자 - 영어 원서로 보는 고전 소설', '너새니얼 호손', '9791162672525', '주홍글자 영어 도서입니다.
+출판사: 달꽃
+ISBN: 9791162672525
+출간일시: 2022-04-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6131411&q=%EC%A3%BC%ED%99%8D%EA%B8%80%EC%9E%90+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, -1, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6131411', 21, 94, 'ACTIVATE', NULL),
+    (408, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '권으로 읽는 ‘셰익스피어’ 명작 소설 : Tales from Shakespeare (영어 원서)', 'Charles Lamb and Mary Lamb  Shakespeare', '9791127244309', '한 권으로 읽는 ‘셰익스피어’ 명작 소설 : Tales from Shakespeare (영어 원서)  World Classic reading Book (세계 고전문학 리딩북)  - 한 권으로 끝내는 셰익스피어 희곡 소설 20편 - 셰익스피어 4대 비극 + 5대 희극 수록 - 미국대학위원회(SAT) 추천 작품 - 쉽게 읽을 수 있도록 이야기 구성(소설)  01.THE TEMPEST  (템페스트) 02. A MIDSUMMER NIGHT''s DREAM  (한여름
+출판사: 부크크(Bookk)
+ISBN: 9791127244309
+출간일시: 2018-07-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4964894&q=%ED%95%9C+%EA%B6%8C%EC%9C%BC%EB%A1%9C+%EC%9D%BD%EB%8A%94+%E2%80%98%EC%85%B0%EC%9D%B5%EC%8A%A4%ED%94%BC%EC%96%B4%E2%80%99+%EB%AA%85%EC%9E%91+%EC%86%8C%EC%84%A4+%3A+Tales+from+Shakespeare+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%29', 15800, 0.00, 15800, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4964894%3Ftimestamp%3D20250404131804', 24, 96, 'ACTIVATE', NULL),
+    (409, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '크리스마스 캐롤_영어원서로 보는 고전소설', '찰스 디킨스', '9791162673270', '찰스 디킨스 소설. 크리스마스 캐롤 영어 원서입니다.
+출판사: 달꽃
+ISBN: 9791162673270
+출간일시: 2022-12-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6252587&q=%ED%81%AC%EB%A6%AC%EC%8A%A4%EB%A7%88%EC%8A%A4+%EC%BA%90%EB%A1%A4_%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 3000, 5.00, -1, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252587', 27, 98, 'ACTIVATE', NULL),
+    (410, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '올리버 트위스트 - 영어 원서로 보는 고전 소설', '찰스 디킨스', '9791162672471', '올리버 트위스트 영어 도서입니다.
+출판사: 달꽃
+ISBN: 9791162672471
+출간일시: 2022-04-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6052044&q=%EC%98%AC%EB%A6%AC%EB%B2%84+%ED%8A%B8%EC%9C%84%EC%8A%A4%ED%8A%B8+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 10.00, -1, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052044', 30, 100, 'ACTIVATE', NULL),
+    (411, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '피터팬_영어 원서로 보는 고전 소설', '제임스 배리', '9791162672105', '피터팬 영어 원서입니다.
+출판사: 달꽃
+ISBN: 9791162672105
+출간일시: 2021-11-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5885004&q=%ED%94%BC%ED%84%B0%ED%8C%AC_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, -1, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5885004', 33, 102, 'ACTIVATE', NULL),
+    (412, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '세계문학 위대한 단편소설 영어원서 2집', '글사랑책사랑편집부', '9791167631435', '세계문학 위대한 단편소설 영어원서 2집  - 유명 작가 작품 모음집 - 노벨문학상 수상 작가(수록)  단편소설(短篇小說): 산문 형식으로 쓰는 서술체의 허구적인 이야기 단일한 효과를 목적으로 단일한 인상, 단일한 효과 및 통일성이 강조 표현한 이야기이다.  01편. The Last Leaf - O. Henry  02편. The Diamond Necklace - Guy de Maupassant  03편. The Betrothed - Anton Pavlovich Chekhov
+출판사: 유페이퍼
+ISBN: 9791167631435
+출간일시: 2022-01-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5964331&q=%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99+%EC%9C%84%EB%8C%80%ED%95%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+2%EC%A7%91', 5000, 0.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964331', 36, 104, 'ACTIVATE', NULL),
+    (413, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '세계문학 위대한 단편소설 영어원서 1집', '글사랑책사랑편집부', '9791167631428', '세계문학 위대한 단편소설 영어원서 1집  - 유명 작가 작품 모음집 - 노벨문학상 수상 작가  단편소설(短篇小說): 산문 형식으로 쓰는 서술체의 허구적인 이야기 단일한 효과를 목적으로 단일한 인상, 단일한 효과 및 통일성이 강조 표현한 이야기!  01편. The Gift of the Magi - O. Henry  02편. Ball of Fat (Boule de suif) - Guy de Maupassant  03편. The Lady With the Dog
+출판사: 유페이퍼
+ISBN: 9791167631428
+출간일시: 2022-01-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5964227&q=%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99+%EC%9C%84%EB%8C%80%ED%95%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+1%EC%A7%91', 5000, 5.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964227', 39, 106, 'ACTIVATE', NULL),
+    (414, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '위대한 유산_영어 원서로 보는 고전소설', '찰스 디킨스', '9791162673287', '찰스 디킨스의 위대한 유산 영어원서입니다.
+출판사: 달꽃
+ISBN: 9791162673287
+출간일시: 2022-12-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6252737&q=%EC%9C%84%EB%8C%80%ED%95%9C+%EC%9C%A0%EC%82%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 4000, 10.00, -1, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252737', 42, 108, 'ACTIVATE', NULL),
+    (415, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어원서읽기러시아단편소설집Best Russian Short Storie', 'Dr K 엮음', '9791166780653', '쉬운 일은 아닙니다. 바빠서라고들 하죠. 맞습니다.  그렇지만 오랫동안 사랑 받고 있는 작품들을 그냥 지나치기엔 아쉬움이 많습니다. 원작에는 어떤 것이 들어있을까. 궁금하시다면 당신이 처음 만나는 원작, 이 책으로 만나보세요.  원서로 읽으면 더 깊이 보인다  그런데 영어라서 부담이 된다고요?  그렇게 어렵지 않습니다. 어려운 단어라고는 특수한 상황을 묘사한 대목 정도라고 할 수 있습니다. 그 동안의 영어 실력이라면 충분히 소화할 수 있는 정도의 난이도입니다
+출판사: 유페이퍼
+ISBN: 9791166780653
+출간일시: 2021-02-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5592459&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EC%9D%BD%EA%B8%B0%EB%9F%AC%EC%8B%9C%EC%95%84%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%A7%91Best+Russian+Short+Storie', 2000, 15.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5592459', 45, 110, 'ACTIVATE', NULL),
+    (416, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '셜록 홈즈의 모험 - 영어 원서로 보는 고전 소설', '아서 코난 도일', '9791162672464', '셜록 홈즈의 모험 영어 도서입니다.
+출판사: 달꽃
+ISBN: 9791162672464
+출간일시: 2022-04-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6052054&q=%EC%85%9C%EB%A1%9D+%ED%99%88%EC%A6%88%EC%9D%98+%EB%AA%A8%ED%97%98+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 0.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052054', 48, 112, 'ACTIVATE', NULL),
+    (417, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '허클베리 핀의 모험-영어 원서로 보는 고전 소설', '마크 트웨인', '9791162672679', '허클베리 핀의 모험 영어 도서입니다.
+출판사: 달꽃
+ISBN: 9791162672679
+출간일시: 2022-05-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6065965&q=%ED%97%88%ED%81%B4%EB%B2%A0%EB%A6%AC+%ED%95%80%EC%9D%98+%EB%AA%A8%ED%97%98-%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 5.00, -1, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6065965%3Ftimestamp%3D20240731160917', 51, 114, 'ACTIVATE', NULL),
+    (418, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '행복한 왕자와 그 밖의 이야기_영어 원서로 보는 고전소설', '오스카 와일드', '9791162672013', '오스카 와일드의영어 소설 2편을 수록하였습니다.
+출판사: 달꽃
+ISBN: 9791162672013
+출간일시: 2021-10-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5873867&q=%ED%96%89%EB%B3%B5%ED%95%9C+%EC%99%95%EC%9E%90%EC%99%80+%EA%B7%B8+%EB%B0%96%EC%9D%98+%EC%9D%B4%EC%95%BC%EA%B8%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 1000, 10.00, -1, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873867', 54, 116, 'ACTIVATE', NULL),
+    (419, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '이상한 나라의 앨리스_영어 원서로 보는 고전 소설', '루이스 캐롤', '9791162672099', '이상한 나라의 앨리스 영어 원서입니다.
+출판사: 달꽃
+ISBN: 9791162672099
+출간일시: 2021-11-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5884961&q=%EC%9D%B4%EC%83%81%ED%95%9C+%EB%82%98%EB%9D%BC%EC%9D%98+%EC%95%A8%EB%A6%AC%EC%8A%A4_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5884961', 57, 118, 'ACTIVATE', NULL),
+    (420, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헌신적인 친구와 그 밖의 이야기_영어 원서로 보는 고전소설', '오스카 와일드', '9791162672006', '오스카 와일드의 영어 소설 3편을 수록하였습니다.
+출판사: 달꽃
+ISBN: 9791162672006
+출간일시: 2021-10-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5873857&q=%ED%97%8C%EC%8B%A0%EC%A0%81%EC%9D%B8+%EC%B9%9C%EA%B5%AC%EC%99%80+%EA%B7%B8+%EB%B0%96%EC%9D%98+%EC%9D%B4%EC%95%BC%EA%B8%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 1000, 0.00, -1, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873857', 60, 0, 'ACTIVATE', NULL),
+    (421, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어원서읽는시간 모파상단편소설집1Maupassant Short Sto', 'Dr K 엮음', '9791166126185', '쉬운 일은 아닙니다. 바빠서라고들 하죠. 맞습니다.  그렇지만 오랫동안 사랑 받고 있는 작품들을 그냥 지나치기엔 아쉬움이 많습니다. 원작에는 어떤 것이 들어있을까. 궁금하시다면 당신이 처음 만나는 원작, 이 책으로 만나보세요.  원서로 읽으면 더 깊이 보인다  그런데 영어라서 부담이 된다고요?  그렇게 어렵지 않습니다. 어려운 단어라고는 특수한 상황을 묘사한 대목 정도라고 할 수 있습니다. 그 동안의 영어 실력이라면 충분히 소화할 수 있는 정도의 난이도입니다
+출판사: 유페이퍼
+ISBN: 9791166126185
+출간일시: 2020-11-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5512282&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EC%9D%BD%EB%8A%94%EC%8B%9C%EA%B0%84+%EB%AA%A8%ED%8C%8C%EC%83%81%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%A7%911Maupassant+Short+Sto', 2000, 5.00, -1, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5512282', 63, 2, 'ACTIVATE', NULL),
+    (422, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '햄릿 영어 소설 쓰기 (주니어-영어원서) : HAMLET - Shakespeare''s English...', '셰익스피어 (William Shakespeare)', '9791127298548', '햄릿 영어 소설 쓰기 (주니어-영어원서) : HAMLET - Shakespeare''s English Novel Writing  *부제: ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  셰익스피어 4대 비극  《햄릿》 Hamlet (추정 1600-01) 셰익스피어 비극.  - 원제: 《덴마크 왕자 햄릿의 비극》 (The Tragedy of Hamlet, Prince of Denmark)  덴마크의 왕자인 햄릿은 아버지가
+출판사: 부크크(Bookk)
+ISBN: 9791127298548
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327571&q=%ED%96%84%EB%A6%BF+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+HAMLET+-+Shakespeare%27s+English+Novel+Writing', 6400, 10.00, 6400, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327571%3Ftimestamp%3D20250404145305', 66, 4, 'ACTIVATE', NULL),
+    (423, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '오셀로 영어 소설 쓰기 (시니어-영어원서) : OTHELLO - Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791127298524', '오셀로 영어 소설 쓰기 (시니어-영어원서)  : OTHELLO - Shakespeare''s English Novel Writing  부제: ''셰익스피어'' 소설 따라쓰기  시니어 잉글리시(Senior English)  셰익스피어 4대 비극  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기 힘
+출판사: 부크크(Bookk)
+ISBN: 9791127298524
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327575&q=%EC%98%A4%EC%85%80%EB%A1%9C+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+OTHELLO+-+Shakespeare%27s+English+Novel+Writing', 8400, 15.00, 8400, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327575%3Ftimestamp%3D20251021133035', 69, 6, 'ACTIVATE', NULL),
+    (424, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '오셀로 영어 소설 쓰기 (주니어-영어원서) : OTHELLO - Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791127298500', '오셀로 영어 소설 쓰기 (주니어-영어원서) : OTHELLO - Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  《오셀로》 Othello (추정 1604-05)  셰익스피어 비극.  베니스의 장군(將軍)인 무어인(人) 오셀로는 원로원(元老院) 의원의 딸 데스데모나의 사랑을 받아 그를 아내로 맞는다.  그러나 부관(副官)의 지위를 캐시오에게 준 오셀로에게
+출판사: 부크크(Bookk)
+ISBN: 9791127298500
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327744&q=%EC%98%A4%EC%85%80%EB%A1%9C+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+OTHELLO+-+Shakespeare%27s+English+Novel+Writing', 6900, 0.00, 6900, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327744%3Ftimestamp%3D20250404145323', 72, 8, 'ACTIVATE', NULL),
+    (425, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '맥베스 영어 소설 쓰기 (주니어-영어원서) : MACBETH - Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791127298586', '맥베스 영어 소설 쓰기 (주니어-영어원서) : MACBETH - Shakespeare''s English Novel Writing  부제: ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  《맥베스의 비극》 Macbath (추정 1605-1606)  셰익스피어 비극.  스코틀랜드의 장군 맥베스는 막료 뱅코와 더불어서 개선도중에 황야에서 세 마녀(魔女)를 만나 그는 앞으로 왕이 되고 뱅코는 그의 자손이 왕이 된다는 예언을 듣는다
+출판사: 부크크(Bookk)
+ISBN: 9791127298586
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327735&q=%EB%A7%A5%EB%B2%A0%EC%8A%A4+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+MACBETH+-+Shakespeare%27s+English+Novel+Writing', 6700, 5.00, 6700, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327735%3Ftimestamp%3D20250404145333', 75, 10, 'ACTIVATE', NULL),
+    (426, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '맥베스 영어 소설 쓰기 (시니어-영어원서) : MACBETH - Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791127298593', '맥베스 영어 소설 쓰기 (시니어-영어원서)  : MACBETH - Shakespeare''s English Novel Writing  부제: ''셰익스피어'' 소설 따라쓰기  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기 힘도 키우고, 작문 능력도 향상될 수 있는 절호의 찬스~  필기의 힘을
+출판사: 부크크(Bookk)
+ISBN: 9791127298593
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327721&q=%EB%A7%A5%EB%B2%A0%EC%8A%A4+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+MACBETH+-+Shakespeare%27s+English+Novel+Writing', 7700, 10.00, 7700, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327721%3Ftimestamp%3D20251021133102', 78, 12, 'ACTIVATE', NULL),
+    (427, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '템페스트 ''영어 소설 쓰기'' (주니어-영어원서) : THE TEMPEST - Shakespeare...', '셰익스피어 (William Shakespeare)', '9791137208971', '템페스트 ''영어 소설 쓰기'' (주니어-영어원서)  THE TEMPEST Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  《템페스트》 The Tempest  *프로스페로: 추방당한 밀라노의 공작이자 템페스트의 주인공. 현재 외딴 섬에 살고 위대한 마법사이다.  *미란다: 프로스페로의 딸. 나폴리의 왕자 페르디난드와 사랑에 빠져있다.  *에어리얼: 프로스페로의
+출판사: 부크크(Bookk)
+ISBN: 9791137208971
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5875067&q=%ED%85%9C%ED%8E%98%EC%8A%A4%ED%8A%B8+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+THE+TEMPEST+-+Shakespeare%27s+English+Novel+Writing', 6800, 15.00, 6800, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5875067%3Ftimestamp%3D20251021141918', 81, 14, 'ACTIVATE', NULL),
+    (428, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '템페스트 ''영어 소설 쓰기'' (시니어-영어원서) : THE TEMPEST- Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791137208964', '템페스트 ''영어 소설 쓰기'' (시니어-영어원서)  THE TEMPEST  Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기 힘도 키우고, 작문 능력
+출판사: 부크크(Bookk)
+ISBN: 9791137208964
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6570990&q=%ED%85%9C%ED%8E%98%EC%8A%A4%ED%8A%B8+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+THE+TEMPEST-+Shakespeare%27s+English+Novel+Writing', 8400, 0.00, 8400, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570990%3Ftimestamp%3D20251021144157', 84, 16, 'ACTIVATE', NULL),
+    (429, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '십이야 ''영어 소설 쓰기'' (주니어-영어원서) : TWELFTH NIGHT - Shakespeare...', '셰익스피어 (William Shakespeare)', '9791137209015', '십이야 ''영어 소설 쓰기'' (시니어-영어원서)  TWELFTH NIGHT Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  《십이야》 (十二夜, Twelfth Night)  윌리엄 셰익스피어의 희극 일란성 쌍둥이 남매로 인해 벌어지는 해프닝을 익살과 위트, 해학  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도
+출판사: 부크크(Bookk)
+ISBN: 9791137209015
+출간일시: 2020-06-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5398952&q=%EC%8B%AD%EC%9D%B4%EC%95%BC+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+TWELFTH+NIGHT+-+Shakespeare%27s+English+Novel+Writing', 6900, 5.00, 6900, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398952%3Ftimestamp%3D20251021133850', 87, 18, 'ACTIVATE', NULL),
+    (430, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '리어왕 영어 소설 쓰기 (주니어-영어원서) : KING LEAR - Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791127298562', '리어왕 영어 소설 쓰기 (주니어-영어원서) : KING LEAR - Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  《리어 왕》 King Lear (추정 1605-1606)  셰익스피어 4대 비극 《햄릿》, 《오셀로》, 《맥베스》등과 함께 4대 비극으로 손꼽힌다.  셰익스피어 비극.  브리튼의 노왕 리어는 국토를 세 딸에게 나누어 주고 정무를 떠나서 여생
+출판사: 부크크(Bookk)
+ISBN: 9791127298562
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327616&q=%EB%A6%AC%EC%96%B4%EC%99%95+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+KING+LEAR+-+Shakespeare%27s+English+Novel+Writing', 5600, 10.00, 5600, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327616%3Ftimestamp%3D20251021133039', 90, 20, 'ACTIVATE', NULL),
+    (431, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '리어왕 영어 소설 쓰기 (시니어-영어원서) : KING LEAR - Shakespeare''s...', '셰익스피어 (William Shakespeare)', '9791127298579', '리어왕 영어 소설 쓰기 (시니어-영어원서)  : KING LEAR - Shakespeare''s English Novel Writing  부제: ''셰익스피어'' 소설 따라쓰기  시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기 힘도 키우고, 작문 능력
+출판사: 부크크(Bookk)
+ISBN: 9791127298579
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327741&q=%EB%A6%AC%EC%96%B4%EC%99%95+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+KING+LEAR+-+Shakespeare%27s+English+Novel+Writing', 8800, 15.00, 8800, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327741%3Ftimestamp%3D20251021133059', 93, 22, 'ACTIVATE', NULL),
+    (432, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '햄릿 영어 소설 쓰기 (시니어-영어원서) : HAMLET, PRINCE OF DENMARK...', '셰익스피어 (William Shakespeare)', '9791127298555', '햄릿 영어 소설 쓰기 (시니어-영어원서)  : HAMLET, PRINCE OF DENMARK - Shakespeare''s English Novel Writing  부제: ''셰익스피어'' 소설 따라쓰기  시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기
+출판사: 부크크(Bookk)
+ISBN: 9791127298555
+출간일시: 2020-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5327662&q=%ED%96%84%EB%A6%BF+%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+HAMLET%2C+PRINCE+OF+DENMARK+-+Shakespeare%27s+English+Novel+Writ', 9100, 0.00, 9100, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327662%3Ftimestamp%3D20251021133057', 96, 24, 'ACTIVATE', NULL),
+    (433, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '십이야 ''영어 소설 쓰기'' (시니어-영어원서) : TWELFTH NIGHT; OR, WHAT YOU...', '셰익스피어 (William Shakespeare)', '9791137209008', '십이야 ''영어 소설 쓰기'' (시니어-영어원서)  TWELFTH NIGHT; OR, WHAT YOU WILL Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서
+출판사: 부크크(Bookk)
+ISBN: 9791137209008
+출간일시: 2020-06-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5398823&q=%EC%8B%AD%EC%9D%B4%EC%95%BC+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+TWELFTH+NIGHT%3B+OR%2C+WHAT+YOU+WILL+-+Shakespeare%27s+English', 8900, 5.00, 8900, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398823%3Ftimestamp%3D20251021133843', 99, 26, 'ACTIVATE', NULL),
+    (434, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헛소동 ''영어 소설 쓰기'' (주니어-영어원서) : MUCH ADO ABOUT NOTHING...', '셰익스피어 (William Shakespeare)', '9791137208872', '헛소동 ''영어 소설 쓰기'' (주니어-영어원서)  MUCH ADO ABOUT NOTHING Shakespeare''s English Novel Writing  부제: ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  * 헛소동(Much Ado About Nothing) 결혼을 앞둔 남녀가 음모와 오해로 인해 헤어질 뻔하다가 다시 결혼하게 되는 스토리다.  1. 돈 페드로 : 스페인의 한 왕국 아라곤의 영주  2. 돈 존 : 돈 페드로
+출판사: 부크크(Bookk)
+ISBN: 9791137208872
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6570900&q=%ED%97%9B%EC%86%8C%EB%8F%99+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+MUCH+ADO+ABOUT+NOTHING+-+Shakespeare%27s+English+Novel+Wri', 8300, 10.00, 8300, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570900%3Ftimestamp%3D20251021144218', 102, 28, 'ACTIVATE', NULL),
+    (435, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '말괄량이 길들이기 ''영어 소설 쓰기'' (시니어-영어원서) : THE TAMING OF THE...', '셰익스피어 (William Shakespeare)', '9791137208940', '말괄량이 길들이기 ''영어 소설 쓰기'' (시니어-영어원서)  THE TAMING OF THE SHREW  Shakespeare''s English Novel Writing  * 부제: ''셰익스피어'' 소설 따라쓰기  * 시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을
+출판사: 부크크(Bookk)
+ISBN: 9791137208940
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6570451&q=%EB%A7%90%EA%B4%84%EB%9F%89%EC%9D%B4+%EA%B8%B8%EB%93%A4%EC%9D%B4%EA%B8%B0+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+THE+TAMING+OF+THE+SHREW+-+Shakespeare%27s+Engli', 8100, 15.00, 8100, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570451%3Ftimestamp%3D20251021144204', 105, 30, 'ACTIVATE', NULL),
+    (436, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '말괄량이 길들이기 ''영어 소설 쓰기'' (주니어-영어원서) :  THE TAMING OF...', '셰익스피어 (William Shakespeare)', '9791137208957', '말괄량이 길들이기 ''영어 소설 쓰기'' (주니어-영어원서)  THE TAMING OF THE SHREW Shakespeare''s English Novel Writing  부제 ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  《말괄량이 길들이기》 The Taming of the Shrew  *카트리나(케이트) 미놀라 - 제목의 말괄량이로 밥티스타의 장녀 *비앙카 미놀라 - 카트리나의 여동생으로 천진난만한 소녀 *밥티스타 미놀라
+출판사: 부크크(Bookk)
+ISBN: 9791137208957
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6570247&q=%EB%A7%90%EA%B4%84%EB%9F%89%EC%9D%B4+%EA%B8%B8%EB%93%A4%EC%9D%B4%EA%B8%B0+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A++THE+TAMING+OF+THE+SHREW+-+Shakespeare%27s+Engl', 7200, 0.00, 7200, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570247%3Ftimestamp%3D20251021144152', 108, 32, 'ACTIVATE', NULL),
+    (437, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헛소동 ''영어 소설 쓰기'' (시니어-영어원서) : MUCH ADO ABOUT NOTHING...', '셰익스피어 (William Shakespeare)', '9791137208858', '헛소동 ''영어 소설 쓰기'' (시니어-영어원서)  MUCH ADO ABOUT NOTHING Shakespeare''s English Novel Writing  *부제 : ''셰익스피어'' 소설 따라쓰기  *시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기
+출판사: 부크크(Bookk)
+ISBN: 9791137208858
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6571551&q=%ED%97%9B%EC%86%8C%EB%8F%99+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+MUCH+ADO+ABOUT+NOTHING+-+Shakespeare%27s+English+Novel+Wri', 8900, 5.00, 8900, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6571551%3Ftimestamp%3D20251021144146', 111, 34, 'ACTIVATE', NULL),
+    (438, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '자에는 자로 ''영어 소설 쓰기'' (주니어-영어원서) : MEASURE FOR MEASURE...', '셰익스피어 (William Shakespeare)', '9791137208698', '자에는 자로 ''영어 소설 쓰기'' (주니어-영어원서)  MEASURE FOR MEASURE Shakespeare''s English Novel Writing  * 부제 : ''셰익스피어'' 소설 따라쓰기  * 주니어 잉글리시(Junior English)  《자에는 자로》 Measure for Measure 제목은 성서에서 따온 것이며, ''법에는 법으로''라고 번역하기도 한다. 법, 정의, 자비 등 어둡고 무거운 주제를 다루는 문제극이다.  영어 한 권이라도 필기
+출판사: 부크크(Bookk)
+ISBN: 9791137208698
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6572368&q=%EC%9E%90%EC%97%90%EB%8A%94+%EC%9E%90%EB%A1%9C+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%A3%BC%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+MEASURE+FOR+MEASURE+-+Shakespeare%27s+English+Novel+W', 7400, 10.00, 7400, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6572368%3Ftimestamp%3D20251021144230', 114, 36, 'ACTIVATE', NULL),
+    (439, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '실수연발 ''영어 소설 쓰기'' (시니어-영어원서) : THE COMEDY OF ERRORS...', '셰익스피어 (William Shakespeare)', '9791137208643', '실수연발  ''영어 소설 쓰기'' (시니어-영어원서)  THE COMEDY OF ERRORS Shakespeare''s English Novel Writing  * 부제: ''셰익스피어'' 소설 따라쓰기  시니어 잉글리시(Senior English)  영어 한 권이라도 필기 해보셨나요?  어린 시절부터 친숙하게 알고 있었지만, 단 한 번도 필기로 써보지 못한 이야기!  쉽고, 편안하게 이젠... 필기로 써 볼 수 있습니다.  영어 문장을 써 보면서 단어 암기
+출판사: 부크크(Bookk)
+ISBN: 9791137208643
+출간일시: 2020-06-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5935071&q=%EC%8B%A4%EC%88%98%EC%97%B0%EB%B0%9C+%27%EC%98%81%EC%96%B4+%EC%86%8C%EC%84%A4+%EC%93%B0%EA%B8%B0%27+%28%EC%8B%9C%EB%8B%88%EC%96%B4-%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%29+%3A+THE+COMEDY+OF+ERRORS+-+Shakespeare%27s+English+Novel+Wri', 9500, 15.00, 9500, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5935071%3Ftimestamp%3D20251021142345', 117, 38, 'ACTIVATE', NULL),
+    (440, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'G. WELLS Short Stories, Vol. 2 - 허버트 조지 웰스 단편소설 2집 (영문원서)', '허버트 조지 웰스 (H G Wells)', '9791137228313', 'H. G. WELLS Short Stories, Vol. 2 허버트 조지 웰스 단편소설 2집 (영문원서)  세계문학전집 클래식은 영원하다 시리즈!  1. Classic Is Forever 클래식은 영원하다  2. The Original Book In English 영문원서 읽기  허버트 조지 웰스 (Herbert George Wells) 1866년 9월 21일 ~ 1946년 8월 13일 영국의 소설가, 문명 비평가.  ''과학 소설의 아버지'' 《타임머신
+출판사: 부크크(Bookk)
+ISBN: 9791137228313
+출간일시: 2021-01-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5566292&q=H.+G.+WELLS+Short+Stories%2C+Vol.+2+-+%ED%97%88%EB%B2%84%ED%8A%B8+%EC%A1%B0%EC%A7%80+%EC%9B%B0%EC%8A%A4+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+2%EC%A7%91+%28%EC%98%81%EB%AC%B8%EC%9B%90%EC%84%9C%29', 21000, 0.00, 21000, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5566292%3Ftimestamp%3D20251021135617', 120, 40, 'ACTIVATE', NULL),
+    (441, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '알사탕 제조법', '백희나', '9791198610607', '#마음의 소리를 들려주는 알사탕 비법서 공개  “그건 알사탕이야. 아주 달지.” 역시 맞았다. 동동이가 새 구슬을 사러 들어간 문방구 할아버지가 바로 알사탕을 만든 장본인이다! 할아버지의 정체가 궁금하다. 마음의 소리를 들려주는 신비한 알사탕은 어떻게 만들었을까? 그 비법을 파헤치러 시간을 거슬러가 보자!
+출판사: 스토리보울
+ISBN: 9791198610607
+출간일시: 2024-03-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6591248&q=%EC%95%8C%EC%82%AC%ED%83%95+%EC%A0%9C%EC%A1%B0%EB%B2%95', 10000, 10.00, 9000, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6591248%3Ftimestamp%3D20241217154354', 123, 42, 'ACTIVATE', NULL),
+    (442, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '네 기분은 어떤 색깔이니?', '최숙희', '9791158363925', '우리는 하루에도 수없이 밀려왔다 밀려가는 감정의 파도에 흔들리며 살아간다. 그 감정들을 알아차리고 표현하기란 어른에게도 결코 쉽지 않은 일이다. 경험치도, 어휘력도 부족한 어린이들에게는 더더욱 그럴 것이다. 최숙희 작가의 신작 《네 기분은 어떤 색깔이니?》는 자기표현에 서툰 아이들에게 다정하게 말을 건넨다. “지금 네 기분은 어떤 색깔이니?” 좀처럼 설명하기 힘든 감정을 색깔로 표현해 보라고 제안하는 것이다. 나아가 긍정적인 것이든 부정적인 것
+출판사: 책읽는곰
+ISBN: 9791158363925
+출간일시: 2023-01-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6261134&q=%EB%84%A4+%EA%B8%B0%EB%B6%84%EC%9D%80+%EC%96%B4%EB%96%A4+%EC%83%89%EA%B9%94%EC%9D%B4%EB%8B%88%3F', 14000, 10.00, 12600, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6261134%3Ftimestamp%3D20260306123652', 126, 44, 'ACTIVATE', NULL),
+    (443, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '숲속 재봉사의 옷장', '작자미상', '9788936429188', '꽃잎과 씨앗으로 만든 옷으로 사계절의 매력을 담아낸 그림책 『숲속 재봉사의 옷장』(최향랑 그림책)이 출간되었다. 초등학교 교과서에 수록되며 어린이 독자의 사랑을 받은 ‘숲속 재봉사’ 시리즈의 신작이다. 『숲속 재봉사의 옷장』은 동물들이 식물 옷을 입고 숲에서 함께 놀며 우정을 쌓아 가는 모습을 그린다. 평면과 입체를 넘나드는 다채로운 콜라주 그림으로 식물의 아름다움을 새롭게 들여다보게끔 한다. 섬세한 사진 작업으로 책 속 다양한 요소들의 입체감을
+출판사: 창비
+ISBN: 9788936429188
+출간일시: 2024-04-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6598214&q=%EC%88%B2%EC%86%8D+%EC%9E%AC%EB%B4%89%EC%82%AC%EC%9D%98+%EC%98%B7%EC%9E%A5', 16000, 10.00, 14400, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6598214%3Ftimestamp%3D20251112153228', 129, 46, 'ACTIVATE', NULL),
+    (444, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '수박 수영장', '안녕달', '9788936446819', '뜨거운 여름날, 커다란 수박 안에 들어가 수영을 한다는 시원하고 호방한 상상이 돋보이는 그림책. 사람들이 수박 안에서 수영하며 수박씨와 수박 껍질을 이용해 다양하게 노는 모습을 즐겁게 그렸다. 나이와 성별, 직업, 장애 등을 구별하지 않고 이웃 사람들 모두가 한곳에서 자연스럽게 어울려 노는 모습이 인상적이다.  한국 그림책계의 독보적 작가, 안녕달이 쓰고 그린 첫 번째 작품으로, 작가만의 상상과 재치가 빛나며 가족에 대한 애정과 이웃을 바라보는 따뜻
+출판사: 창비
+ISBN: 9788936446819
+출간일시: 2023-01-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=533265&q=%EC%88%98%EB%B0%95+%EC%88%98%EC%98%81%EC%9E%A5', 14000, 10.00, 12600, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533265%3Ftimestamp%3D20260210110736', 132, 48, 'ACTIVATE', NULL),
+    (445, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '별에게', '작자미상', '9788936429430', '독보적인 상상력과 따뜻한 감성으로 사랑받아 온 안녕달 작가의 창작 10주년을 빛내는 그림책 『별에게』가 출간되었다. 첫 창작 그림책 『수박 수영장』 이후, 아이들이 마음껏 놀고 기대어 쉴 수 있는 세계를 그리며 독자의 신뢰를 쌓아 온 작가가 선보이는 열두 번째 작품이다. 하굣길, 아이는 학교 앞에서 작은 ‘별’을 가져온 할머니를 만난다. 별을 조심스레 집으로 데려온 아이는 “달빛을 받아야 잘 자란다”라는 엄마의 말에 따라 매일 밤 별을 데리고 산책을
+출판사: 창비
+ISBN: 9788936429430
+출간일시: 2025-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6878100&q=%EB%B3%84%EC%97%90%EA%B2%8C', 16800, 10.00, 15120, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6878100%3Ftimestamp%3D20251016143710', 135, 50, 'ACTIVATE', NULL),
+    (446, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '당근 유치원', '안녕달', '9788936455484', '낯선 선생님에게 마음을 열어 가는 과정을 담은『당근 유치원』. 아기 토끼가 새 유치원에 가서 몸집도 목소리도 크고, 힘도 장사인 곰 선생님을 만나 점차 선생님과 마음을 나누며 유치원에 적응해 가는 과정을 그렸다. 작가는 아이들이 공감할 수 있는 현실적인 유치원 배경과 생활 모습을 그리면서도 동화적인 따스함이 어려 있는 특별한 공간을 만들어 냈다. 유년의 아이들이 낯선 환경에 적응하려는 노력을 응원할 뿐 아니라 매일 건강한 마음으로 아이들을 돌보는
+출판사: 창비
+ISBN: 9788936455484
+출간일시: 2020-05-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5368933&q=%EB%8B%B9%EA%B7%BC+%EC%9C%A0%EC%B9%98%EC%9B%90', 14000, 10.00, 12600, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5368933%3Ftimestamp%3D20260320121435', 138, 52, 'ACTIVATE', NULL),
+    (447, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '알사탕', '백희나', '9791198610614', '#새봄, 새로운 맛 : 2024 《알사탕》 2024년 새봄, 백희나의 그림책 《알사탕》이 7년 만에 새롭게 돌아왔다. 2017년 출간된 후(책읽는곰 펴냄), 스토리보울의 간판을 달고 재출간되는 《알사탕》은 보다 깊이 있는 구성과 새로운 디자인으로 독자들을 만날 예정이다. 이 작품은 혼자 노는 아이, 동동이가 신비한 알사탕을 통해 주변 존재들의 속마음을 듣게 되는 마법 같은 이야기를 담고 있다. 그동안 《알사탕》은 소통과 이해, 내면의 성장 과정을
+출판사: 스토리보울
+ISBN: 9791198610614
+출간일시: 2024-03-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6591149&q=%EC%95%8C%EC%82%AC%ED%83%95', 15000, 10.00, 13500, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6591149%3Ftimestamp%3D20260212121605', 141, 54, 'ACTIVATE', NULL),
+    (448, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '겨울 이불', '작자미상', '9788936455965', '어린이부터 어른까지 전 세대의 뜨거운 사랑을 받는 작가 안녕달이 신작 그림책 『겨울 이불』로 찾아왔다. 작가 특유의 사랑스러운 상상이 탁월하게 발휘된 작품으로, 겨울날 아이가 할머니, 할아버지 댁에서 보내는 평화로운 오후 한때를 그리며 가족 간의 사랑을 전한다. 다정한 온기를 품은 특별한 공간에서 펼쳐지는 이야기가 추위에 지친 모두의 몸과 마음을 부드럽게 녹인다. 가족과 이웃, 먼 곳의 동물들까지 누구도 외롭지 않게 겨울을 보내기 바라는 작가의 섬세
+출판사: 창비
+ISBN: 9788936455965
+출간일시: 2023-01-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6246370&q=%EA%B2%A8%EC%9A%B8+%EC%9D%B4%EB%B6%88', 16000, 10.00, 14400, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6246370%3Ftimestamp%3D20251001141005', 144, 56, 'ACTIVATE', NULL),
+    (449, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '이파라파냐무냐무', '이지은', '9791160946673', '대체 저 소리는 뭘까? 냐무냐무? 냠냠? 잡아먹겠다는 말인가?  드러운 풀이 가득하고 배고프면 언제나 따먹을 수 있는 신선한 과일이 열려 있다. 마치 요정들이 살 것만 같은 버섯 모양 집들에서 마시멜롱들이 총총총 나온다. 이 그림책의 배경은 연둣빛 동산이 나지막하게 이어지는 마을이다. 동화적인 공간이 주는 따듯한 행복감이 책 전체를 감싸고, 하얗고 말랑한 마시멜롱들과 꿈벅꿈벅 어수룩한 털숭숭이가 심쿵한 귀여움을 선사한다. 캐릭터 하나하나마다 다른 표정과
+출판사: 사계절
+ISBN: 9791160946673
+출간일시: 2020-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5385027&q=%EC%9D%B4%ED%8C%8C%EB%9D%BC%ED%8C%8C%EB%83%90%EB%AC%B4%EB%83%90%EB%AC%B4', 16500, 10.00, 14850, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5385027%3Ftimestamp%3D20260401121702', 147, 58, 'ACTIVATE', NULL),
+    (450, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '꽁꽁꽁 캠핑', '윤정주', '9791158364120', '솔이네 가족이 바닷가로 캠핑을 왔다. 그런데 솔이가 아이스박스 위에 놔둔 알이조아 초콜릿을 갈매기가 알인 줄 알고 휙 채 가 버린다. 알이조아는 갈매기가 잠든 새 살금살금 미역 줄기를 타고 탈출하다 그만, 게들이 쌓은 모래성을 무너뜨리고 만다. 다행히 오리 튜브를 만나 바다로 도망치지만, 이번에는 대왕 문어가 먹이인 줄 알고 삼키려 든다. 게다가 알이 없어진 걸 알고 쫓아온 갈매기까지! 바다에선 대왕 문어와 갈매기가 쫓아오고, 바닷가에선 게들이
+출판사: 책읽는곰
+ISBN: 9791158364120
+출간일시: 2023-06-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6373701&q=%EA%BD%81%EA%BD%81%EA%BD%81+%EC%BA%A0%ED%95%91', 14000, 10.00, 12600, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6373701%3Ftimestamp%3D20260205150849', 150, 60, 'ACTIVATE', NULL),
+    (451, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '오싹오싹 편의점', '김영진', '9791158364083', '민철이와 성주, 보영이가 사는 동네에는 아주아주 신기한 편의점이 있다. 편의점에 가면 속상한 마음을 어루만져 주는 두근두근 설레는 마법도, 정신이 번쩍 나는 오싹오싹 짜릿한 마법도 만날 수 있다. 미니몬빵이 갖고 싶어 새치기를 하고 만 민철이, 남이 흘리고 간 돈을 주워 오글 기프트 카드를 산 성주, 갑자기 쏟아지는 비에 남의 우산을 집어 온 보영이…. 세 친구는 어떤 마법을 만나게 될까?
+출판사: 책읽는곰
+ISBN: 9791158364083
+출간일시: 2023-05-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6346493&q=%EC%98%A4%EC%8B%B9%EC%98%A4%EC%8B%B9+%ED%8E%B8%EC%9D%98%EC%A0%90', 14000, 10.00, 12600, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6346493%3Ftimestamp%3D20260404125711', 153, 62, 'ACTIVATE', NULL),
+    (452, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '면봉이라서', '한지원', '9791169813860', '누렇고 까맣고 빨간 걸 묻혀 가며 일하는 광부부터, 다친 곳을 치료하는 의사, 고장 난 곳을 뚝딱 고치는 수리공, 꼼꼼하고 깔끔한 청소부까지, 특출나진 않지만 다양한 역할을 소화하는 면봉. 양도 많고 쓸 데도 많지만, 눈에 잘 띄지 않는 애매한 존재감의 면봉은 매일매일 주어진 일을 해 나갑니다. 익숙함에 마음이 느슨해질 무렵, 사건 하나가 벌어집니다. 면봉들이 와르르 쏟아진 사이, 친구 하나가 사라진 것입니다. 얼마 후, 친구는 몰라보게 달라진
+출판사: 사계절출판사
+ISBN: 9791169813860
+출간일시: 2025-08-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6995205&q=%EB%A9%B4%EB%B4%89%EC%9D%B4%EB%9D%BC%EC%84%9C', 15000, 10.00, 13500, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6995205%3Ftimestamp%3D20260212121643', 156, 64, 'ACTIVATE', NULL),
+    (453, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '빠작 초등 5~6학년 국어 어휘X독해 5단계', '구주영, 김보라, 문동열, 박유진, 변진한, 정주연', '9788900475562', '확장하여 학습하도록 구성하였습니다. 그리고 속담과 관용어는 같은 주제의 어휘로 확장하여 학습합니다. 한자가 같거나 주제가 같은 어휘끼리 연계하여 학습함으로써 어휘들의 뜻을 쉽게 이해할 수 있고, 오래 기억할 수 있습니다.  독해와 글쓰기의 기본, 어법 학습 초등 국어 교육과정에서 필수로 알아야 하는 어법을 수록하였습니다. 어법을 [1. 이해]-[2. 확인]-[3. 적용]하는 훈련을 통해 글을 정확하고 바르게 읽고 쓰는 기본 실력을 탄탄하게 쌓을 수 있습니다
+출판사: 동아출판
+ISBN: 9788900475562
+출간일시: 2023-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6354104&q=%EB%B9%A0%EC%9E%91+%EC%B4%88%EB%93%B1+5%7E6%ED%95%99%EB%85%84+%EA%B5%AD%EC%96%B4+%EC%96%B4%ED%9C%98X%EB%8F%85%ED%95%B4+5%EB%8B%A8%EA%B3%84', 12000, 10.00, 10800, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354104%3Ftimestamp%3D20251112153227', 159, 66, 'ACTIVATE', NULL),
+    (454, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '빠작 초등 3~4학년 국어 어휘X독해 3단계', '구주영, 김보라, 문동열, 박유진, 변진한, 정주연', '9788900475524', '확장하여 학습하도록 구성하였습니다. 그리고 속담과 관용어는 같은 주제의 어휘로 확장하여 학습합니다. 한자가 같거나 주제가 같은 어휘끼리 연계하여 학습함으로써 어휘들의 뜻을 쉽게 이해할 수 있고, 오래 기억할 수 있습니다.  독해와 글쓰기의 기본, 어법 학습 초등 국어 교육과정에서 필수로 알아야 하는 어법을 수록하였습니다. 어법을 [1. 이해]-[2. 확인]-[3. 적용]하는 훈련을 통해 글을 정확하고 바르게 읽고 쓰는 기본 실력을 탄탄하게 쌓을 수 있습니다
+출판사: 동아출판
+ISBN: 9788900475524
+출간일시: 2023-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6353935&q=%EB%B9%A0%EC%9E%91+%EC%B4%88%EB%93%B1+3%7E4%ED%95%99%EB%85%84+%EA%B5%AD%EC%96%B4+%EC%96%B4%ED%9C%98X%EB%8F%85%ED%95%B4+3%EB%8B%A8%EA%B3%84', 12000, 10.00, 10800, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6353935%3Ftimestamp%3D20260319124449', 162, 68, 'ACTIVATE', NULL),
+    (455, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '빠작 초등 3~4학년 국어 어휘X독해 4단계', '구주영, 김보라, 문동열, 박유진, 변진한, 정주연', '9788900475548', '확장하여 학습하도록 구성하였습니다. 그리고 속담과 관용어는 같은 주제의 어휘로 확장하여 학습합니다. 한자가 같거나 주제가 같은 어휘끼리 연계하여 학습함으로써 어휘들의 뜻을 쉽게 이해할 수 있고, 오래 기억할 수 있습니다.  독해와 글쓰기의 기본, 어법 학습 초등 국어 교육과정에서 필수로 알아야 하는 어법을 수록하였습니다. 어법을 [1. 이해]-[2. 확인]-[3. 적용]하는 훈련을 통해 글을 정확하고 바르게 읽고 쓰는 기본 실력을 탄탄하게 쌓을 수 있습니다
+출판사: 동아출판
+ISBN: 9788900475548
+출간일시: 2023-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6354127&q=%EB%B9%A0%EC%9E%91+%EC%B4%88%EB%93%B1+3%7E4%ED%95%99%EB%85%84+%EA%B5%AD%EC%96%B4+%EC%96%B4%ED%9C%98X%EB%8F%85%ED%95%B4+4%EB%8B%A8%EA%B3%84', 12000, 10.00, 10800, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354127%3Ftimestamp%3D20251108151532', 165, 70, 'ACTIVATE', NULL),
+    (456, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '초등 영문법 문법이 쓰기다 기본 1', '키 영어학습방법연구소', '9788974577575', '『초등 영문법, 문법이 쓰기다 기본』제1권. 초등 영어 전 과정에서 다루는 문법 내용을 특징 중심으로 묶어 일일 학습만으로 쉽게 소화할 수 있게 쪼개 설명합니다. 흥미로운 문법 규칙을 익힌 뒤에는 이 지식을 바탕으로 수수께끼를 풀 듯 문장 쓰기 연습을 시작합니다. 이 단계까지 마치면 자유로운 쓰기로 문법을 확장 응용할 수 있게 되며, 그 과정에서 영어에 대한 자신감이 절로 높아집니다.
+출판사: 키출판사
+ISBN: 9788974577575
+출간일시: 2015-11-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1041645&q=%EC%B4%88%EB%93%B1+%EC%98%81%EB%AC%B8%EB%B2%95+%EB%AC%B8%EB%B2%95%EC%9D%B4+%EC%93%B0%EA%B8%B0%EB%8B%A4+%EA%B8%B0%EB%B3%B8+1', 12000, 10.00, 10800, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1041645%3Ftimestamp%3D20250925110356', 168, 72, 'ACTIVATE', NULL),
+    (457, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '기적의 계산법 7(초등 4학년)', '기적학습연구소', '9791164064045', '은 수학의 기본기를 차곡차곡 다지고 싶은 학생들을 위한 연산 전문 훈련서이다. 하루 한 장씩, 2가지 유형을 5일 반복하는 ‘One Day 반복 설계’로 아이들의 연산 실수는 줄이고 점점 빠르게 계산할 수 있도록 돕는다. 또한 아이들이 집중하기에 알맞은 계산 연습량을 딱 한 장씩 뜯어 쓸 수 있도록 구성하여 아이의 학습 부담은 줄이고, 연습은 충분히 할 수 있도록 설계하였다. 매일매일 《기적의 계산법》 한 장으로 연산 실력을 잡아 ‘수학자신감’을 기르자
+출판사: 길벗스쿨
+ISBN: 9791164064045
+출간일시: 2021-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5928473&q=%EA%B8%B0%EC%A0%81%EC%9D%98+%EA%B3%84%EC%82%B0%EB%B2%95+7%28%EC%B4%88%EB%93%B1+4%ED%95%99%EB%85%84%29', 9000, 10.00, 8100, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928473%3Ftimestamp%3D20260101145356', 171, 74, 'ACTIVATE', NULL),
+    (458, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '초등 분수 개념이 먼저다 1', '키 수학학습방법연구소', '9791189719579', '수포자를 만드는 주범, 초등학교 3학년 분수! 분수를 제대로 이해하고 넘어가지 않으면 수포자가 될 수 있습니다. 개념을 잘게 쪼개서, 완전히 소화할 수밖에 없도록 만든 ‘완전 소중한 분수책’!!!  1. 수학의 용어를 이미지화하여 오래 기억한다! 수학은 약속의 학문입니다. 단순 계산이 아닌 개념과 과정 중심으로 공부를 하는 것입니다. 그래서, 용어도 정확히 알아야 하는데 문제는 수학 용어가 대부분 한자어라는 것이 문제지요. 그래서, 한자어로 되어있는
+출판사: 키출판사
+ISBN: 9791189719579
+출간일시: 2019-07-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5005964&q=%EC%B4%88%EB%93%B1+%EB%B6%84%EC%88%98+%EA%B0%9C%EB%85%90%EC%9D%B4+%EB%A8%BC%EC%A0%80%EB%8B%A4+1', 11000, 10.00, 9900, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5005964%3Ftimestamp%3D20260401114714', 174, 76, 'ACTIVATE', NULL),
+    (459, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '빠작 초등 5~6학년 국어 어휘X독해 6단계', '구주영, 김보라, 문동열, 박유진, 변진한, 정주연', '9788900475586', '확장하여 학습하도록 구성하였습니다. 그리고 속담과 관용어는 같은 주제의 어휘로 확장하여 학습합니다. 한자가 같거나 주제가 같은 어휘끼리 연계하여 학습함으로써 어휘들의 뜻을 쉽게 이해할 수 있고, 오래 기억할 수 있습니다.  독해와 글쓰기의 기본, 어법 학습 초등 국어 교육과정에서 필수로 알아야 하는 어법을 수록하였습니다. 어법을 [1. 이해]-[2. 확인]-[3. 적용]하는 훈련을 통해 글을 정확하고 바르게 읽고 쓰는 기본 실력을 탄탄하게 쌓을 수 있습니다
+출판사: 동아출판
+ISBN: 9788900475586
+출간일시: 2023-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6354303&q=%EB%B9%A0%EC%9E%91+%EC%B4%88%EB%93%B1+5%7E6%ED%95%99%EB%85%84+%EA%B5%AD%EC%96%B4+%EC%96%B4%ED%9C%98X%EB%8F%85%ED%95%B4+6%EB%8B%A8%EA%B3%84', 12000, 10.00, 10800, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354303%3Ftimestamp%3D20251108151533', 177, 78, 'ACTIVATE', NULL),
+    (460, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '기적의 계산법 6(초등 3학년)', '기적학습연구소', '9791164064038', '은 수학의 기본기를 차곡차곡 다지고 싶은 학생들을 위한 연산 전문 훈련서이다. 하루 한 장씩, 2가지 유형을 5일 반복하는 ‘One Day 반복 설계’로 아이들의 연산 실수는 줄이고 점점 빠르게 계산할 수 있도록 돕는다. 또한 아이들이 집중하기에 알맞은 계산 연습량을 딱 한 장씩 뜯어 쓸 수 있도록 구성하여 아이의 학습 부담은 줄이고, 연습은 충분히 할 수 있도록 설계하였다. 매일매일 《기적의 계산법》 한 장으로 연산 실력을 잡아 ‘수학자신감’을 기르자
+출판사: 길벗스쿨
+ISBN: 9791164064038
+출간일시: 2021-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5928231&q=%EA%B8%B0%EC%A0%81%EC%9D%98+%EA%B3%84%EC%82%B0%EB%B2%95+6%28%EC%B4%88%EB%93%B1+3%ED%95%99%EB%85%84%29', 9000, 10.00, 8100, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928231%3Ftimestamp%3D20260408150513', 180, 80, 'ACTIVATE', NULL),
+    (461, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '빠작 초등 1~2학년 국어 어휘X독해 1단계', '구주영, 김보라, 문동열, 박유진, 변진한, 정주연', '9788900475487', '확장하여 학습하도록 구성하였습니다. 그리고 속담과 관용어는 같은 주제의 어휘로 확장하여 학습합니다. 한자가 같거나 주제가 같은 어휘끼리 연계하여 학습함으로써 어휘들의 뜻을 쉽게 이해할 수 있고, 오래 기억할 수 있습니다.  독해와 글쓰기의 기본, 어법 학습 초등 국어 교육과정에서 필수로 알아야 하는 어법을 수록하였습니다. 어법을 [1. 이해]-[2. 확인]-[3. 적용]하는 훈련을 통해 글을 정확하고 바르게 읽고 쓰는 기본 실력을 탄탄하게 쌓을 수 있습니다
+출판사: 동아출판
+ISBN: 9788900475487
+출간일시: 2023-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6354228&q=%EB%B9%A0%EC%9E%91+%EC%B4%88%EB%93%B1+1%7E2%ED%95%99%EB%85%84+%EA%B5%AD%EC%96%B4+%EC%96%B4%ED%9C%98X%EB%8F%85%ED%95%B4+1%EB%8B%A8%EA%B3%84', 12000, 10.00, 10800, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354228%3Ftimestamp%3D20260410121708', 183, 82, 'ACTIVATE', NULL),
+    (462, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '기적의 계산법 9(초등 5학년)', '기적학습연구소', '9791164064069', '은 수학의 기본기를 차곡차곡 다지고 싶은 학생들을 위한 연산 전문 훈련서이다. 하루 한 장씩, 2가지 유형을 5일 반복하는 ‘One Day 반복 설계’로 아이들의 연산 실수는 줄이고 점점 빠르게 계산할 수 있도록 돕는다. 또한 아이들이 집중하기에 알맞은 계산 연습량을 딱 한 장씩 뜯어 쓸 수 있도록 구성하여 아이의 학습 부담은 줄이고, 연습은 충분히 할 수 있도록 설계하였다. 매일매일 《기적의 계산법》 한 장으로 연산 실력을 잡아 ‘수학자신감’을 기르자
+출판사: 길벗스쿨
+ISBN: 9791164064069
+출간일시: 2021-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5928485&q=%EA%B8%B0%EC%A0%81%EC%9D%98+%EA%B3%84%EC%82%B0%EB%B2%95+9%28%EC%B4%88%EB%93%B1+5%ED%95%99%EB%85%84%29', 9000, 10.00, 8100, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928485%3Ftimestamp%3D20260404124643', 186, 84, 'ACTIVATE', NULL),
+    (463, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '기적의 계산법 8(초등 4학년)', '기적학습연구소', '9791164064052', '은 수학의 기본기를 차곡차곡 다지고 싶은 학생들을 위한 연산 전문 훈련서이다. 하루 한 장씩, 2가지 유형을 5일 반복하는 ‘One Day 반복 설계’로 아이들의 연산 실수는 줄이고 점점 빠르게 계산할 수 있도록 돕는다. 또한 아이들이 집중하기에 알맞은 계산 연습량을 딱 한 장씩 뜯어 쓸 수 있도록 구성하여 아이의 학습 부담은 줄이고, 연습은 충분히 할 수 있도록 설계하였다. 매일매일 《기적의 계산법》 한 장으로 연산 실력을 잡아 ‘수학자신감’을 기르자
+출판사: 길벗스쿨
+ISBN: 9791164064052
+출간일시: 2021-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5928453&q=%EA%B8%B0%EC%A0%81%EC%9D%98+%EA%B3%84%EC%82%B0%EB%B2%95+8%28%EC%B4%88%EB%93%B1+4%ED%95%99%EB%85%84%29', 9000, 10.00, 8100, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928453%3Ftimestamp%3D20260110145418', 189, 86, 'ACTIVATE', NULL),
+    (464, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 12, '초등 국어 한자가 어휘력이다 1단계', '키 초등학습방법연구소', '9791165260309', '6급 수준의 기초 한자를 아이가 쉽게 받아들일 수 있는 순서로 분류 ▶ 어휘: 초등학교 1~2학년군의 교과서 어휘 및 아이에게 친숙한 그 수준의 일상 어휘 ▶ 긴 글: 초등학교 1~2학년군 교육과정 성취기준을 주제로 쓰인 또래 친구의 생활문  ③ 유추하는 힘을 키워 주는 우리말 어원 학습! 한자를 통해 모든 학교 교과목의 기본이 되는 어휘력을 향상시킵니다. 한자를 알면, 이미 알고 있는 어휘의 의미는 더욱 명확해지고, 처음 보는 어휘의 의미는 유추하여 아이
+출판사: 키출판사
+ISBN: 9791165260309
+출간일시: 2020-07-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5429885&q=%EC%B4%88%EB%93%B1+%EA%B5%AD%EC%96%B4+%ED%95%9C%EC%9E%90%EA%B0%80+%EC%96%B4%ED%9C%98%EB%A0%A5%EC%9D%B4%EB%8B%A4+1%EB%8B%A8%EA%B3%84', 13000, 10.00, 11700, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5429885%3Ftimestamp%3D20240727150025', 192, 88, 'ACTIVATE', NULL),
+    (465, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '긴긴밤', '작자미상', '9788954677158', '게 서툰 노든을 아내가 도와준 것처럼, 윔보가 오른쪽 눈이 보이지 않는 치쿠를 위해 항상 치쿠의 오른쪽에 서 있었던 것처럼, 앙가부가 노든의 이야기를 듣고 또 들어 준 것처럼, 작지만 위대한 사랑의 연대를 보여 준다._송수연(아동문학평론가)  세상에 마지막 하나 남은 코뿔소가 된다면, 소중한 이를 다 잃고도 ‘마지막 하나 남은 존재’의 무게를 온 영혼으로 감당해야 한다면 어떠할까? 친구의 마지막 부탁을 들어주기 위해, 어린 생명이 마땅히 있어야 할 안전
+출판사: 문학동네
+ISBN: 9788954677158
+출간일시: 2021-02-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5589770&q=%EA%B8%B4%EA%B8%B4%EB%B0%A4', 12500, 10.00, 11250, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5589770%3Ftimestamp%3D20260313123852', 195, 90, 'ACTIVATE', NULL),
+    (466, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '리플레이', '이윤정', '9791141615048', '제26회 문학동네어린이문학상 수상작 『리플레이』가 출간되었다. “야구와 캐치볼, 그 미세한 차이를 파고드는 승부수를 던졌다.” “우리의 한 시절을 예리하게 파고들었다.”(김남중)는 평을 받으며 최종심에 오른 이 작품을 두고 심사위원들은 경쟁이 아닌 소통으로, 스포츠 동화의 새로운 기준점을 제시할 작품의 탄생을 예감했다. “운동을 통해 얻는 즐거움, 정직하게 몸을 움직이며 고통을 극복하는 건강함, 원하는 것을 얻지 못하더라도 다시 일어나는 어린이의
+출판사: 문학동네
+ISBN: 9791141615048
+출간일시: 2026-01-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7132168&q=%EB%A6%AC%ED%94%8C%EB%A0%88%EC%9D%B4', 13500, 10.00, 12150, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7132168%3Ftimestamp%3D20260213121941', 198, 92, 'ACTIVATE', NULL),
+    (467, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '우주의 속삭임', '하신하', '9788954697705', '다정한 메시지는 작가가 아이들에게 바치는 연심이다. 고로 이 작품의 골자는 사랑. 우리는 누군가의 사랑으로부터 지지되는 존재이기에.  밤하늘은 이야기로 가득했고 우주는 내 친구였다. 내가 살고 있는 집, 마당, 학교 너머 더 크고 아름다운 세계, 무엇이든 벌어질 수 있는 미지의 공간이 존재한다는 사실 자체가 가슴 설레었다. 돌이켜 보면 이 설렘이 더 크고 더 넓은 세상으로 나아가게 하는 원동력이 되어 준 게 아닌가 싶다._유영진(아동문학평론가), 심사평에서
+출판사: 문학동네
+ISBN: 9788954697705
+출간일시: 2024-01-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6532138&q=%EC%9A%B0%EC%A3%BC%EC%9D%98+%EC%86%8D%EC%82%AD%EC%9E%84', 12500, 10.00, 11250, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6532138%3Ftimestamp%3D20251112153210', 1, 94, 'ACTIVATE', NULL),
+    (468, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '어린이문학(삶을 가꾸는)(이오덕교육문고 2)', '이오덕', '9788994372150', '가장 주체적이고 위대한 겨레의 사상가 이오덕의 사상을 부활시키는 「이오덕교육문고」 제2권 『삶을 가꾸는 어린이문학』. 1984년에 출간된 &lt;어린이를 지키는 문학&gt;을 새롭게 편집해서 엮은 이 책은, 어린이들이 인간답게 자라고 자기 삶의 주인이 되기를 바란 저자의 문학정신을 만날 수 있다. 한국 어린이문학의 뿌리에 해당하는 전래동화의 의미와 가치를 살펴보고, 동화 창작의 바른 원칙과 방법 등을 제시한다. 자연을 살리고 아이들을 살리고 교육을
+출판사: 고인돌
+ISBN: 9788994372150
+출간일시: 2010-07-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1425086&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%AC%B8%ED%95%99%28%EC%82%B6%EC%9D%84+%EA%B0%80%EA%BE%B8%EB%8A%94%29%28%EC%9D%B4%EC%98%A4%EB%8D%95%EA%B5%90%EC%9C%A1%EB%AC%B8%EA%B3%A0+2%29', 18000, 10.00, 16200, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1425086%3Ftimestamp%3D20190129235653', 4, 96, 'ACTIVATE', NULL),
+    (469, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '어린이문학', '이성은, 유정아', '9788925406770', '『어린이문학』은 공감공유 시대에 맞는 어린이문학을 제시한 책이다. 어린이문학의 이론적 배경과 함께 아동발달과 연계시켜 살펴본다. 어린이문학의 요소와 평가 기준은 어떻게 하는 것이 좋은지 제시하고, 이 기준들을 어린이문학 7장르의 평가기준에 정용시켜 확인할 수 있다. 어린이 문학의 새로운 교육적 접근 방식을 제시함으로써 타 교재와 차별성을 확보했다.
+출판사: 교육과학사
+ISBN: 9788925406770
+출간일시: 2013-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=409441&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%AC%B8%ED%95%99', 20000, 1.00, 19800, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F409441%3Ftimestamp%3D20240227113717', 7, 98, 'ACTIVATE', NULL),
+    (470, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '어린이문학(봄호)', '한국어린이문학협의회', '9771598670500', '계간지 『어린이문학』. 한국어린이문학협의회에서 발행하는 계간지로, 1998년에 이오덕, 권정생이 동화를 공부하는 사람들을 위해 발행한 것이다.  어린이와 부모님과 선생님뿐 아니라, 어린이문학을 창작하는 사람들, 어린이책을 만드는 사람들, 어린이문학을 평론하는 사람들, 그리고 어린이도서관을 꾸려가는 사람들 등을 위한 풍부한 정보를 담아냈다.
+출판사: 한국어린이문학협의회
+ISBN: 9771598670500
+출간일시: 2009-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5671563&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%AC%B8%ED%95%99%28%EB%B4%84%ED%98%B8%29', 9000, 10.00, -1, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5671563%3Ftimestamp%3D20250531154525', 10, 100, 'ACTIVATE', NULL),
+    (471, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '딱친구 강만기(푸른숲 어린이 문학 002)', '문선이', '9788971845370', '2000년 &lt;나의 비밀 일기장&gt;으로 MBC 창작동화대상을 수상한 이후 지금까지 여러 권의 장편 동화를 썼습니다. 작품으로 『제키의 지구 여행』『양파의 왕따 일기』『엄마의 마지막 선물』『벌레 구멍 속으로』가 있습니다. 지금까지 어린이들의 가장 민감한 문제를 동화 속에 펼쳐 보였으며, 앞으로도 어린이의 아픈 마음을 끌어안는 작품을 쓰고자 합니다.    그림  민애수  서해 강화도에서 태어났습니다. 홍익대학교 회화과를 졸업했고, 『라몬의 바다』『비밀스럽게』에
+출판사: 푸른숲
+ISBN: 9788971845370
+출간일시: 2003-09-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=989977&q=%EB%94%B1%EC%B9%9C%EA%B5%AC+%EA%B0%95%EB%A7%8C%EA%B8%B0%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+002%29', 9800, 10.00, 8820, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989977%3Ftimestamp%3D20230616150233', 13, 102, 'ACTIVATE', NULL),
+    (472, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '어린이 문학(6월호)', '한국어린이문학협의회 편집부', '2016163000014', '출판사: 한국어린이문학협의회
+ISBN: 2016163000014
+출간일시: 2003-08-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=298669&q=%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99%286%EC%9B%94%ED%98%B8%29', 4000, 0.00, -1, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F298669%3Ftimestamp%3D20250425170037', 16, 104, 'ACTIVATE', NULL),
+    (473, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '내 친구 고슴도치(푸른숲 어린이 문학 006)', '문선이', '9788971845578', '출판사: 푸른숲
+ISBN: 9788971845578
+출간일시: 2004-12-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=987863&q=%EB%82%B4+%EC%B9%9C%EA%B5%AC+%EA%B3%A0%EC%8A%B4%EB%8F%84%EC%B9%98%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+006%29', 9500, 10.00, 8550, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F987863%3Ftimestamp%3D20221025135328', 19, 106, 'ACTIVATE', NULL),
+    (474, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '영국 총리는 열두 살(라임 어린이 문학 12)', '톰 맥로힌', '9791185871424', '『영국 총리는 열두 살』은 우연찮게 총리 자리에 오른 열두 살짜리 소년이 갖가지 시행착오를 겪으면서, 세상을 살아가는 데 있어서 진짜로 옳고 소중한 것이 무엇인지를 깨달아 가는 과정을 그리고 있다. 밝고 경쾌한 필치 때문에 어른들의 세계를 유머러스하게 비판하면서 어린이가 주도하는 삶을 풀어내고 있는 것처럼 보이지만, 그 안을 찬찬히 들여다보면 행간마다 의미심장한 메시지들이 빼곡히 들어 있다.
+출판사: 라임
+ISBN: 9791185871424
+출간일시: 2016-06-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1623824&q=%EC%98%81%EA%B5%AD+%EC%B4%9D%EB%A6%AC%EB%8A%94+%EC%97%B4%EB%91%90+%EC%82%B4%28%EB%9D%BC%EC%9E%84+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+12%29', 9800, 10.00, 8820, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1623824%3Ftimestamp%3D20221025122853', 22, 108, 'ACTIVATE', NULL),
+    (475, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '거리의 아이 토토(푸른숲 어린이 문학 26)', '이시이 고타', '9788971846650', '이시이 고타의 어린이 동화『거리의 아이 토토』. 어린 동생을 잃고 할머니마저 병이 들어 혼자가 된 토토, 같은 처지의 친구들과 함께 거리에서 씩씩하게 살아가지만 현실은 자꾸만 절망이라는 벼랑 끝으로 내모는데…….
+출판사: 푸른숲주니어
+ISBN: 9788971846650
+출간일시: 2011-12-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=989531&q=%EA%B1%B0%EB%A6%AC%EC%9D%98+%EC%95%84%EC%9D%B4+%ED%86%A0%ED%86%A0%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+26%29', 9000, 15.00, -1, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989531%3Ftimestamp%3D20220904153435', 25, 110, 'ACTIVATE', NULL),
+    (476, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '화장실 몬스터(라임 어린이 문학 5)', '사스키아 훌라', '9791185871080', '사스키아 훌라 동화 『화장실 몬스터』. 화장실에 나타난 커다란 검정색 구두에서 비롯된 의문과 두려움이 아이들의 기발한 상상력을 통과하면서 무시무시한 소문으로 몸집을 불렸다가, 뒤이어 웃지 못할 몬스터 퇴치 작전 소동을 불러오는 과정을 능청스럽게 그린 작품이다. ‘학교 화장실’이라는 다소 불편한 공간에 대한 아이들의 솔직한 속내를 들여다볼 수 있는 것은 물론이고, ‘소문’이 어떻게 시작되고 전해지는지 그 속성을 재치 있게 그려냈다.
+출판사: 라임
+ISBN: 9791185871080
+출간일시: 2014-12-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1620747&q=%ED%99%94%EC%9E%A5%EC%8B%A4+%EB%AA%AC%EC%8A%A4%ED%84%B0%28%EB%9D%BC%EC%9E%84+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+5%29', 8900, 10.00, 8010, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1620747%3Ftimestamp%3D20220820174547', 28, 112, 'ACTIVATE', NULL),
+    (477, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '세계를 건너 너에게 갈게', '이꽃님', '9788954650212', '수 없는 이야기, 눈치챘음에도, 그럼에도 불구하고 엉엉 울고 만 결말, 소중한 시간을 놓치고 있는 당신에게 권하는 책, 내 곁의 존재를 어루만져 보게 한 책…… 등 ‘감동’과 ‘눈물’이 언급되는 평이 압도적으로 많은 이 책은 청소년을 넘어 초등학생부터 성인까지 단숨에 몰입시키며 폭 넓은 지지와 공감을 끌어내었다. 또래 친구에게 추천하는 책, 자녀에게 추천하는 책, 부모에게 권하는 책, 최애작으로 독자들이 손꼽는 이유는 여타 수식을 제거하고 ‘재미있고 감동
+출판사: 문학동네
+ISBN: 9788954650212
+출간일시: 2021-09-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=694322&q=%EC%84%B8%EA%B3%84%EB%A5%BC+%EA%B1%B4%EB%84%88+%EB%84%88%EC%97%90%EA%B2%8C+%EA%B0%88%EA%B2%8C', 13500, 10.00, 12150, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F694322%3Ftimestamp%3D20260319110838', 31, 114, 'ACTIVATE', NULL),
+    (478, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '훌훌', '문경민', '9788954685030', '제12회 문학동네청소년문학상 대상 수상작. 과거와의 단절을 선언하며 독립을 꿈꾸던 열여덟 살 유리가 곁의 사람들과 연결되어 가는 과정을 그렸다. 주인공 유리의 한 계절을 함께하면서 우리는 자연히 어떤 ‘사이’를 떠올리게 된다. 식탁에 마주 앉아 스팸을 같이 먹는 사이. 추운 날 아침에 옷을 충분히 따뜻하게 입었는지 확인하는 사이. 내가 처음으로 직접 요리한 음식을 먹던 상대방의 표정을 기억하는 사이. 혈연이든 비혈연이든 마음의 한 토막을 기꺼이 내어
+출판사: 문학동네
+ISBN: 9788954685030
+출간일시: 2022-02-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5965502&q=%ED%9B%8C%ED%9B%8C', 13500, 10.00, 12150, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5965502%3Ftimestamp%3D20260314122355', 34, 116, 'ACTIVATE', NULL),
+    (479, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '영우한테 잘해줘(자음과모음 청소년문학 23)', '박영란', '9788954428255', '《나의 고독한 두리안 나무》, 《라구나 이야기 외전》의 작가 박영란의 소설 『영우한테 잘해줘』. 작가 특유의 섬세한 심리 묘사와 문장으로, 어른들의 의해 기획된 삶보다는 자신의 내면의 소리에 귀를 기울이며 ‘너 자신에게 잘해줘’라고 이야기한다. 3년 전, J학원 과학고 입시 준비반에서 만난 ‘나’와 녀석. 부유한 집안에서 태어난 녀석과 달리 ‘나’는 불법체류자였던 필리핀인 아버지와 결혼한 엄마 사이에서 태어났다. 이런 차이에도 불구하고 ‘나’는
+출판사: 자음과모음
+ISBN: 9788954428255
+출간일시: 2012-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=688362&q=%EC%98%81%EC%9A%B0%ED%95%9C%ED%85%8C+%EC%9E%98%ED%95%B4%EC%A4%98%28%EC%9E%90%EC%9D%8C%EA%B3%BC%EB%AA%A8%EC%9D%8C+%EC%B2%AD%EC%86%8C%EB%85%84%EB%AC%B8%ED%95%99+23%29', 11000, 10.00, 9900, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688362%3Ftimestamp%3D20220527210114', 37, 118, 'ACTIVATE', NULL),
+    (480, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '남쪽에서 보낸 일년(자음과모음 청소년문학 2)', '안토니오 콜리나스', '9788954422727', '스페인 작가 안토니오 콜리나스의 국내 첫 번역 소설『남쪽에서 보낸 일년』. 안토니오 콜리나스는 ''국가비평상''과 ''국가문학상'' 등을 수상하고 스페인 국왕으로부터 ''시민 공로 표창''을 수여받은 스페인의 저명한 작가이다. 이 소설은 한 소년이 예술과 삶의 의미를 찾아 방황하는 이야기를 그리고 있다. 스페인 남부 지방의 한 기숙학교. 내면의 혼란 속에서 흔들리던 북쪽 출신의 소년 하노는 예술을 만나게 된다. 그는 책을 읽고, 음악을 듣고, 그림을 보며
+출판사: 자음과모음
+ISBN: 9788954422727
+출간일시: 2010-10-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=688484&q=%EB%82%A8%EC%AA%BD%EC%97%90%EC%84%9C+%EB%B3%B4%EB%82%B8+%EC%9D%BC%EB%85%84%28%EC%9E%90%EC%9D%8C%EA%B3%BC%EB%AA%A8%EC%9D%8C+%EC%B2%AD%EC%86%8C%EB%85%84%EB%AC%B8%ED%95%99+2%29', 11000, 10.00, 9900, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688484%3Ftimestamp%3D20221001185959', 40, 0, 'ACTIVATE', NULL),
+    (481, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '독고솜에게 반하면', '허진희', '9788954670302', '보여 준 『세계를 건너 너에게 갈게』, 무리에 속하기 위해 감추고 있던 진짜 ‘나’를 찾는 여정이 담긴 『체리새우: 비밀글입니다』 등 수상작마다 출간 즉시 베스트셀러가 되며 이제는 전 연령 독자들에게 ‘믿고 읽는’ 이름이 된 문학동네청소년문학상. 2020년, 또 한 번 독자들의 마음을 단단히 사로잡을 새 수상작이 그 모습을 드러낸다. 제10회 대상 수상작 『독고솜에게 반하면』은 한낙원과학소설상 우수 응모작으로 두 차례 선정된 바 있는 허진희 작가의 첫 장편
+출판사: 문학동네
+ISBN: 9788954670302
+출간일시: 2023-04-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5221580&q=%EB%8F%85%EA%B3%A0%EC%86%9C%EC%97%90%EA%B2%8C+%EB%B0%98%ED%95%98%EB%A9%B4', 13500, 10.00, 12150, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5221580%3Ftimestamp%3D20260318115858', 43, 2, 'ACTIVATE', NULL),
+    (482, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '하늘로 날아간 집오리(자음과모음 청소년문학 28)', '이상권', '9788954428477', '생태작가 이상권의 대표 작품집 『하늘로 날아간 집오리』. 자연의 신비와 강인한 생명력을 감동적으로 그려내어 각종 기관에서 권장도서로 선정되었으며, 1997년 처음 출간된 이후 47쇄를 찍었다. 이번 개정판에는 교과서에 실린 표제작 《하늘로 날아간 집오리》를 비롯해 여섯 편의 단편이 수록되어 있으며, 그중 《조폭의 개》는 새로 추가된 신작 중편이다. 잊혀져가는 우리나라 야생 동물들과 자연의 아름다움을 다시 일깨워준다.  작가는 자연과 인간을 단순
+출판사: 자음과모음
+ISBN: 9788954428477
+출간일시: 2013-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=688814&q=%ED%95%98%EB%8A%98%EB%A1%9C+%EB%82%A0%EC%95%84%EA%B0%84+%EC%A7%91%EC%98%A4%EB%A6%AC%28%EC%9E%90%EC%9D%8C%EA%B3%BC%EB%AA%A8%EC%9D%8C+%EC%B2%AD%EC%86%8C%EB%85%84%EB%AC%B8%ED%95%99+28%29', 12500, 10.00, 11250, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688814%3Ftimestamp%3D20220425160303', 46, 4, 'ACTIVATE', NULL),
+    (483, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '내 친구 기리시마 동아리 그만둔대(자음과모음 청소년문학 31)', '아사이 료', '9788954429924', '2013년 나오키상 수상작가 아사이 료의 데뷔작 『내 친구 기리시마 동아리 그만둔대』. 제22회 소설 스바루 신인상을 수상한 이 작품은 날카롭고 섬세한 청춘소설로 평가받으며 출간 당시 열렬한 호응을 얻었고, 이후 영화화되어 각종 영화상을 휩쓸기도 했다. 기리시마라는 한 아이가 배구부를 그만둔 사건 이후 시골 고등학교 학생들의 관계와 미묘한 심리 변화를 그려낸다.  배구부의 카리스마 넘치는 주장이자 교내의 가장 인기 있는 여학생과 사귀는 기리시마
+출판사: 자음과모음
+ISBN: 9788954429924
+출간일시: 2013-05-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=688912&q=%EB%82%B4+%EC%B9%9C%EA%B5%AC+%EA%B8%B0%EB%A6%AC%EC%8B%9C%EB%A7%88+%EB%8F%99%EC%95%84%EB%A6%AC+%EA%B7%B8%EB%A7%8C%EB%91%94%EB%8C%80%28%EC%9E%90%EC%9D%8C%EA%B3%BC%EB%AA%A8%EC%9D%8C+%EC%B2%AD%EC%86%8C%EB%85%84%EB%AC%B8%ED%95%99+31%29', 11500, 10.00, 10350, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688912%3Ftimestamp%3D20220527191101', 49, 6, 'ACTIVATE', NULL),
+    (484, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '골목 전쟁(오늘의 청소년 문학 3)', '진 메릴', '9788992711913', '풍자와 해학을 통해 전쟁의 의미를 일깨워주는 살아 있는 고전『골목 전쟁』. 루이스 캐럴상을 수상한 작품으로, 뉴욕시에서 벌어진 트럭과 손수레의 가상 전쟁을 통해 큰 것과 작은 것의 전쟁을 통해 작은 것들을 지켜 나가는 힘이 어디에서 오는지, 그리고 작은 것들을 지켜 나가야 하는 이유가 무엇인지 일깨워주는 책이다.
+출판사: 다른
+ISBN: 9788992711913
+출간일시: 2012-06-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1379678&q=%EA%B3%A8%EB%AA%A9+%EC%A0%84%EC%9F%81%28%EC%98%A4%EB%8A%98%EC%9D%98+%EC%B2%AD%EC%86%8C%EB%85%84+%EB%AC%B8%ED%95%99+3%29', 12000, 10.00, 10800, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1379678%3Ftimestamp%3D20220411161937', 52, 8, 'ACTIVATE', NULL),
+    (485, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '어떤 범생이가(청소년 문학)', '이상권', '9788952787637', '하지만 결코 포기할 수 없는 단 하나, 바로 자기 자신.  헐거운 삶의 중력에 맞서 여기, 어떤 아이가 살아가고 있다.  다 닳은 전구처럼 불안하게 깜박이는 우리 인생, 다시 환하게 밝힐 수 있을까?  《어떤 범생이가》는 한국 청소년문학의 맥을 성실히 이어 온 이상권 작가의 신작이다. 작가는 오랫동안 여성 청소년의 임신과 낙태(《발차기》)부터 시련과 절망으로도 꺾을 수 없는 꿈(《난 할 거다》), 인간과 자연의 공존 운명(《고양이가 키운 다람쥐》), 의인화를
+출판사: 시공사
+ISBN: 9788952787637
+출간일시: 2018-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4368562&q=%EC%96%B4%EB%96%A4+%EB%B2%94%EC%83%9D%EC%9D%B4%EA%B0%80%28%EC%B2%AD%EC%86%8C%EB%85%84+%EB%AC%B8%ED%95%99%29', 10000, 10.00, 9000, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4368562%3Ftimestamp%3D20220723202430', 55, 10, 'ACTIVATE', NULL),
+    (486, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '두 번째 기회(개암 청소년 문학 13)', '파트릭 코뱅', '9788992844680', '초상화 속 소녀와 현실 세계 소년의 시공을 초월한 로맨스를 그린 소설 『두 번째 기회』. 영화 &lt;리틀 로망스&gt;와 &lt;사랑한다면 이들처럼&gt;의 원작자인 파트릭 코뱅이 세상을 떠나기 전에 마지막으로 남긴 작품이다. 고등학생 제피랭은 루브르 미술관에 견학을 갔다가 4백 년 전에 그려진 어느 소녀의 초상화를 본 순간 통증과 함께 피를 흘리며 쓰러진다. 제피랭을 공격한 사람은 아무도 없지만, 그의 팔에는 날카로운 칼에 찔린 상처가 남았다
+출판사: 개암나무
+ISBN: 9788992844680
+출간일시: 2011-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1385209&q=%EB%91%90+%EB%B2%88%EC%A7%B8+%EA%B8%B0%ED%9A%8C%28%EA%B0%9C%EC%95%94+%EC%B2%AD%EC%86%8C%EB%85%84+%EB%AC%B8%ED%95%99+13%29', 11000, 10.00, 9900, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1385209%3Ftimestamp%3D20221025152136', 58, 12, 'ACTIVATE', NULL),
+    (487, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '버터플라이즈(자음과모음 청소년문학 43)', '수잔 거베이', '9788954430838', '잔물결처럼 새겨진 몸의 흉터들을 극복해가는 희망의 여정『버터플라이즈』. 이 작품은 화상으로 인한 상처를 딛고 일어선 화상 환자들의 삶을 연약해 보이는 나비가 따뜻한 곳을 찾아 어마어마한 거리를 이동하는 것에 빗대어 이야기한다. 평범한 열일곱 소녀가 겪는 일상을 통해 화상이 개인과 그 가족에게 미치는 복잡다단한 감정적 영향들을 그대로 보여준다.
+출판사: 자음과모음
+ISBN: 9788954430838
+출간일시: 2014-05-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=688783&q=%EB%B2%84%ED%84%B0%ED%94%8C%EB%9D%BC%EC%9D%B4%EC%A6%88%28%EC%9E%90%EC%9D%8C%EA%B3%BC%EB%AA%A8%EC%9D%8C+%EC%B2%AD%EC%86%8C%EB%85%84%EB%AC%B8%ED%95%99+43%29', 13000, 10.00, 11700, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688783%3Ftimestamp%3D20220915010906', 61, 14, 'ACTIVATE', NULL),
+    (488, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 14, '시간 밖으로 달리다(청소년문학 보물창고 16)(양장본 HardCover)', '마거릿 피터슨 해딕스', '9788961702331', '열세 살 소녀가 겪는 시간여행 이야기 『시간 밖으로 달리다』. 미국에서 주목받는 청소년소설 작가 마거릿 피터슨 해딕스의 첫 번째 작품으로, 에드거 앨런 포 상 후보에 오르고 미국 도서관 협회 추천 도서로 선정되었다. 작가는 ''시간 이동''이라는 기법과 ''문명 발전의 빛과 그림자''라는 소재를 버무려내며, 가족과 마을의 운명을 짊어진 채 위험한 모험을 감행하는 제시의 이야기를 들려준다. 156년의 시차가 있는 과거와 현재가 동시대에 공존하고 있다가, 이 사실
+출판사: 보물창고
+ISBN: 9788961702331
+출간일시: 2011-07-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=857020&q=%EC%8B%9C%EA%B0%84+%EB%B0%96%EC%9C%BC%EB%A1%9C+%EB%8B%AC%EB%A6%AC%EB%8B%A4%28%EC%B2%AD%EC%86%8C%EB%85%84%EB%AC%B8%ED%95%99+%EB%B3%B4%EB%AC%BC%EC%B0%BD%EA%B3%A0+16%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10800, 10.00, 9720, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F857020%3Ftimestamp%3D20220904163429', 64, 16, 'ACTIVATE', NULL),
+    (489, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '이연승, 성현주', '9791161054490', '▶ 가정교육에 관한 내용을 담은 전문서적입니다.
+출판사: 공동체
+ISBN: 9791161054490
+출간일시: 2020-02-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5332991&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 18000, 5.00, 18000, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5332991%3Ftimestamp%3D20230302210638', 67, 18, 'ACTIVATE', NULL),
+    (490, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육(양장본 HardCover)', '권화숙, 김선, 남현주, 박현숙, 윤혜영, 임미혜', '9791196172350', '▶ 부모교육에 관한 내용을 담은 전문서적입니다.
+출판사: 수양재
+ISBN: 9791196172350
+출간일시: 2018-07-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1672044&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 20000, 10.00, 20000, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1672044%3Ftimestamp%3D20221025152421', 70, 20, 'ACTIVATE', NULL),
+    (491, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '이선애, 김상림, 신희이', '9788958093374', '▶ 이 책은 부모교육에 관한 이론서입니다. 부모교육의 기초적이고 전반적인 내용을 학습할 수 있습니다.
+출판사: 정민사
+ISBN: 9788958093374
+출간일시: 2015-04-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=772633&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 18000, 15.00, 18000, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772633%3Ftimestamp%3D20250628112849', 73, 22, 'ACTIVATE', NULL),
+    (492, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육(다음 세대를 위한)', '신용주, 김혜수', '9788999712258', '『부모교육』은 총 13개 장으로 구성되어 있으며, 부모준비기부터 부모로서 직면하게 될 상황별, 자녀연령별, 가족유형별 등 광범위한 맥락에서 요구되는 부모역할에 대해 소개한다. 특히 부모교육의 목적이 부모와 자녀의 삶의 질을 높이고 가족 체계를 건강하고 기능적으로 만들기 위한 것이므로 이에 부합하는 내용으로 구성하였다. 구체적으로 부모준비기부터 자녀의 발달단계에 따른 부모역할 및 부모교육과 관련한 다양한 이론과 프로그램을 소개하였으며, 자녀의 가정생활
+출판사: 학지사
+ISBN: 9788999712258
+출간일시: 2017-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1509209&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1%28%EB%8B%A4%EC%9D%8C+%EC%84%B8%EB%8C%80%EB%A5%BC+%EC%9C%84%ED%95%9C%29', 20000, 3.00, 19400, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1509209%3Ftimestamp%3D20220114174544', 76, 24, 'ACTIVATE', NULL),
+    (493, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '정계숙, 문혁준, 김명애, 김혜금, 심희옥, 안효진', '9788942606634', '『부모교육』은 사회적, 학문적, 실제적 요구를 제시하고 해결방향을 모색하며 구체적인 방법론을 다루는 부모교육론이다. 부모교육의 이해, 부모 됨, 부모-자녀 관계, 발달단계별 부모역할, 부모교육이론, 다양한 가족과 자녀, 부모교육 프로그램의 개발 배경 및 종류 등 총 12장으로 나누어 살펴본다.
+출판사: 창지사
+ISBN: 9788942606634
+출간일시: 2012-08-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=580957&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 18000, 5.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F580957%3Ftimestamp%3D20240316112740', 79, 26, 'ACTIVATE', NULL),
+    (494, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육(2판)', '강영식, 오경숙, 박창옥', '9791161051673', '[부모교육]은 부모와 자녀 모두를 위한 내용을 담고 있다. 부모의 역할, 어떤 양육 태도를 가지고 있어야 하는지 등 꼭 필요한 조언을 아끼지 않는다. 더불어 유아교육기관에서 부모를 알려주기 위한 교육자들을 위한 내용도 수록되어 있다. 부모교육의 계획단계부터 실천까지, 관련 업종에 종사하는 사람들은 업무적 조언을 얻는다.
+출판사: 공동체
+ISBN: 9791161051673
+출간일시: 2017-08-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1603659&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1%282%ED%8C%90%29', 16000, 1.00, 15840, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1603659%3Ftimestamp%3D20211212164836', 82, 28, 'ACTIVATE', NULL),
+    (495, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '김현자, 김지영, 이무영, 이미나, 조미영, 임미선', '9791161053509', '▶ 부모교육에 관한 내용을 담은 전문서적입니다.
+출판사: 공동체
+ISBN: 9791161053509
+출간일시: 2018-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3759733&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 17000, 1.00, 16830, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3759733%3Ftimestamp%3D20240301113927', 85, 30, 'ACTIVATE', NULL),
+    (496, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '정지나, 한준아, 김지현, 김태은, 윤상인', '9788999407871', '▶ 이 책은 부모교육에 대해 다룬 도서입니다. 부모교육의 기초적이고 전반적인 내용을 확인할 수 있도록 구성했습니다.
+출판사: 양서원
+ISBN: 9788999407871
+출간일시: 2018-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1510523&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 19000, 0.00, 19000, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1510523%3Ftimestamp%3D20220826210936', 88, 32, 'ACTIVATE', NULL),
+    (497, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육(개정판)(양장본 HardCover)', '김지현, 정지나, 조윤주, 한준아', '9788999400698', '『부모교육』은 총 5부로 구성된 책이다. 부모 교육의 이해와 부모-자녀관계에 대한 이론적 관점을 설명하였다. 자녀의 발달 단계에 따른 부모역할에 초점을 두고, 태내기, 영아기, 유아기, 아동기, 청소년기, 청년기의 단계별 발달 특성과 부모역할을 제안한다. 부모교육 이론과 프로그램 및 그 적용 과정에 대해 정리하였다. 아울러 부모교육의 문제점 및 활성화 방안에 대하여 논의하였다.
+출판사: 양서원
+ISBN: 9788999400698
+출간일시: 2013-02-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1509470&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1%28%EA%B0%9C%EC%A0%95%ED%8C%90%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 19000, 1.00, 18810, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1509470%3Ftimestamp%3D20220819175920', 91, 34, 'ACTIVATE', NULL),
+    (498, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '김애란, 유경숙, 유혜자, 이병래', '9788958094999', '이 책은 2부 12장으로 나누었다. 1부에서는 부모교육이론을 다루었는데 모두 7개의 장으로 구성되어 있다. 1장에서는 부모교육이 왜 필요한지에 대하여 살펴보고, 2장에서는 부모교육의 의미에 대하여 알아보았다. 3장에서는 부모교육의 역사에 대하여 살펴봄으로써 과거에 부모교육이 어떻게 이루어져 왔는지에 대하여 알아보았고, 4장에서는 부모교육에서 다루어야 할 내용을 살펴보았다. 5장에서는 영유아의 발달 단계 및 가족 형태 등 영유아의 상황에 따른 부모역할
+출판사: 정민사
+ISBN: 9788958094999
+출간일시: 2017-02-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=772861&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 20000, 10.00, 20000, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772861%3Ftimestamp%3D20240122201101', 94, 36, 'ACTIVATE', NULL),
+    (499, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '윤호열, 김형구, 이승희, 김영숙', '9788925408132', '이 책은 5장으로 구성되어 있는데, 1장은 현대사회와 가족의 특징을 비롯하여 부모교육의 필요성을 다루는 ''현대사회의 부모역할'', 2장은 서양과 동양에 속하는 우리나라를 구분하여 부모교육의 역사를 살펴보는 ''부모교육의 역사'', 3장은 아동의 발달과 부모로서의 역할 발달에 관한 ''아동의 발달을 촉진시키는 부모교육'', 4장은 부모교육 이론과 부모교육 프로그램을 다루는 ''부모교육 이론'', 5장은 특수한 아동을 가진 부모들에게 특수아동에 대한 이해와 상담, 그리고
+출판사: 교육과학사
+ISBN: 9788925408132
+출간일시: 2014-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=409917&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 14000, 15.00, 14000, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F409917%3Ftimestamp%3D20240122200250', 97, 38, 'ACTIVATE', NULL),
+    (500, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육', '윤은미', '9788958097709', '『부모교육』은 〈부모교육의 이해〉, 〈부모 됨의 이해〉, 〈부모역할과 양육태도〉, 〈다양한 가족 유형에 따른 부모역할〉 등 부모교육의 기초적이고 전반적인 내용이 수록되어 있다.
+출판사: 정민사
+ISBN: 9788958097709
+출간일시: 2020-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5460299&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 19000, 1.00, 18810, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5460299%3Ftimestamp%3D20250628140234', 100, 40, 'ACTIVATE', NULL),
+    (501, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '눈아이', '안녕달', '9788936455736', '모든 그림책 독자를 설레게 하는 안녕달 작가의 신작 『눈아이』가 출간되었다. 작가 특유의 따뜻하고 포근한 상상력으로 겨울의 정취와 빛나는 유년의 한때를 뭉클하게 그린 작품이다. 이야기는 한 아이가 눈 덮인 들판에 홀로 있던 눈덩이를 찾아오면서 시작된다. 아이가 눈덩이에게 팔다리와 눈, 입, 귀를 만들어 주고 다정한 인사를 건네자 눈덩이는 ‘눈아이’가 된다. 눈덩이를 들판에 홀로 외롭게 두지 않으려는 마음에서 비롯된 상상은 아이와 눈아이가 함께하는 순간
+출판사: 창비
+ISBN: 9788936455736
+출간일시: 2021-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5893008&q=%EB%88%88%EC%95%84%EC%9D%B4', 16800, 10.00, 15120, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5893008%3Ftimestamp%3D20251126151150', 103, 42, 'ACTIVATE', NULL),
+    (502, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '우리가 케이크를 먹는 방법', '김효은', '9788954699983', '받았다. “부드러운 빛과 기품을 품은 수채화. 드러난 이야기 너머의 상상을 불러일으킨다.”(퍼블리셔스 위클리) “아름답고 차분한 그림이 독자를 압도한다. 명민한 구성과 훌륭한 형식을 갖춘 사랑스러운 책.” (폴 젤린스키, 뉴욕타임스 그림책 선정위원) 등이 그것이다. 7년의 간격을 두고 나란히 놓인 두 권의 그림책의 공통점은 메시지를 명료하게 건져 올리고, 그림이 담는 에너지를 최대치로 끌어올리기 위한 작가의 수많은 시도와 진실한 고민의 결과라는 점이다. 내면을
+출판사: 문학동네
+ISBN: 9788954699983
+출간일시: 2022-06-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6091006&q=%EC%9A%B0%EB%A6%AC%EA%B0%80+%EC%BC%80%EC%9D%B4%ED%81%AC%EB%A5%BC+%EB%A8%B9%EB%8A%94+%EB%B0%A9%EB%B2%95', 16800, 10.00, 15120, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6091006%3Ftimestamp%3D20251016142351', 106, 44, 'ACTIVATE', NULL),
+    (503, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '100 인생 그림책', '하이케 팔러', '9791160944426', '0세부터 100세까지, 100컷으로 보는 인생 그림책. 책장을 넘길 때마다 그 나이에 마주할 삶의 순간들이 섬세하고 구체적인 글과 형형색색의 감각적인 그림으로 펼쳐진다. 매일 똑같은 날처럼 보여도, 조금씩 다른 인생의 진짜 모습들. 그 아름다운 모습을 212쪽으로 담백하고 알차게 담았다.
+출판사: 사계절
+ISBN: 9791160944426
+출간일시: 2019-02-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4883352&q=100+%EC%9D%B8%EC%83%9D+%EA%B7%B8%EB%A6%BC%EC%B1%85', 22000, 10.00, 19800, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4883352%3Ftimestamp%3D20240423132140', 109, 46, 'ACTIVATE', NULL),
+    (504, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '고구마구마(반달 그림책)', '사이다', '9788956187372', '첫 그림책으로 《가래떡》을 펴낸 사이다 작가가 먹을거리를 소재로 한 두 번째 그림책 『고구마구마』. ‘고구마는 둥글구마.’ ‘고구마는 길쭉하구마.’ ‘크구마.’ ‘작구마.’ 고구마의 생김새들이 이렇게 재미있구나 하고 책장을 넘깁니다. 둥글구마, 길쭉하구마, 크구마, 작구마 하고 말하는 우리 입이 톡톡 쏘는 사탕을 먹는 듯 톡톡 튀네요. 다음 장을 넘기면 아무리 안 웃고 싶어도 안 웃을 수가 없습니다. 허리가 굽은 고구마, 배가 불룩한 고구마, 온 몸
+출판사: 반달(킨더랜드)
+ISBN: 9788956187372
+출간일시: 2017-02-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=727787&q=%EA%B3%A0%EA%B5%AC%EB%A7%88%EA%B5%AC%EB%A7%88%28%EB%B0%98%EB%8B%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 13000, 10.00, 11700, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F727787%3Ftimestamp%3D20250905110402', 112, 48, 'ACTIVATE', NULL),
+    (505, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '먼작귀 2(그림책 특별판)', '나가노', '9791169184663', '먼가 작고 귀여운 녀석, 치이카와. 그런 치이카와의 친구 가르마는 치이카와네 집에서 ''제초 검정 5급'' 자격시험 참고서를 발견합니다. ''자격증을 따서 보수가 오르면 모두에게 선물을 줄 수 있어.'' 공부는 잘 못 하지만 열심히 하는 치이카와의 모습을 보고 가르마의 머리에 떠오른 것은...  작고 귀엽고, 언제나 열심.  물론,뭐든지 잘되는 것은 아니고 치이카와의 일상에는 힘든 일, 슬픈 일, 위험한 일도 많습니다. 그래도 사랑하는 친구들과 함께 내일
+출판사: 미우
+ISBN: 9791169184663
+출간일시: 2022-08-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6141967&q=%EB%A8%BC%EC%9E%91%EA%B7%80+2%28%EA%B7%B8%EB%A6%BC%EC%B1%85+%ED%8A%B9%EB%B3%84%ED%8C%90%29', 18000, 10.00, 16200, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6141967%3Ftimestamp%3D20260326130542', 115, 50, 'ACTIVATE', NULL),
+    (506, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아주 이상한 수학책', '벤 올린', '9791191013597', '“천재들은 왜 게임에 빠져들고, 수학은 어떻게 세상을 플레이하는가?” 게임, 퍼즐, 추리로 세상을 이해하는 75와 1/4가지 방법들!  놀이가 배움이 되고, 배움이 즐거워지는 경험! 게임에서 최고의 상상력을 끌어내는 아주 이상한 수학책!  충격적으로 재미있고 유쾌한 벤 올린의 ‘이상한 수학책’ 시리즈 최신작 《아주 이상한 수학책》이 출간됐다. 그의 데뷔작은 일상 속 수학 개념과 원리를 다룬 《이상한 수학책》으로, 단 하나의 수학 문제나 해설 없이 수학을 이해하는
+출판사: 북라이프
+ISBN: 9791191013597
+출간일시: 2024-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6561787&q=%EC%95%84%EC%A3%BC+%EC%9D%B4%EC%83%81%ED%95%9C+%EC%88%98%ED%95%99%EC%B1%85', 25000, 10.00, 22500, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6561787%3Ftimestamp%3D20251017143317', 118, 52, 'ACTIVATE', NULL),
+    (507, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '곤충 그림책', '수잔 바라클로우', '9788994545912', '『진짜 진짜 재밌는 곤충 그림책』은 지구 곳곳에 살고 있는 70여 종의 곤충들의 이야기를 실감나는 일러스트와 함께 소개합니다. 나비목, 벌목, 딱정벌레목, 메뚜기목, 사마귀목, 노린재목 등 다양한 곤충들을 대표적인 목(目) 별로 분류해 알아보기 쉽고, 다른 책에서는 볼 수 없던 이야기와 함께 각 특징들을 꼼꼼히 설명하여 아이들이 자연스럽게 그 생태를 익히게 합니다. 특히 사람의 손 크기와 비교하거나 실제 크기 그대로 그림을 실어 놓아서, 진짜 모습을
+출판사: 부즈펌
+ISBN: 9788994545912
+출간일시: 2014-06-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1420579&q=%EA%B3%A4%EC%B6%A9+%EA%B7%B8%EB%A6%BC%EC%B1%85', 17500, 10.00, 15750, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1420579%3Ftimestamp%3D20230414150235', 121, 54, 'ACTIVATE', NULL),
+    (508, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '장수탕 선녀님', '백희나', '9791198610621', '“어린 시절 나에게 목욕탕은 가장 비일상적으로 느껴지는 공간이었다.” - 백희나  #우정 #배려 #나눔 #다정함 #연대 #목욕탕 #열탕처럼 후~끈하고, 냉탕처럼 시-원한 본격 목욕탕 판타지 그림책 #오래된 목욕탕, 장수탕에서 펼쳐지는 선녀 할머니와 덕지의 버라이어티 냉탕쇼! #레트로 감성 물씬 나는 헌것투성이랜드 《장수탕 선녀님》으로 오세요! #365일 24시간 연중무휴 “쾌적하게 모십니다!”  선녀님과 요구룽의 비밀 덕지가 사는 동네에는 아주아주 오래
+출판사: 스토리보울
+ISBN: 9791198610621
+출간일시: 2024-04-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6602704&q=%EC%9E%A5%EC%88%98%ED%83%95+%EC%84%A0%EB%85%80%EB%8B%98', 15000, 10.00, 13500, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6602704%3Ftimestamp%3D20260108152031', 124, 56, 'ACTIVATE', NULL),
+    (509, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '내가 너', '이재록', '9791190411998', '서로가 마음이 있어야만 그 만남이 오래갈 수 있다고 여겨지기 때문에 내가 너라고 말하고 싶다라고 하는 이재록 시인의 첫 시집.
+출판사: 그림과책
+ISBN: 9791190411998
+출간일시: 2023-08-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6429040&q=%EB%82%B4%EA%B0%80+%EB%84%88', 13000, 10.00, 11700, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6429040%3Ftimestamp%3D20260113152239', 127, 58, 'ACTIVATE', NULL),
+    (510, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '그림책(논픽션 단행본)', '최윤정', '9788949190365', '출판사: 비룡소
+ISBN: 9788949190365
+출간일시: 2001-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=616593&q=%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EB%85%BC%ED%94%BD%EC%85%98+%EB%8B%A8%ED%96%89%EB%B3%B8%29', 15000, 10.00, 13500, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F616593%3Ftimestamp%3D20221025142638', 130, 60, 'ACTIVATE', NULL),
+    (511, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아마도 세상은(알이알이 호기심그림책 6)(양장본 HardCover)', '히도 반 헤네흐텐', '9788997175970', '생각을 키우는 사고력 그림책 『아마도 세상은』. 유아 그림책에서 찾아보기 힘든 검은색 배경에 강렬한 원색과 기본 도형만으로 구성된 책은 언뜻 단순한 도형 놀이 책처럼 보이기도 한다. 그러나 조금만 주의 깊게 살펴보면 이 책은 우주가, 세상이, 그리고 문명이 나타나는 과정을 보여 주고 있으며, 결국 이 모든 것이 소멸의 길을 걷고 이 또한 반복된다는 단순하지 않은 메시지를 담고 있다. 놀랍게도 책 속에 등장하는 사물, 동물, 식물은 각각이 모두 4개
+출판사: 현북스
+ISBN: 9788997175970
+출간일시: 2014-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1483305&q=%EC%95%84%EB%A7%88%EB%8F%84+%EC%84%B8%EC%83%81%EC%9D%80%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%ED%98%B8%EA%B8%B0%EC%8B%AC%EA%B7%B8%EB%A6%BC%EC%B1%85+6%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483305%3Ftimestamp%3D20220925172952', 133, 62, 'ACTIVATE', NULL),
+    (512, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '글자 먹는 악어(사파리 그림책)(양장본 HardCover)', '닉 브롬리', '9788964804964', '사파리 그림책『글자 먹는 악어』. 백조가 된 ‘미운 아기 오리’ 이야기를 들려주려고 했는데 책에 이상한 게 나타났어요. 책장을 조심조심, 살그머니 넘겨 보니……, 무지무지 크고 무서운 악어예요! 악어는 배가 고픈지 책 속 글자들을 와작와작 먹기 시작했어요. 악어가 더는 글자를 먹지 못하도록 여러분이 미운 아기 오리와 함께 도와주세요. 크레파스로 악어 몸에 그림을 그리고, 책을 요리조리 흔들고 툴툴 털면 될까요? 어떻게 해야 악어가 책 밖으로 빠져나갈 수
+출판사: 사파리
+ISBN: 9788964804964
+출간일시: 2013-07-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=904770&q=%EA%B8%80%EC%9E%90+%EB%A8%B9%EB%8A%94+%EC%95%85%EC%96%B4%28%EC%82%AC%ED%8C%8C%EB%A6%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F904770%3Ftimestamp%3D20220821201035', 136, 64, 'ACTIVATE', NULL),
+    (513, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '먼작귀 1: 그림책(합본 특별판)', '나가노', '9791168944442', '모두에게 사랑을, 다정함을 받으며 살고 싶다…고 생각했는데, 주변에는 정체를 알 수 없는 존재가 잔뜩?! 하지만 좋아하는 가르마, 토끼와 함께 맛있는 걸 먹거나 노동의 보수로 원하는 것을 손에 넣으며 매일 열심히 살아가는 ‘치이카와’의 주변은 항상 미소로 넘치고 있다.
+출판사: 미우
+ISBN: 9791168944442
+출간일시: 2022-06-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6088342&q=%EB%A8%BC%EC%9E%91%EA%B7%80+1%3A+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%ED%95%A9%EB%B3%B8+%ED%8A%B9%EB%B3%84%ED%8C%90%29', 17000, 10.00, 15300, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6088342%3Ftimestamp%3D20250625145556', 139, 66, 'ACTIVATE', NULL),
+    (514, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '이수지의 그림책', '이수지', '2090000110487', '미국의 대표적 일간신문 ''뉴욕타임스''의 2008년, 2010년 우수 그림책 선정 작가 이수지의 『이수지의 그림책』. 저자의 현실과 환상을 넘나드는 경계 그림책 삼부작 〈거울속으로〉, 〈파도야 놀자〉, 〈그림자놀이〉의 작업 노트다. 〈거울속으로〉, 〈파도야 놀자〉, 〈그림자놀이〉를 창작하며서 만든 생각을 곰곰이 되짚어 가면서 직접 쓴 것이다. 신비하고 흥미로운 작업 과정을 엿볼 수 있다. 아울러 ''그림책은 어떻게 만들어질까" 등의 스스로의 질문에 답
+출판사: 비룡소
+ISBN: 2090000110487
+출간일시: 2011-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6042807&q=%EC%9D%B4%EC%88%98%EC%A7%80%EC%9D%98+%EA%B7%B8%EB%A6%BC%EC%B1%85', 18000, 10.00, 16200, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6042807%3Ftimestamp%3D20221107235604', 142, 68, 'ACTIVATE', NULL),
+    (515, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '미술관에 가고 싶어지는 미술책', '김영숙', '9791160806724', '흥미진진하게 안내한다. 그림 감상에 반드시 많은 지식이 필요한 것은 아니다. 하지만 알고 보는 그림과 그냥 보는 그림은 천양지차다. 그럼 그림의 세계로 입장하기 위해 꼭 알아야 할 최소한의 지식은 뭘까? 《미술관에 가고 싶어지는 미술책》은 그림 속에 꼭꼭 숨겨진 이야기를 풀어내는 비밀의 주문 네 가지를 알려 준다. 바로 ‘어떻게 그린 걸까?’ ‘어떤 시대였을까?’ ‘어떤 화가였을까?’ ‘무엇을 그린 걸까?’라는 질문이다. 무작정 미술관에 따라가 아무런 준비 없이
+출판사: 휴머니스트
+ISBN: 9791160806724
+출간일시: 2021-08-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5798763&q=%EB%AF%B8%EC%88%A0%EA%B4%80%EC%97%90+%EA%B0%80%EA%B3%A0+%EC%8B%B6%EC%96%B4%EC%A7%80%EB%8A%94+%EB%AF%B8%EC%88%A0%EC%B1%85', 14000, 10.00, 12600, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5798763%3Ftimestamp%3D20260405121304', 145, 70, 'ACTIVATE', NULL),
+    (516, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '세계 명화 그림책', '정상영', '9788972217329', '연표를 보며 세계 명화 여행을 떠나는 『한눈에 펼쳐보는 세계 명화 그림책』. 고대 미술부터 20세기 미술까지 세계 명화를 한눈에 펼쳐낸 그림책이다. 시대별ㆍ화가별로 150여 점의 명화를 수록하고 있다. 특히 세계사의 흐름에 따라 전문가의 꼼꼼한 감수를 거친 연표로 명화를 정리했다. 아울러 화가의 생각뿐 아니라, 시대의 흐름과 문화가 고스란히 담긴 명화를 통해 미술사와 세계사까지 탐구할 수 있다. 아이들이 꼭 알아야 할 미술 사조, 화가, 미술 기법도
+출판사: 진선출판사
+ISBN: 9788972217329
+출간일시: 2011-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=997000&q=%EC%84%B8%EA%B3%84+%EB%AA%85%ED%99%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 12000, 10.00, 10800, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F997000%3Ftimestamp%3D20231227182717', 148, 72, 'ACTIVATE', NULL),
+    (517, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '더러워지면 좀 어때(내 인생의 그림책 27)(양장본 HardCover)', 'Caryl Hart', '9788996886952', '늑대 윌슨과 함께 배우는 건강한 습관『더러워지면 좀 어때』. 우리 아이들에게 건강한 습관을 가르쳐주기 위한 그림책이다. 아이들이 밖에 나가기 귀찮아하고 씻기 싫어한다면, 혹은 건강한 생활습관을 쉽고 재미있게 가르쳐주고 싶을 때 유용한 책이다.
+출판사: 내인생의책
+ISBN: 9788996886952
+출간일시: 2012-07-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1476949&q=%EB%8D%94%EB%9F%AC%EC%9B%8C%EC%A7%80%EB%A9%B4+%EC%A2%80+%EC%96%B4%EB%95%8C%28%EB%82%B4+%EC%9D%B8%EC%83%9D%EC%9D%98+%EA%B7%B8%EB%A6%BC%EC%B1%85+27%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476949%3Ftimestamp%3D20220325200512', 151, 74, 'ACTIVATE', NULL),
+    (518, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '야금야금 사과(비룡소 창작 그림책 27)', '정지영', '9788949100517', '한글의 모음을 익힐 수 있는 그림책!『야금야금 사과』는 ''ㅏ''부터 ''ㅣ''까지의 모음을 재미있게 소개하고 있습니다. 왼쪽에는 커다란 타이포그래피의 모음 안에 민화 형태의 그림이 그려져 있고, 그 안에는 해당 모음으로 시작하는 단어가 숨겨져 있습니다. 오른쪽에는 아슬아슬한 애벌레의 모험이 펼쳐짐과 동시에 왼쪽에 소개된 모음 단어의 그림이 숨겨져 있습니다.  『야금야금 사과』는 왼쪽에는 커다란 모음 그림이 보이고, 오른쪽에는 재미있는 애벌레의 모험이 펼쳐집니다
+출판사: 비룡소
+ISBN: 9788949100517
+출간일시: 2005-12-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=614132&q=%EC%95%BC%EA%B8%88%EC%95%BC%EA%B8%88+%EC%82%AC%EA%B3%BC%28%EB%B9%84%EB%A3%A1%EC%86%8C+%EC%B0%BD%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+27%29', 13000, 10.00, 11700, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F614132%3Ftimestamp%3D20220514163225', 154, 76, 'ACTIVATE', NULL),
+    (519, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '유령기차', '욘나 비엔세나', '9788983097132', '토끼와 동물 친구들은 지하철을 타고 여기저기 탐방하는 것을 좋아합니다. 그들은 매주 목요일에 지하철 애호가 모임을 갖는데, 지하철 노선도를 보면서 찾아갈 곳에 대한 호기심과 기대감에 가득 찬 이야기를 나누며 즐거운 시간을 보내곤 했지요.   어느 날, 모임에 참석한 부엉이 얼굴이 몹시 어두워 보였습니다. 이유를 물어보니, 지하철에 유령 기차가 있고, 그 기차에 한번 올라타면 누구도 내릴 수 없다는 것입니다. 겁에 질린 동물 친구들은 이제 다시는
+출판사: 지양어린이
+ISBN: 9788983097132
+출간일시: 2020-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5398972&q=%EC%9C%A0%EB%A0%B9%EA%B8%B0%EC%B0%A8', 12500, 10.00, 11250, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398972%3Ftimestamp%3D20260205140440', 157, 78, 'ACTIVATE', NULL),
+    (520, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '세상에서 가장 큰 낱말 그림책(네버랜드 아기 그림책 126)(양장본 Hardcover)', '올레 쾨네케', '9788952764454', '세상을 배워나가는 유아들을 위한 「네버랜드 아기 그림책」 제126권 『세상에서 가장 큰 낱말 그림책』. 독일 태생의 그림책작가 올레 쾨네케가 유아들을 위해 창작한 낱말 그림책이다. 단순한 묘사에 귀여운 느낌과 명료한 표현이 돋보이는 귀엽고 아기자기한 그림을 통해 430여 개에 달하는 방대하고 다양한 낱말을 재미있게 배워나간다. 공간별, 영역별, 상황별로 나눈 구성으로 낱말 간의 관계를 쉽게 파악하도록 꾸며져 있다.
+출판사: 시공주니어
+ISBN: 9788952764454
+출간일시: 2012-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=645192&q=%EC%84%B8%EC%83%81%EC%97%90%EC%84%9C+%EA%B0%80%EC%9E%A5+%ED%81%B0+%EB%82%B1%EB%A7%90+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+126%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+Hardcover%29', 12000, 10.00, 10800, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F645192%3Ftimestamp%3D20220730180544', 160, 80, 'ACTIVATE', NULL),
+    (521, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '공룡이빨 나게 해줄까(노란돼지 창작그림책 2 성장이야기)(양장본 HardCover)', '김주이', '9788996359715', '앞니가 빠졌어요. 새 이는 언제 날까요? 토끼이빨처럼 길고 하얀 이가 나올까요? 아니면 매일 귀찮게 이 닦지 않아도 되는 악어이빨은 어떨까요? 무시무시한 공룡이빨은요?『무시무시한 공룡이빨 나게해줄까』는 새 이가 나기를 기다리는 아이들의 초조한 마음을 자연스럽게 표현한 그림책이다. 악어, 공룡, 코끼리, 새 등 다양한 동물들의 이빨을 상상하는 과정을 통해 이, 이빨, 치아, 부리 등 정확한 개념을 자연스럽게 익힐 수 있다.
+출판사: 노란돼지
+ISBN: 9788996359715
+출간일시: 2010-04-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1460167&q=%EB%AC%B4%EC%8B%9C%EB%AC%B4%EC%8B%9C%ED%95%9C+%EA%B3%B5%EB%A3%A1%EC%9D%B4%EB%B9%A8+%EB%82%98%EA%B2%8C+%ED%95%B4%EC%A4%84%EA%B9%8C%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+2+%EC%84%B1%EC%9E%A5%EC%9D%B4%EC%95%BC%EA%B8%B0%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 5.00, -1, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1460167%3Ftimestamp%3D20220630124032', 163, 82, 'ACTIVATE', NULL),
+    (522, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '베스트 겨울 노부영 그림책 2종 세트(New)', '편집부', '8809448445303', '[노부영 Snow]는 칼데콧상을 수상한 Snow는 특유의 차분한 수채화 그림을 통해 아이들의 아름다운 시각을 보여줍니다.  [베오영 Snowman]는 단편영화로도 제작되었으며, 따뜻한 그림과 재미있는 페이지 구성을 통해 아이들의 기발한 상상력을 보여줍니다.
+출판사: 제이와이북스
+ISBN: 8809448445303
+출간일시: 2018-11-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4808143&q=%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EA%B2%A8%EC%9A%B8+%EB%85%B8%EB%B6%80%EC%98%81+%EA%B7%B8%EB%A6%BC%EC%B1%85+2%EC%A2%85+%EC%84%B8%ED%8A%B8%28New%29', 23000, 35.00, 14950, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4808143%3Ftimestamp%3D20221025141807', 166, 84, 'ACTIVATE', NULL),
+    (523, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '견우와 직녀(알이알이 명작그림책 9)(양장본 HardCover)', '셀린느 라빅네뜨', '9788997175048', '우리나라의 절기 중 하나인 칠석에 얽힌 옛이야기 『견우와 직녀』 그림책. 한국의 이야기를 프랑스어로 가장 아름답게 표현할 수 있는 프랑스 작가 셀린느 라빅네뜨와 한국의 정서를 가장 잘 표현하는 한국의 그림작가 김동성이 만났다. 프랑스인의 감성이 그대로 녹아 있는 글은 견우와 직녀의 사랑을 더욱 아름답게 표현했고, 한국 고유의 정서를 잘 살리면서 독창적인 작품 활동을 하고 있다고 인정받는 김동성의 그림은 하늘나라와 인간 세상을 오가는 견우와 직녀
+출판사: 현북스
+ISBN: 9788997175048
+출간일시: 2011-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1480371&q=%EA%B2%AC%EC%9A%B0%EC%99%80+%EC%A7%81%EB%85%80%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+9%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 15.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1480371%3Ftimestamp%3D20220929013911', 169, 86, 'ACTIVATE', NULL),
+    (524, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '동동동 아기 돼지(무지개 그림책 2)(양장본 HardCover)', '이상교', '9788959791293', '''무지개 그림책'' 시리즈, 제2권 『동동동 아기 돼지』. 동시 작가 이상교와 그림 작가 장기석이 함께 만든 그림책입니다. 맛깔스러운 의성어가 풍부하게 곁들여져, 동시처럼 운율감이 살아있는 이야기가 읽는 재미와 듣는 재미를 동시에 안겨줍니다.  또한 돼지, 닭, 생쥐, 개, 염소, 그리고 고양이 등 동물들의 표정과 행동을 생생하면서도 익살맞게 묘사해낸 생생한 그림이 아이들의 눈을 즐겁게 합니다. 동물들에 대한 인지력을 키우는 데에도 도움을 줍니다.  달이네 뚱뚱이
+출판사: 작은책방
+ISBN: 9788959791293
+출간일시: 2009-02-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=816022&q=%EB%8F%99%EB%8F%99%EB%8F%99+%EC%95%84%EA%B8%B0+%EB%8F%BC%EC%A7%80%28%EB%AC%B4%EC%A7%80%EA%B0%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85+2%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9000, 10.00, 8100, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F816022%3Ftimestamp%3D20220907202028', 172, 88, 'ACTIVATE', NULL),
+    (525, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '배고픔 없는 세상(단비 어린이 그림책 1)(양장본 HardCover)', '프랑수아 데이비드', '9788963010649', '『배고픔 없는 세상』은 인간의 무관심과 이기주의를 드러내면서, 전쟁과 자연재해에 의해 굶주리는 모든 이들을 위해 즉각적인 도움이 필요함을 일깨워 주는 그림책입니다. 자연재해로 인해 식량과 물이 부족한 나라의 모습을 현실적으로 보여 주기도 하고, 부자의 모습과 가난한 아이들의 모습을 대비하여 보여 주기도 합니다. 동시에 기아에 시달리는 아이들을 살릴 수 있는 방법은 아주 사소한 것들에서 비롯됨을 알려주며, 우리들의 관심과 그들과의 교류를 통한 희망 또한
+출판사: 단비어린이
+ISBN: 9788963010649
+출간일시: 2012-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=876866&q=%EB%B0%B0%EA%B3%A0%ED%94%94+%EC%97%86%EB%8A%94+%EC%84%B8%EC%83%81%28%EB%8B%A8%EB%B9%84+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+1%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F876866%3Ftimestamp%3D20221025165938', 175, 90, 'ACTIVATE', NULL),
+    (526, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '화가 나면 열을 세어 봐', '앨리슨 스체친스키', '9791194148425', '‘화’라는 감정을 건강하게 표현하고 스스로 다스리는 힘을 길러 주는 그림책입니다. 감정을 억누르거나 부정하지 않고, “지금 내가 화가 났구나”를 인식한 뒤 숫자를 세며 마음을 가라앉히는 방법을 알려 줍니다. 그림책 속 렉스 선생님이 교실에서 알려 주는 다양한 화 조절 방법은 누구나 따라 하기 쉬워, 가정과 교실 어디에서든 활용할 수 있습니다. 감정이 폭발하기 전에 멈추고 숨을 고르는 경험을 통해, 아이는 자기 조절력과 회복탄력성을 기르게 될 것입니다
+출판사: 다봄
+ISBN: 9791194148425
+출간일시: 2025-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7062516&q=%ED%99%94%EA%B0%80+%EB%82%98%EB%A9%B4+%EC%97%B4%EC%9D%84+%EC%84%B8%EC%96%B4+%EB%B4%90', 14000, 10.00, 12600, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7062516%3Ftimestamp%3D20260408153242', 178, 92, 'ACTIVATE', NULL),
+    (527, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '곧 책이 열립니다', '사이다', '9788901295657', '『곧 책이 열립니다』는 시간적으로 머지 않은 때를 의미하는 ‘곧’이라는 말의 의미를 활용해 바로 뒤에 벌어질 일들을 상상해 보며 이야기를 즐기는 그림책입니다. 그래서 제목이 ‘곧 책이 열립니다’입니다. 여러분은 곧 책을 열어 볼 테니까요! 한시도 긴장감을 놓지 말고 『곧 책이 열립니다』에 집중해 보세요. ‘곧’ 어떤 일들이 벌어질까요?
+출판사: 웅진주니어
+ISBN: 9788901295657
+출간일시: 2025-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6953024&q=%EA%B3%A7+%EC%B1%85%EC%9D%B4+%EC%97%B4%EB%A6%BD%EB%8B%88%EB%8B%A4', 17000, 10.00, 15300, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6953024%3Ftimestamp%3D20250703143158', 181, 94, 'ACTIVATE', NULL),
+    (528, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '목련 만두', '작자미상', '9788901269061', '살랑살랑 바람이 불어오는 봄의 문턱. 다람쥐와 청설모 사이에 작은 오해가 생긴다. 어떻게 화해할지 고민하는 그때, 다람쥐는 동물 친구들에게 목련 만두를 만들자고 제안하는데…… 모든 재료를 감싸는 포근한 만두처럼 청설모와 다람쥐는 오해를 풀고 하나로 어우러질 수 있을까?  『목련 만두』는 친구들 사이에서 생길 수 있는 갈등 상황들과 이를 해결하는 과정을 따뜻하게 풀어냈다. 쉽게 오해하기도 하지만 자신의 잘못을 인정하고 바로 사과하는 동물 친구들의
+출판사: 웅진주니어
+ISBN: 9788901269061
+출간일시: 2023-03-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6299212&q=%EB%AA%A9%EB%A0%A8+%EB%A7%8C%EB%91%90', 14000, 10.00, 12600, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6299212%3Ftimestamp%3D20260403154057', 184, 96, 'ACTIVATE', NULL),
+    (529, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '똥자루 굴러간다(우리그림책 4)(양장본 HardCover)', '김윤정', '9788911029228', '『똥자루 굴러간다』는 아이들이 좋아하는 ‘똥’ 이야기에 전통적인 소재를 입혀 유쾌하게 그려낸 그림책이다. 거대한 똥자루의 주인인 한 여성이 부장군으로 임명되고, 똥자루를 이용해 적을 물리친다는 이야기를 담고 있다. ‘거대한 똥자루의 주인은 누구일까?’ 추리하면서 상상력을 자극하고, 의외의 결말에 통쾌함을 주며 아이들을 이야기 속에 빠져들게 한다. 또한 자신만의 기막힌 방법으로 적군을 물리치는 똥자루 임자를 통해 위기를 슬기롭게 헤쳐 나가는 명석함과
+출판사: 국민서관
+ISBN: 9788911029228
+출간일시: 2010-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=380709&q=%EB%98%A5%EC%9E%90%EB%A3%A8+%EA%B5%B4%EB%9F%AC%EA%B0%84%EB%8B%A4%28%EC%9A%B0%EB%A6%AC%EA%B7%B8%EB%A6%BC%EC%B1%85+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F380709%3Ftimestamp%3D20220902171038', 187, 98, 'ACTIVATE', NULL),
+    (530, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '이건 내 모자가 아니야(네버랜드 세계의 걸작 그림책 231)(양장본 HardCover)', '존 클라센', '9788952768810', '작은 물고기의 이야기입니다. 커다란 물고기는 아무것도 모를거라고 확신하는 작은 물고기의 생각과 달리 커다란 물고기는 작은 물고기를 뒤쫓아 오기 시작합니다. 특히 작은 물고기의 말에 반응이라도 하듯 움직이는 커다란 물고기의 눈동자는 묘한 긴장감과 재미를 더합니다. 글과는 정반대로 흘러가는 상황이 펼쳐지는 이 책은 화려하지 않고 절제되어 있는 그림으로 이야기에 집중하게 만듭니다. 아이들의 상상력를 자극하는 열린 결말은 또 다른 새로운 이야기를 만들 수 있습니다
+출판사: 시공주니어
+ISBN: 9788952768810
+출간일시: 2013-08-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=645618&q=%EC%9D%B4%EA%B1%B4+%EB%82%B4+%EB%AA%A8%EC%9E%90%EA%B0%80+%EC%95%84%EB%8B%88%EC%95%BC%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%84%B8%EA%B3%84%EC%9D%98+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+231%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 37800, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F645618%3Ftimestamp%3D20220520234321', 190, 100, 'ACTIVATE', NULL),
+    (531, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '유치원에 처음 가는 날(키다리 그림책 3)(양장본 HardCover)', '코린 드레퓌스', '9788992365116', '『유치원에 처음 가�� 날』. 이 책은 처음으로 떨어져 생활하게 되는 엄마와 아기의 마음을 잘 표현한 그림책이에요. 유치원에 처음 가는 아이의 불안한 감정, 아이를 유치원에 떼 놓고와야 하는 엄마의 애틋한 마음이 글에도, 그림에도, 색깔에도 담겨져 있습니다. 책장을 넘겨가면서 아이와 엄마의 감정이 어떻게 변해가는지 살펴보세요~!  오늘은 유치원 가는 첫날이에요. 엄마는 열 밤이 지나면 유치원에 간다고 그랬죠. 그때는 빨리 유치원에 가고 싶었는데. 엄마 내
+출판사: 키다리
+ISBN: 9788992365116
+출간일시: 2008-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1371858&q=%EC%9C%A0%EC%B9%98%EC%9B%90%EC%97%90+%EC%B2%98%EC%9D%8C+%EA%B0%80%EB%8A%94+%EB%82%A0%28%ED%82%A4%EB%8B%A4%EB%A6%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85+3%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1371858%3Ftimestamp%3D20220109161537', 193, 102, 'ACTIVATE', NULL),
+    (532, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '어른을 위한 그림책테라피', '김소영', '9791195981786', '그림책에 빠져드는 순수하고 따뜻한 시간 나이가 들수록 단순해지기가 힘들다. 이 사람이 어떤 생각을 하고 그런 말을 했는지 곰곰 따져보기도 해야 하고, 내가 이렇게 하면 다른 사람이 어떻게 생각할지 싶어 머뭇거려지기도 한다. 어린 시절을 떠올려본다. 우리는 마음이 이끄는 대로 내가 행복해지는 일들을 쉽게 해오곤 했다. 그 행복은 대단한 것이 아니라 아주 사소한 것에서 비롯되었다. 〈어른을 위한 그림책테라피〉(피그말리온, 2018)는 이리 치이고 저리 치이며
+출판사: 피그말리온
+ISBN: 9791195981786
+출간일시: 2018-04-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1666363&q=%EC%96%B4%EB%A5%B8%EC%9D%84+%EC%9C%84%ED%95%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85%ED%85%8C%EB%9D%BC%ED%94%BC', 14500, 10.00, 13050, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1666363%3Ftimestamp%3D20220907181203', 196, 104, 'ACTIVATE', NULL),
+    (533, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아이스크림 똥(살림어린이 그림책 30)(양장본 HardCover)', '김윤정', '9788952227454', '『아이스크림 똥』은 깜깜한 밤, 숲속 한가운데 무언가 쿵 하고 떨어지면서 ''이게 무엇일까?'' 상상하는 동물들의 이야기를 그린 그림책입니다. 물결처럼 올록볼록한 선을 가진 이 세모 모양은 부드러운 아이스크림 같기도 하고, 깊은 숲에서 자라는 버섯 같기도 합니다. 아니면 푸른 바닷가에 사는 소라게일지도 모르고, 똬리를 틀고 있는 뱀일지도 모릅니다. 책 한가운데 뻥 뚫린 이 모양의 구멍은 책장을 넘길 때마다 다양한 사물로 변신합니다. 같은 형태이더라도 여러
+출판사: 살림어린이
+ISBN: 9788952227454
+출간일시: 2013-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=635289&q=%EC%95%84%EC%9D%B4%EC%8A%A4%ED%81%AC%EB%A6%BC+%EB%98%A5%28%EC%82%B4%EB%A6%BC%EC%96%B4%EB%A6%B0%EC%9D%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+30%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F635289%3Ftimestamp%3D20221004002848', 199, 106, 'ACTIVATE', NULL),
+    (534, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '달샤베트', '백희나', '9791198610652', '무더운 여름밤, 잠들기 전에 읽으면 더없이 좋은 책, 《달샤베트》가 다시 독자들을 찾아왔다. 스토리보울에서 재출간된 백희나의 그림책 《달샤베트》는 무더운 여름날 밤, 보름달이 녹아내리고, 늑대 주민이 사는 아파트가 정전되는 가운데 펼쳐지는 환상적인 이야기를 담고 있다. 특히, 이번 개정판은 시원하고 감각적인 디자인과 여름밤을 비추는 빛의 변화가 세심하게 돋보인다.  또한, 15년 전 출간된 작품임에도 불구하고, 《달샤베트(Moon Pops)》는 2022
+출판사: 스토리보울
+ISBN: 9791198610652
+출간일시: 2024-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6652685&q=%EB%8B%AC%EC%83%A4%EB%B2%A0%ED%8A%B8', 15000, 10.00, 13500, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6652685%3Ftimestamp%3D20241227152745', 2, 108, 'ACTIVATE', NULL),
+    (535, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '이상한 수학책', '벤 올린', '9791188850808', '것은 이제 선택이 아닌 필수다.    『이상한 수학책』에서 벤 올린은 바로 지금 우리가 알아야 할 진정한 수학의 모습을 보여 준다. 수학의 수많은 용도와 이상한 기호, 그리고 일반적으로 이해하기 힘든 수학 연구의 특징인 정신없는 논리적 도약과 신념 등을 말이다. 2009년에 예일대를 졸업하고(수학과 심리학 복수 전공) 몇 년 동안 중학교와 고등학교에서 아이들에게 수학을 가르치던 작가는 2013년부터 ‘이상한 그림으로 보는 수학’(Math with Bad Drawings
+출판사: 북라이프
+ISBN: 9791188850808
+출간일시: 2020-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5269201&q=%EC%9D%B4%EC%83%81%ED%95%9C+%EC%88%98%ED%95%99%EC%B1%85', 24000, 10.00, 21600, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5269201%3Ftimestamp%3D20260122132859', 5, 110, 'ACTIVATE', NULL),
+    (536, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '홀짝홀짝 호로록', '작자미상', '9788936429126', '제1회 창비그림책상 대상 수상작. 보드라운 그림으로 다양한 개성의 아이들을 환영하는 이야기 『홀짝홀짝 호로록』(손소영 그림책)이 출간되었다. 처음 만난 고양이, 강아지, 오리가 어울리며 친구가 되어 가는 과정을 그린다. “사랑스러운 캐릭터들이 부드럽게 이야기를 끌고 가는 마시멜로 같은 작품”(심사평)으로, 놀이와 어울림의 즐거움을 가장 포근한 온도로 전한다. 58가지 의성어·의태어만으로 생생하게 이야기를 전개하면서 다채로운 감정 표현을 담아 어린이 독자
+출판사: 창비
+ISBN: 9788936429126
+출간일시: 2024-02-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6552613&q=%ED%99%80%EC%A7%9D%ED%99%80%EC%A7%9D+%ED%98%B8%EB%A1%9C%EB%A1%9D', 15000, 10.00, 13500, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6552613%3Ftimestamp%3D20250521221416', 8, 112, 'ACTIVATE', NULL),
+    (537, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '똑똑한 그림책: 직업놀이(뜨인돌 그림책 26)(양장본 HardCover)', '신지윤', '9788958073338', '『똑똑한 그림책: 직업놀이』는 다양한 직업을 가진 18명의 사람들이 등장하여 아이들과 영리한 숨바꼭질을 벌인다. 직업놀이를 통해 아이들이 집중력, 관찰력, 사고력을 키울 수 있도록 구성한 신기한 숨박꼭질 그림책이다.
+출판사: 뜨인돌어린이
+ISBN: 9788958073338
+출간일시: 2011-09-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=771851&q=%EB%98%91%EB%98%91%ED%95%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85%3A+%EC%A7%81%EC%97%85%EB%86%80%EC%9D%B4%28%EB%9C%A8%EC%9D%B8%EB%8F%8C+%EA%B7%B8%EB%A6%BC%EC%B1%85+26%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F771851%3Ftimestamp%3D20221003232338', 11, 114, 'ACTIVATE', NULL),
+    (538, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '슈퍼 거북(리커버판)', '유설화', '9788993242980', '이솝우화 〈토끼와 거북이〉 이야기 들어 본 적 있니? 거북이가 느리다고 얕보다가 경주에서 진 토끼 이야기 말이야. 그럼 토끼 코를 납작하게 만든 그 거북이는 어떻게 됐을까? ‘토끼를 이긴 거북’이라니 텔레비전에 나올 일이잖아. 지금부터 벼락 스타가 된 거북이 이야기를 들려줄게. ‘나답게 산다는 것’이 무엇인지 생각하게 하는 〈토끼와 거북이〉, 그 뒷이야기!
+출판사: 책읽는곰
+ISBN: 9788993242980
+출간일시: 2014-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1392150&q=%EC%8A%88%ED%8D%BC+%EA%B1%B0%EB%B6%81%28%EB%A6%AC%EC%BB%A4%EB%B2%84%ED%8C%90%29', 11000, 10.00, 9900, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1392150%3Ftimestamp%3D20260403110926', 14, 116, 'ACTIVATE', NULL),
+    (539, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '변신 고양이 도도(노란돼지 창작그림책 3 성장이야기)(양장본 HardCover)', '이재민', '9788996359722', '게으른 고양이 도도의 변화되는 과정을 경쾌하게 담아낸 그림책『변신! 고양이 도도』. 돼지인지 고양이인지 구분이 가지 않을 정도로 살이 찐 고양이 도도가 눈물겨운 노력을 통해 진정한 고양이의 모습을 찾아가는 과정을 따뜻한 그림과 함께 보여준다. 편안함에 길들여져 있던 도도는 계속 게으름을 피면 집에서 쫓겨난다는 경고를 듣고서야 눈물겨운 노력을 시작한다. 몸이 따라주지 않지만 열심히 노력하는 도도의 모습을 통해 끊임없이 노력하면 무슨 일이든 해낼 수 있다는
+출판사: 노란돼지
+ISBN: 9788996359722
+출간일시: 2010-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1463434&q=%EB%B3%80%EC%8B%A0+%EA%B3%A0%EC%96%91%EC%9D%B4+%EB%8F%84%EB%8F%84%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+3+%EC%84%B1%EC%9E%A5%EC%9D%B4%EC%95%BC%EA%B8%B0%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9800, 10.00, 8820, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1463434%3Ftimestamp%3D20220713194920', 17, 118, 'ACTIVATE', NULL),
+    (540, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '또 혼났어!(뜨인돌 그림책 56)(양장본 HardCover)', '고니시 다카시', '9788958076728', '다듬어지지 않은 평범한 집 안 풍경이 정겹고, 계속 혼나면서도 할 말은 하는 귀여운 아이의 표정이 생생하다. 연필로 그린 듯한 그림의 질감이 따스하게 다가온다. 엄마와 아이 모두 자신의 상황을 떠올리며 공감하며 읽을 수 있는 그림책이다. 육아에 지친 엄마는 자기도 모르게 아이를 야단치거나 화를 낼 때도 있다. 그렇다고 아이를 미워하거나 사랑하지 않는 것은 아니지만, 아직 어른의 상황과 생각을 일일이 헤아릴 능력이 없는 아이는, 야단을 맞으면 엄마가 자신을
+출판사: 뜨인돌어린이
+ISBN: 9788958076728
+출간일시: 2018-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=772339&q=%EB%98%90+%ED%98%BC%EB%82%AC%EC%96%B4%21%28%EB%9C%A8%EC%9D%B8%EB%8F%8C+%EA%B7%B8%EB%A6%BC%EC%B1%85+56%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772339%3Ftimestamp%3D20220925184315', 20, 0, 'ACTIVATE', NULL),
+    (541, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '나 진짜 곰이야(알이알이 명작그림책 2)(양장본 HardCover)', '브라이언 와일드스미스', '9788996570721', '여러 가지 사건을 일으키고는 다시 평화로운 산으로 돌아가는 이야기를 화려하고 아름답게 담아내고 있다. 책의 뒷부분에는 브라이언 와일드스미스와 함께하는 아주 특별한 인터뷰가 그가 직접 양손으로 그려 준 사자 그림 &amp; 싸인과 함께 실려 있다.  ☞ 이 책의 줄거리! 어느 날 갈색 곰 한마리가 산골짜기에서 예쁜 색깔의 풍선을 발견한다. 풍선에 매달린 바구니를 굴이라고 생각한 곰은 아늑한 바구니 안에서 잠이 들어 버린다. 그런데 풍선이 하늘을 날아 곰을
+출판사: 현북스
+ISBN: 9788996570721
+출간일시: 2011-03-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1478158&q=%EB%82%98+%EC%A7%84%EC%A7%9C+%EA%B3%B0%EC%9D%B4%EC%95%BC%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+2%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10500, 10.00, 9450, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1478158%3Ftimestamp%3D20221011180323', 23, 2, 'ACTIVATE', NULL),
+    (542, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '알록달록 동물 촉감놀이책(촉감그림책)', '편집부', '9788901152714', '『알록달록 동물 촉감놀이책』은 귀여운 동물들을 만지며 촉감을 발달시키는 책입니다. 문어의 매끈매끈한 다리도 만져 보고, 고슴도치의 까슬까슬한 등도 긁어 보고, 물개의 보들보들한 배도 쓰다듬으며 여러 가지 재질을 경험할 수 있습니다. 동물의 특징을 잘 살린 털, 가죽, 벨크로, 구멍 등 아기의 손끝을 자극할 촉감 종류가 다양합니다. 아기가 좋아하는 알록달록한 색깔과 화려한 패턴이 돋보이는 이 책에는 동물이 내는 소리나 움직임이 생동감 있는 의성어와 의태어
+출판사: 웅진주니어
+ISBN: 9788901152714
+출간일시: 2013-08-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=350065&q=%EC%95%8C%EB%A1%9D%EB%8B%AC%EB%A1%9D+%EB%8F%99%EB%AC%BC+%EC%B4%89%EA%B0%90%EB%86%80%EC%9D%B4%EC%B1%85%28%EC%B4%89%EA%B0%90%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 11000, 10.00, 9900, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F350065%3Ftimestamp%3D20220922040004', 26, 4, 'ACTIVATE', NULL),
+    (543, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '여행 그림책 4: 미국편(여행 그림책)', '안노 미쓰마사', '9788970943992', '여행 그림책 시리즈 4편으로 그림 속에 등장하는 여행자를 따라 미국의 서부에서 동부로 말을 타고 여행하는 그림을 담았다. 다른 나라처럼 오랜 역사는 없지만 현대에 많은 유명인과 좋은 영화 그림책을 가지고 있는 미국의 뿌리에 자리잡고 있는 한 단면을 엿볼 수 있는 그림책이다. 미국의 역사를 따라 뉴욕에서 출발하여 동해안의 마을들을 보고, 남쪽을 향해 애틀랜타부터 뉴올리언스로 향하는 이 그림책은 톰 소여, 킹콩, 프랭클린, 채플린, 마릴린 먼로, 제임스 딘등
+출판사: 한림출판사
+ISBN: 9788970943992
+출간일시: 2014-08-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=977039&q=%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85+4%3A+%EB%AF%B8%EA%B5%AD%ED%8E%B8%28%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 13000, 10.00, 11700, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F977039%3Ftimestamp%3D20220721040711', 29, 6, 'ACTIVATE', NULL),
+    (544, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '하늘 높이 태극기(통합교과 그림책 14: 우리나라)(양장본 HardCover)', '어린이 통합교과 연구회', '9788997174614', '교과별 교육과정을 교과 연계형으로 구성한 새로운 교과서를 사용하는 개정 통합교과를 반영한 「통합교과 그림책」 제14권 『하늘 높이 태극기』. 이 시리즈는 2013년 초등학교 1ㆍ2학년이 만나게 되는 새로운 교과인 개정 통합교과의 방향에 맞추었습니다. 초등학교 저학년 발달 단계의 특성을 살려 생활에서 뽑아 낸 주제를 통해 아이들의 흥미를 불러일으키면서 광범위한 교과 연계가 가능하도록 내용을 구성한 그림책으로 이루어졌습니다.  이 책에서는 통합교과의
+출판사: 상상의집
+ISBN: 9788997174614
+출간일시: 2013-04-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1482061&q=%ED%95%98%EB%8A%98+%EB%86%92%EC%9D%B4+%ED%83%9C%EA%B7%B9%EA%B8%B0%28%ED%86%B5%ED%95%A9%EA%B5%90%EA%B3%BC+%EA%B7%B8%EB%A6%BC%EC%B1%85+14%3A+%EC%9A%B0%EB%A6%AC%EB%82%98%EB%9D%BC%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1482061%3Ftimestamp%3D20220922040708', 32, 8, 'ACTIVATE', NULL),
+    (545, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, 'OS가 보이는 그림책', 'ANK CO LTD', '9788931551839', '그림으로 OS에 대해 배우는 『OS가 보이는 그림책』. 쉽게 이해하기 어려운 논리도 있기 때문에 문장만으로는 이미지를 파악하기 어려운 OS를 그림을 통해 해설하는 입문서다. 직감적으로 이미지를 파악하면서 컴퓨터가 작동하는 데 필요한 소프트웨어인 OS의 구조를 쉽게 이해하고 빠르게 학습해나가도록 구성되어 있다.
+출판사: 성안당
+ISBN: 9788931551839
+출간일시: 2012-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=487529&q=OS%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 15000, 5.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487529%3Ftimestamp%3D20221025145708', 35, 10, 'ACTIVATE', NULL),
+    (546, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '엄마랑 꼭꼭 약속해(아기발달 2단계 그림책 2)(양장본 HardCover)', '김별', '9788991963979', '『엄마랑 꼭꼭 약속해』는 외출 과정에서 일어날 수 있는 다양한 상황들을 제시하며 아이가 지켜야 할 행동에 대해 알려주는 예절그림책이다. 주인공 산이가 엄마랑 놀러 가기로 한 날, 엄마와 약속한 공공장소에서 지켜야 할 규칙들을 하나씩 실천하면서 스스로 뿌듯함을 느끼는 이야기다. 특히 산이가 공공예절을 지키지 않는 모습과 지키는 모습을 비교하여 보여주어 아이들은 공공예절을 안 지켰을 때 주변에 어떤 피해를 주는지 실질적으로 깨닫게 된다. 마지막 장에는 실생활
+출판사: 큰북작은북
+ISBN: 9788991963979
+출간일시: 2012-05-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1366700&q=%EC%97%84%EB%A7%88%EB%9E%91+%EA%BC%AD%EA%BC%AD+%EC%95%BD%EC%86%8D%ED%95%B4%28%EC%95%84%EA%B8%B0%EB%B0%9C%EB%8B%AC+2%EB%8B%A8%EA%B3%84+%EA%B7%B8%EB%A6%BC%EC%B1%85+2%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1366700%3Ftimestamp%3D20220325194226', 38, 12, 'ACTIVATE', NULL),
+    (547, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '꽃비 내리던 날(그림과책 시선 118)', '금동건', '9788994753126', '금동건 두 번째 시집『꽃비 내리던 날』. 꾸준한 시 작품 활동과 발표, TV 출연 등 다방면으로 활동하였으며 특히 KBS 스페셜 &lt;행복해지는 법&gt;에 출연해 ''내 진실 된 삶의 노래''를 보여주었고 환경미화원의 아름다운 모습을 보여준 금동건의 시집으로, 환경미화원으로 즐겁고 행복하게 살아가는 시인의 삶을 담은 시편들을 수록한 책이다.
+출판사: 그림과책
+ISBN: 9788994753126
+출간일시: 2011-09-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1426412&q=%EA%BD%83%EB%B9%84+%EB%82%B4%EB%A6%AC%EB%8D%98+%EB%82%A0%28%EA%B7%B8%EB%A6%BC%EA%B3%BC%EC%B1%85+%EC%8B%9C%EC%84%A0+118%29', 8000, 10.00, 7200, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1426412%3Ftimestamp%3D20221025124040', 41, 14, 'ACTIVATE', NULL),
+    (548, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '안녕 바나나 달(마음씨앗 그림책 14)(양장본 HardCover)', '이연실', '9788953541542', '『안녕, 바나나 달』은 유리창을 통해 상상의 세계에 빠져드는 송이의 이야기로, 귀여운 캐릭터와 다양한 기법을 살린 그림이 돋보이는 그림책입니다. 초승달을 닮은 바나나 모양의 동물과 꽃, 우산들을 찾는 재미가 쏠쏠합니다. 송이와 함께 신나는 상상 여행을 떠나 보세요~!  송이는 집에 혼자 있어요. 할머니가 아프다는 전화를 받고 엄마가 급하게 나갔거든요. 송이는 인형놀이도, 그림책 보는 것도 흥이 나질 않았어요. 그러다 우연히 하얗게 김이 서린 유리창
+출판사: 한솔수북
+ISBN: 9788953541542
+출간일시: 2007-05-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=672930&q=%EC%95%88%EB%85%95+%EB%B0%94%EB%82%98%EB%82%98+%EB%8B%AC%28%EB%A7%88%EC%9D%8C%EC%94%A8%EC%95%97+%EA%B7%B8%EB%A6%BC%EC%B1%85+14%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 8800, 10.00, 7920, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F672930%3Ftimestamp%3D20220701051539', 44, 16, 'ACTIVATE', NULL),
+    (549, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '노아 박사의 우주선(알이알이 명작그림책 13)(양장본 HardCover)', '브라이언 와일드스미스', '9788997175147', '현대판 노아의 방주 이야기 『노아 박사의 우주선』. 이 책은 그림책의 거장 브라이언 와일드스미스의 작품으로, 환경에 대한 경각심을 불러일으키는 이야기가 담겨 있다. 숲이 변해 가는 장면과 동물들이 고통받으며 이야기하는 장면의 글이 차분하게 전개되고, 반면 같은 장면의 그림은 동물들의 눈빛과 배경을 통해서 그들의 절박함을 나타내고 있다. 이야기를 통해 아이들은 우리의 지구를 아름다운 모습 그대로 지킬 수 있는 방법들을 생각해보고 실천할 수 있는 용기를
+출판사: 현북스
+ISBN: 9788997175147
+출간일시: 2012-04-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1475229&q=%EB%85%B8%EC%95%84+%EB%B0%95%EC%82%AC%EC%9D%98+%EC%9A%B0%EC%A3%BC%EC%84%A0%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+13%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1475229%3Ftimestamp%3D20220716185831', 47, 18, 'ACTIVATE', NULL),
+    (550, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '착해지는 책(알이알이 명작그림책 22)(양장본 HardCover)', '데이비드 에즈라 스테인', '9788997175482', '『착해지는 책』은 사랑하는 방법은 물론 그 방법을 어떻게 표현할 것인지 핵심적인 단어를 이용해 안내한 책이다. 저자는 단색의 아크릴과 색연필만을 사용해 다양한 표정을 가진 동물들을 재치 있게 표현했다. 아이들에게 착하게 사랑하는 방법을 자연스럽게 일깨워주고, 상냥한 자녀가 될 수 있도록 안내한다.
+출판사: 현북스
+ISBN: 9788997175482
+출간일시: 2013-04-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1479803&q=%EC%B0%A9%ED%95%B4%EC%A7%80%EB%8A%94+%EC%B1%85%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+22%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1479803%3Ftimestamp%3D20220922040309', 50, 20, 'ACTIVATE', NULL),
+    (551, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '책은 먹는게 아니에요(네버랜드 아기 그림책 112)(양장본 HardCover)', '이안 쇤헤르', '9788952758439', '책을 보는 좋은 습관을 길러주는 그림책『책은 먹는 게 아니에요!』. 책과 점점 친해지는 아이들에게 제대로 책 읽는 방법을 알려주는 책으로, 책을 소중히 아끼는 방법과 책을 빌려 볼 때 알아야 할 에티켓을 이야기한다. 곰, 개, 고양이, 토끼, 원숭이, 코끼리 등 친근한 동물들이 등장하여 책을 잘못 다루는 경우들을 보여준다. 의인화된 동물들의 행동을 통해 책을 어떻게 보면 좋을지 배울 수 있다. 또한 어른들도 아이와 함께 그림책을 보면서 책에 대한 기본
+출판사: 시공주니어
+ISBN: 9788952758439
+출간일시: 2010-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=644679&q=%EC%B1%85%EC%9D%80+%EB%A8%B9%EB%8A%94%EA%B2%8C+%EC%95%84%EB%8B%88%EC%97%90%EC%9A%94%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+112%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 8000, 10.00, 7200, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F644679%3Ftimestamp%3D20220904153757', 53, 22, 'ACTIVATE', NULL),
+    (552, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '스스로 닦을 수 있니?(콩콩꼬마그림책 14)(양장본 HardCover)', '후카미 하루오', '9788955823035', '《스스로 닦을 수 있니?》는 온통 황금색으로 빛나는 똥 세상에서 신나고 재미있게 똥 닦는 법을 배우는 책이에요. 용이가 변기에 앉아 기다란 똥을 누었어요. 그러자 기다란 똥은 황금 배가 되고 변기 속은 바다가 되었어요. 용이는 황금 배를 타고 황금색으로 빛나는 바다 위를 나아가며, 새로운 친구들을 만납니다. 친구들은 하나같이 용이에게 물어요.
+출판사: 길벗어린이
+ISBN: 9788955823035
+출간일시: 2014-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=718352&q=%EC%8A%A4%EC%8A%A4%EB%A1%9C+%EB%8B%A6%EC%9D%84+%EC%88%98+%EC%9E%88%EB%8B%88%3F%28%EC%BD%A9%EC%BD%A9%EA%BC%AC%EB%A7%88%EA%B7%B8%EB%A6%BC%EC%B1%85+14%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 5.00, 9500, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F718352%3Ftimestamp%3D20211206155541', 56, 24, 'ACTIVATE', NULL),
+    (553, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '할머니의 조각보(미래그림책 15)', '패트리샤 폴라코', '9788983942104', '출판사: 미래아이
+ISBN: 9788983942104
+출간일시: 2003-01-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1173218&q=%ED%95%A0%EB%A8%B8%EB%8B%88%EC%9D%98+%EC%A1%B0%EA%B0%81%EB%B3%B4%28%EB%AF%B8%EB%9E%98%EA%B7%B8%EB%A6%BC%EC%B1%85+15%29', 8000, 10.00, 7200, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1173218%3Ftimestamp%3D20210904210550', 59, 26, 'ACTIVATE', NULL),
+    (554, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '마법의 여름(아이세움 그림책)', '후지와라 카즈에 외', '9788937814341', '마법같았던 외갓집에서의 여름 방학 이야기를 담은 그림책. 맞벌이를 하시는 엄마 아빠 때문에 케이와 유이는 매일 둘이만 있는다. 학교 수영장에 갔다가 게임을 했다가 감자칩도 먹고, 보리차도 마시지만 도쿄에서의 방학은 너무나 심심하다. 그러던 와중에 시골 외삼촌으로부터 엽서가 날아와 외갓집으로 향하면서 형제의 생활은 너무나 흥미진진해진다. 낚시에 잠자리 잡기, 나무타기, 외갓집에서는 마법처럼 재미있는 일이 너무나 많고, 밥도 너무너무 맛있다.
+출판사: 미래엔아이세움
+ISBN: 9788937814341
+출간일시: 2004-07-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=544171&q=%EB%A7%88%EB%B2%95%EC%9D%98+%EC%97%AC%EB%A6%84%28%EC%95%84%EC%9D%B4%EC%84%B8%EC%9B%80+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 11000, 10.00, 9900, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F544171%3Ftimestamp%3D20221107220713', 62, 28, 'ACTIVATE', NULL),
+    (555, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '구름관찰자를 위한 그림책', '개빈 프레터피니', '9788934933922', '저명한 일러스트레이터 윌리엄 그릴이 그림을 그렸다. 구름의 주요 유형에 대한 흥미로운 사실과 비밀을 알려주고, 구름이 주변 날씨를 어떻게 형성하는지를 들려주면서, 서정적인 그림에 구름의 아름다움과 신비를 다채롭게 담아냈다. 어린이와 성인, 누가 읽어도 좋다. 구름을 좋아하는 사람이라면 누구나 이 책을 통해 구름의 멋진 이름을 배우고, 구름이 노닐기 좋아하는 하늘을 탐험하고, 구름이 햇빛과 어우러지는 방식에 감탄하며, 지구 밖 다른 행성의 구름도 만나볼 수
+출판사: 김영사
+ISBN: 9788934933922
+출간일시: 2024-08-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6696234&q=%EA%B5%AC%EB%A6%84%EA%B4%80%EC%B0%B0%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85', 18800, 10.00, 16920, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6696234%3Ftimestamp%3D20250403153912', 65, 30, 'ACTIVATE', NULL),
+    (556, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '육식동물 그림책(진짜 진짜 재밌는)(양장본 HardCover)', '폴라 해먼드', '9788994545783', '『진짜 진짜 재밌는 육식동물 그림책』은 지구 곳곳에서 다른 동물을 먹잇감으로 삼으며 살아가고 있는 육식동물들의 놀랍고도 신기한 이야기를 인상적인 일러스트와 함께 소개한 책이다. 날카로운 발톱과 치명적인 독, 감쪽같은 보호색으로 무장한 육식동물들이 어떤 방법으로 사냥을 하는지, 자기 자신은 어떻게 보호하는지 알 수 있다.
+출판사: 부즈펌
+ISBN: 9788994545783
+출간일시: 2014-01-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1426255&q=%EC%9C%A1%EC%8B%9D%EB%8F%99%EB%AC%BC+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%A7%84%EC%A7%9C+%EC%A7%84%EC%A7%9C+%EC%9E%AC%EB%B0%8C%EB%8A%94%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 17500, 10.00, 15750, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1426255%3Ftimestamp%3D20220527201453', 68, 32, 'ACTIVATE', NULL),
+    (557, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '그림책의 그림읽기(2판)', '현은자, 강은진, 변윤희, 심향분', '9788956635651', '[그림책의 그림읽기]는 대학에서 10년 이상 그림책을 연구하고 그림책 관련 강의를 맡아 하면서 얻은 저자들의 성과를 정리하고, 외국의 그림책 관련 학자들의 주요 저서와 최신 논문의 내용들이 소개하였다. 그림책 속 글과 그림의 다양한 관계, 그림책의 시간과 공간의 표현 양상을 정리함은 물론, 그림책을 기호학적 관점과 현대 서사 이론을 적용하여 분석에 이르기까지 다루고 있다.
+출판사: 마루벌
+ISBN: 9788956635651
+출간일시: 2016-04-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=739247&q=%EA%B7%B8%EB%A6%BC%EC%B1%85%EC%9D%98+%EA%B7%B8%EB%A6%BC%EC%9D%BD%EA%B8%B0%282%ED%8C%90%29', 17000, 10.00, 15300, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F739247%3Ftimestamp%3D20190124174329', 71, 34, 'ACTIVATE', NULL),
+    (558, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '방귀를 뽀옹(알이알이 명작그림책 8)(양장본 HardCover)', '노에 까를랭', '9788997175031', '『방귀를 뽀옹』은 여러 동물들이 방귀를 뀌면 일어나는 재미있는 상황을 그린 그림책이다. ‘뽀옹!’ 방귀 소리를 내며 동물들이 방귀를 뀌면 상상도 못했던 유쾌한 일들이 일어난다. 달팽이가 ‘뽀옹!’ 방귀를 뀌면 껍데기가 ‘피~융!’ 하고 날아간다. 머리카락 사이로 꼬물꼬물 기어 다니는 이가 방귀를 뀌면 머리카락이 엉망진창으로 흐트러진다. 물속을 헤엄쳐 다니는 물고기가 방귀를 뀌면 물속이 온통 보글보글 거품으로 가득 찬다. 재미있는 상황을 다양한 소재와
+출판사: 현북스
+ISBN: 9788997175031
+출간일시: 2011-10-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1485174&q=%EB%B0%A9%EA%B7%80%EB%A5%BC+%EB%BD%80%EC%98%B9%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+8%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1485174%3Ftimestamp%3D20220907174310', 74, 36, 'ACTIVATE', NULL),
+    (559, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '엄마 거꾸로 매달리면 잠이 올까요(아이세움 지식그림책 31)(양장본 HardCover)', '브리기테 라브', '9788937885044', '잠을 자지 않는 아이를 위한 잠자리 그림책 『엄마 거꾸로 매달리면 잠이 올까요』. 잠이 안 오는 아이를 위해 엄마는 다양한 동물들의 잠자는 방법에 대해 이야기해 준다. 나뭇가지에 엎드려 자는 표범, 한 발로 서서 자는 황새, 눈을 뜨고 자는 물고기, 거꾸로 매달려 자는 박쥐 등 신기하고 재밌는 동물들의 잠자는 방법이 펼쳐진다. 아이는 표범처럼 자보기도 하고, 황새처럼 자보기도 하고, 물고기처럼 자보기도 하지만 모두 불편하고 잠을 잘 수 없다. 이에
+출판사: 미래엔아이세움
+ISBN: 9788937885044
+출간일시: 2011-12-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=550164&q=%EC%97%84%EB%A7%88+%EA%B1%B0%EA%BE%B8%EB%A1%9C+%EB%A7%A4%EB%8B%AC%EB%A6%AC%EB%A9%B4+%EC%9E%A0%EC%9D%B4+%EC%98%AC%EA%B9%8C%EC%9A%94%28%EC%95%84%EC%9D%B4%EC%84%B8%EC%9B%80+%EC%A7%80%EC%8B%9D%EA%B7%B8%EB%A6%BC%EC%B1%85+31%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F550164%3Ftimestamp%3D20220903164802', 77, 38, 'ACTIVATE', NULL),
+    (560, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '김밥 놀이 좋아(아기 생활 그림책 1)(양장본 HardCover)', '최순영', '9788952750334', '출판사: 시공주니어
+ISBN: 9788952750334
+출간일시: 2007-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=643165&q=%EA%B9%80%EB%B0%A5+%EB%86%80%EC%9D%B4+%EC%A2%8B%EC%95%84%28%EC%95%84%EA%B8%B0+%EC%83%9D%ED%99%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85+1%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 6500, 10.00, 5850, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F643165%3Ftimestamp%3D20190124042053', 80, 40, 'ACTIVATE', NULL),
+    (561, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '나쁜 어른들로부터 나를 지켜요(푸른숲 그림책 10)(양장본 HardCover)', '이진희', '9788971849415', '『나쁜 어른들로부터 나를 지켜요』는 언제 어디서 일어날지 모르는 각종 안전사고로부터 우리 아이들이 스스로를 지킬 수 있도록 도와주는 그림책이다. 모르는 사람이 친근하게 말을 걸며 어디론가 데려가려고 하거나, 집에 혼자 있는데 누군가가 문을 열어 달라고 할 때 등 우리 아이들이 일상생활에서 흔히 만나는 다양한 사례들을 모아 한눈에 쉽게 이해하고 따라할 수 있도록 구성했다. 또 밝고 풍부한 색감이 돋보이는 일러스트로 ‘내 몸은 내가 지킬 수 있다’는 긍정
+출판사: 푸른숲주니어
+ISBN: 9788971849415
+출간일시: 2012-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=990115&q=%EB%82%98%EC%81%9C+%EC%96%B4%EB%A5%B8%EB%93%A4%EB%A1%9C%EB%B6%80%ED%84%B0+%EB%82%98%EB%A5%BC+%EC%A7%80%EC%BC%9C%EC%9A%94%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EA%B7%B8%EB%A6%BC%EC%B1%85+10%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F990115%3Ftimestamp%3D20221003231638', 83, 42, 'ACTIVATE', NULL),
+    (562, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '한강(아이세움 지식그림책 30)(양장본 HardCover)', '김하늘', '9788937846649', '아이들의 성장에 도움을 줄 지식을 안겨주는 「아이세움 지식그림책」 제30권 『한강』. 500km에 달하는 한강을 지도 따라 굽이굽이 살펴보면서 역사 여행을 떠나는 지식그림책이다. 선사 시대부터 현대 사회까지 힘차게 흘러가는 한강을 구석구석 둘러보면서 교과서에서도 배우지 못한 우리나라 역사는 물론, 문화와 지리를 지도 따라 생생하게 체험해본다. 한강의 이야기를 풍부하게 살리는 관련 사진과 그림을 알차게 곁들였다. 뒷부분에는 &lt;하루 만에 한강 돌아보기
+출판사: 미래엔아이세움
+ISBN: 9788937846649
+출간일시: 2011-10-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=546301&q=%ED%95%9C%EA%B0%95%28%EC%95%84%EC%9D%B4%EC%84%B8%EC%9B%80+%EC%A7%80%EC%8B%9D%EA%B7%B8%EB%A6%BC%EC%B1%85+30%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F546301%3Ftimestamp%3D20220630125114', 86, 44, 'ACTIVATE', NULL),
+    (563, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '파랑새(알이알이 명작그림책 7)(양장본 HardCover)', '모리스 메테르링크, 브라이언 와일드스미스', '9788997175024', '『파랑새』는 벨기에의 작가 모리스 마테를링크가 어린이를 위한 아동극으로 쓴 희곡 작품 &lt;파랑새&gt;를 그림책에 담은 것이다. 요정에게 병든 여자아이의 행복을 위해 파랑새를 찾아 줄 것을 부탁받은 틸틸과 미틸이 파랑새를 찾아 여행을 떠나는 이야기다. 행복을 쉽게 풀어 나가기 위해 상징적으로 표현한 ''파랑새''는 아이들에게 행복이 늘 우리 곁에 있다는 사실을 일깨워준다. 더불어 틸틸과 미틸의 여행을 그린 그림은 꿈과 현실을 오가는 듯한 몽환적인 느낌
+출판사: 현북스
+ISBN: 9788997175024
+출간일시: 2011-09-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1476631&q=%ED%8C%8C%EB%9E%91%EC%83%88%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+7%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10500, 10.00, 9450, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476631%3Ftimestamp%3D20221003232218', 89, 46, 'ACTIVATE', NULL),
+    (564, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '왜 이래요 왜 이래(알이알이 명작그림책 14)(양장본 HardCover)', '장 뤽 프로망탈', '9788997175239', '세계 유명 작가의 수준 높은 그림책으로 구성된 「알이알이 명작그림책」 제14권 『왜 이래요 왜 이래』. 프랑스 태생의 글작가 장-뤽 프로망탈이 쓰고 그림작가 조엘 졸리베가 그린 그림책이다. 겨우 비누 때문에 휴가를 완전히 망치게 된 레오네 가족의 모험 속으로 아이들을 안내한다. 눈이 나쁜 고모가 창밖으로 놓친 비누가 연이은 사건을 일으켜 외계인의 비행접시를 불러오기까지의 과정을 흥미진진하게 따라가고 있다. 레오 가족을 따라 프랑스 파리도 구경하게 된다
+출판사: 현북스
+ISBN: 9788997175239
+출간일시: 2012-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1476441&q=%EC%99%9C+%EC%9D%B4%EB%9E%98%EC%9A%94+%EC%99%9C+%EC%9D%B4%EB%9E%98%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+14%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476441%3Ftimestamp%3D20220410091447', 92, 48, 'ACTIVATE', NULL),
+    (565, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '저마다 제 색깔(마루벌의 좋은 그림책 74)(양장본 HardCover)', '레오 리오니', '9788956632452', '출판사: 마루벌
+ISBN: 9788956632452
+출간일시: 2008-11-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=739144&q=%EC%A0%80%EB%A7%88%EB%8B%A4+%EC%A0%9C+%EC%83%89%EA%B9%94%28%EB%A7%88%EB%A3%A8%EB%B2%8C%EC%9D%98+%EC%A2%8B%EC%9D%80+%EA%B7%B8%EB%A6%BC%EC%B1%85+74%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 4000, 10.00, 3600, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F739144%3Ftimestamp%3D20221025151615', 95, 50, 'ACTIVATE', NULL),
+    (566, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, 'Hello! 직업 그림책: 사랑이 가득한 성격(우리 아이 성격으로 알아보는...', 'Wang Xiaoxiao, Qian Hai Yun', '9791158951078', '《Hello! 직업그림책》시리즈는 우리가 직업의 세계를 항해하는 데 있어 네비게이션이 되며 36개의 여러 가지 직업 세계를 아이의 성격별로 이해하는 데 꼭 필요한 정보들만 모아서 재미있는 그림과 함께 알기 쉽게 설명한 책이예요. 내가 가진 성격에 따라 흥미롭게 느끼는 직업은 무엇인지, 내가 꿈꾸는 직업을 갖기 위해서는 무엇을 준비해야 하는지, 어떤 사람이 해당 분야에 유명한 사람인지 직업에 대한 많은 고민을 《Hello! 직업그림책》와 함께 풀어가길
+출판사: 봄봄스쿨
+ISBN: 9791158951078
+출간일시: 2018-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1585188&q=Hello%21+%EC%A7%81%EC%97%85+%EA%B7%B8%EB%A6%BC%EC%B1%85%3A+%EC%82%AC%EB%9E%91%EC%9D%B4+%EA%B0%80%EB%93%9D%ED%95%9C+%EC%84%B1%EA%B2%A9%28%EC%9A%B0%EB%A6%AC+%EC%95%84%EC%9D%B4+%EC%84%B1%EA%B2%A9%EC%9C%BC%EB%A1%9C+%EC%95%8C%EC%95%84%EB%B3%B4%EB%8A%94%29%28Hello%21+%EC%A7%81%EC%97%85+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%8B%9C%EB%A6%AC%EC%A6%88+1%29%28%EC%96%91%EF%BF%BD', 10000, 10.00, 9000, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1585188%3Ftimestamp%3D20221025120916', 98, 52, 'ACTIVATE', NULL),
+    (567, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '진짜 진짜 재밌는 우주 그림책', '알베르토 에르난데스', '9791190808705', '유·아동 인기 도감 〈진짜 진짜 재밌는 그림책〉 시리즈! 이번 주제는 기다리고 기다렸던 ‘우주’예요. 마치 우주 공간에 도착한 것 같은 크고 생생한 이미지로 우주에 담긴 기막힌 이야기를 만나 보세요. 우리가 사는 지구, 지구가 속한 태양계, 태양계가 있는 우리은하, 태양계 행성들과 태양계 밖 외계 행성들까지 이 넓디넓은 우주를 가득 채우고 있는 수많은 천체들을 단 한 권으로 익힐 수 있답니다. 게다가 우주로 간 동물과 인간들, 멋진 탐사선도 살펴보며 전
+출판사: 부즈펌
+ISBN: 9791190808705
+출간일시: 2023-04-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6338426&q=%EC%A7%84%EC%A7%9C+%EC%A7%84%EC%A7%9C+%EC%9E%AC%EB%B0%8C%EB%8A%94+%EC%9A%B0%EC%A3%BC+%EA%B7%B8%EB%A6%BC%EC%B1%85', 23000, 10.00, 20700, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6338426%3Ftimestamp%3D20250916143431', 101, 54, 'ACTIVATE', NULL),
+    (568, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '진짜 진짜 재밌는 그림책 세트(보급판)(전6권)', '수잔 바라클로우', '9791187504719', '《진짜 진짜 재밌는 그림책》 시리즈 가운데 가장 인기 있는 6권(공룡 / 바다 / 파충류 / 곤충 / 육식동물 / 거미)을 모아 한정판으로 제작했습니다. ● 기존 양장본보다 무게가 가볍고 책이 180도로 완전히 펼쳐지는 PUR 제본 방식 채택 ● 기존 정가 대비 약 30% 할인된 특별한 가격
+출판사: 부즈펌
+ISBN: 9791187504719
+출간일시: 2019-01-09T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4858171&q=%EC%A7%84%EC%A7%9C+%EC%A7%84%EC%A7%9C+%EC%9E%AC%EB%B0%8C%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8%28%EB%B3%B4%EA%B8%89%ED%8C%90%29%28%EC%A0%846%EA%B6%8C%29', 87000, 10.00, 78300, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4858171%3Ftimestamp%3D20221025135634', 104, 56, 'ACTIVATE', NULL),
+    (569, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '메아리(알이알이 명작그림책 24)(양장본 HardCover)', '알레산드로 리치오니', '9788997175581', '『메아리』는 난생 처음 메아리를 경험하게 된 아이의 소박한 이야기를 통해 아이가 정말 바라는 것이 무엇인지 생각해 보게 하는 그림책입니다. 특히 아빠가 외친 말이 메아리가 되어 들려오자 상상의 나래를 펼치는 아이의 모습이 귀엽고 사랑스럽습니다. 더불어 이야기의 배경 속에 자연스럽게 녹아든 이탈리아의 멋진 풍광이 감탄을 자아냅니다.  어느 이른 아침, 잠에서 덜 깬 아이가 아빠와 함께 산에 오릅니다. 아빠는 메아리에게 소원을 말하는 방법을 아이에게 알려
+출판사: 현북스
+ISBN: 9788997175581
+출간일시: 2013-05-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1483656&q=%EB%A9%94%EC%95%84%EB%A6%AC%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+24%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483656%3Ftimestamp%3D20220922040111', 107, 58, 'ACTIVATE', NULL),
+    (570, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, 'TCP/IP가 보이는 그림책', 'ANK CO LTD', '9788931555479', '《TCP/IP가 보이는그림책》(2판 10쇄)  TCP/IP 네트워크의 개념을 잡기에 더 없이 좋은 책!  눈으로 볼 수 없는 네트워크의 세계를 눈으로 확인하면서 이해시키는 책이 과연 또 있을까?  이 책은 TCP/IP 네트워크 구조에 대한 핵심을 체계적으로 설명하였고 TCP, UDP 등 네트워크와 관련된 다양한 용어의 정의가 그림을 통해 쉽게 설명되어 있습니다. 컴퓨터끼리 데이터를 주고받기 위해 어떤 규칙과 과정을 거쳐야 하는지를 한 눈에 파악할 수
+출판사: 성안당
+ISBN: 9788931555479
+출간일시: 2018-03-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=488185&q=TCP%2FIP%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 17000, 10.00, 15300, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F488185%3Ftimestamp%3D20221025145559', 110, 60, 'ACTIVATE', NULL),
+    (571, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '그림책(초점.모양.색깔.그림)', '형설아이 편집부', '9788986796865', '출판사: 형설아이
+ISBN: 9788986796865
+출간일시: 2002-12-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1245942&q=%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%B4%88%EC%A0%90.%EB%AA%A8%EC%96%91.%EC%83%89%EA%B9%94.%EA%B7%B8%EB%A6%BC%29', 9900, 10.00, 8910, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1245942%3Ftimestamp%3D20190127110924', 113, 62, 'ACTIVATE', NULL),
+    (572, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '쿠슐라와 그림책 이야기(이론서)', '도로시 버틀러', '9788943305024', '이 책은 일반 독자층을 대상으로 한 책으로, 전문적인 내용을 비전공인 일반 독자들도 쉽게 이해할 수 있도록 풀어쓴 교양 도서이다.
+출판사: 보림
+ISBN: 9788943305024
+출간일시: 2003-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=590103&q=%EC%BF%A0%EC%8A%90%EB%9D%BC%EC%99%80+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%9D%B4%EC%95%BC%EA%B8%B0%28%EC%9D%B4%EB%A1%A0%EC%84%9C%29', 15000, 10.00, 13500, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590103%3Ftimestamp%3D20221025131747', 116, 64, 'ACTIVATE', NULL),
+    (573, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '생명 축제(내 인생의 그림책 24)(양장본 HardCover)', '구사바 가즈히사', '9788991813991', '『생명 축제』는 아이들에게 생명의 참된 가치를 쉽게 설명할 수 있는 그림책이다. 저자 구사바 가즈히사는 10년간 유치원 생활을 바탕으로 눈에 보이지 않는 생명에 관한 이야기를 아이들이 가장 이해하기 쉬운 방식으로 전한다. 나에게 생명을 전해준 사람은 아빠와 엄마 두 사람, 아빠와 엄마에게 생명을 준 사람은 할아버지, 할머니, 외할아버지, 외할머니 네 사람……. 이렇게 위로 거슬러 올라가다 보면 내 생명은 셀 수도 없이 많은 조상님으로부터 물려받았다는 사실
+출판사: 내인생의책
+ISBN: 9788991813991
+출간일시: 2012-05-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1363836&q=%EC%83%9D%EB%AA%85+%EC%B6%95%EC%A0%9C%28%EB%82%B4+%EC%9D%B8%EC%83%9D%EC%9D%98+%EA%B7%B8%EB%A6%BC%EC%B1%85+24%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1363836%3Ftimestamp%3D20220730201516', 119, 66, 'ACTIVATE', NULL),
+    (574, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '친구가 필요해(그림책 보물창고 61)(양장본 HardCover)', '질리언 쉴즈', '9788961703482', '『친구가 필요해』는 아기에 대한 엄마의 무한한 사랑을 귀엽고 따뜻한 그림으로 그려낸 《사랑해 사랑해 사랑해》의 그림작가 캐롤라인 처치의 새 그림책입니다. 저자 특유의 사랑스러운 그림들이 펼쳐지는 이 책은 친구를 사귀고 싶어하는 강아지 ‘러프’를 통해 진짜 우정이 무엇인지 이야기합니다. 아이들에게 진정한 친구를 사귀는 기쁨과 우정의 소중함을 일깨워 줄 것입니다.  세상에서 가장 바쁜 강아지, 러프. 일에만 열중하느라 외로운 줄도 모르고 지내던 러프는
+출판사: 보물창고
+ISBN: 9788961703482
+출간일시: 2013-11-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=856159&q=%EC%B9%9C%EA%B5%AC%EA%B0%80+%ED%95%84%EC%9A%94%ED%95%B4%28%EA%B7%B8%EB%A6%BC%EC%B1%85+%EB%B3%B4%EB%AC%BC%EC%B0%BD%EA%B3%A0+61%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F856159%3Ftimestamp%3D20220203175548', 122, 68, 'ACTIVATE', NULL),
+    (575, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '캠핑을 떠나요(네버랜드 마음이 자라는 성장 그림책 21)(양장본 HardCover)', '엘리자베스 드 랑빌리', '9788952780133', '시간이 흘러도 아이들의 생활에 힘이 되어줄 「네베랜드 마음이 자라는 성장 그림책」 제21권 『신나는 캠핑을 떠나요』. 생활 영역이 넓어지는 아이들을 위한 톰 이야기가 펼쳐진다. 가족과 함께 하는 즐거운 캠핑 시간을 간접적으로 체험하게 된다. 톰의 가족은 캠핑을 떠난다. 텐트를 치고, 야외에서 식사를 하고, 밤하늘의 별을 본다. 그런데 잠자리에 누운 톰에게 이상한 소리가 들려오는데….
+출판사: 시공주니어
+ISBN: 9788952780133
+출간일시: 2014-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=647054&q=%EC%8B%A0%EB%82%98%EB%8A%94+%EC%BA%A0%ED%95%91%EC%9D%84+%EB%96%A0%EB%82%98%EC%9A%94%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EB%A7%88%EC%9D%8C%EC%9D%B4+%EC%9E%90%EB%9D%BC%EB%8A%94+%EC%84%B1%EC%9E%A5+%EA%B7%B8%EB%A6%BC%EC%B1%85+21%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 7000, 10.00, 6300, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F647054%3Ftimestamp%3D20220512170437', 125, 70, 'ACTIVATE', NULL),
+    (576, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '진짜 곰(뜨인돌 그림책 28)(양장본 HardCover)', '송희진', '9788958073475', '『진짜 곰』은 알 수 없는 진짜 곰의 정체를 찾아 떠난 서커스곰이 여행길에서 다양한 곰들을 만나는 이야기를 그린 그림책이다. 자기처럼 묘기를 부리고 있는 곰을 만나고, 장난감 가게의 쇼윈도에 앉아 있는 분홍색 인형곰을 만난다. 또한 동물원 철창 안에서 살고 있는 늙은 곰도 만난다. 하지만 이들은 아무도 자신들이 ‘진짜 곰’이라고 하지 않는다. 거리에서 만난 곰들은 하나같이 진짜 곰은 자신들과 같은 모습이 아니라고 말하는데….
+출판사: 뜨인돌어린이
+ISBN: 9788958073475
+출간일시: 2011-10-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=771864&q=%EC%A7%84%EC%A7%9C+%EA%B3%B0%28%EB%9C%A8%EC%9D%B8%EB%8F%8C+%EA%B7%B8%EB%A6%BC%EC%B1%85+28%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10500, 10.00, 9450, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F771864%3Ftimestamp%3D20220203153756', 128, 72, 'ACTIVATE', NULL),
+    (577, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '콩알 특공대와 생일 케이크(두고두고 보고 싶은 그림책 64)(양장본 HardCover)', '나카가와 치히로', '9788955823950', '“콩알 특공대, 출동!” 언제 어디서든 무슨 일이 생겨도 걱정 마세요! 콩알 특공대가 해결해 줍니다!  기발한 상상력과 깜찍한 그림이 돋보이는 [콩알 특공대] 시리즈는 일본에서 출간되어 아이는 물론 어른들에게도 큰 인기를 끌고 있는 그림책입니다. 사람들에게 복잡하고 어려운 일이 생기면 중장비를 타고 달려가 반짝이는 아이디어로 무엇이든 해결해 주는 귀여운 콩알 특공대. 이 작은 특공대는 포크레인, 덤프트럭, 불도저 등 커다란 중장비를 타고 우리 집과 주변 구석
+출판사: 길벗어린이
+ISBN: 9788955823950
+출간일시: 2017-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=718394&q=%EC%BD%A9%EC%95%8C+%ED%8A%B9%EA%B3%B5%EB%8C%80%EC%99%80+%EC%83%9D%EC%9D%BC+%EC%BC%80%EC%9D%B4%ED%81%AC%28%EB%91%90%EA%B3%A0%EB%91%90%EA%B3%A0+%EB%B3%B4%EA%B3%A0+%EC%8B%B6%EC%9D%80+%EA%B7%B8%EB%A6%BC%EC%B1%85+64%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F718394%3Ftimestamp%3D20220721001841', 131, 74, 'ACTIVATE', NULL),
+    (578, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '큰일 났어요 산신령 할아버지(노란돼지 창작그림책 10)(양장본 HardCover)', '무돌', '9788994975108', '『큰일 났어요, 산신령 할아버지!』는 산신령 할아버지가 등장하는 전래동화 형식으로 재미있게 구성해 숲의 소중함을 말하고 있다. 산불에 대한 짧은 우화를 통해 자연을 보호하는 것의 중요성을 일깨워준다. 산신령 할아버지가 지키고 있는 동쪽 산에 불이 났어요. 대부분 계곡으로 피했지만 아기 하늘다람쥐만 불 속에 갇히고 말았답니다. 산신령 할아버지는 급히 용왕에게 도움을 청했고 용왕은 용을 부려 산불을 끄기 시작하는데….
+출판사: 노란돼지
+ISBN: 9788994975108
+출간일시: 2011-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1432298&q=%ED%81%B0%EC%9D%BC+%EB%82%AC%EC%96%B4%EC%9A%94+%EC%82%B0%EC%8B%A0%EB%A0%B9+%ED%95%A0%EC%95%84%EB%B2%84%EC%A7%80%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+10%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1432298%3Ftimestamp%3D20220829103756', 134, 76, 'ACTIVATE', NULL),
+    (579, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, 'ABC 그림책(낮은학년 그림책)', '안노 미쓰마사', '9788970942896', '알파벳의 역사를 상상의 눈으로 들여다보는 즐거움을 느낄 수 있는 그림책. 알파벳 A부터 Z까지 의 문자 디자인과 각각의 글자로 시작되는 그림들이 숨어 있다. 예를 들면 알파벳 B가 ''이상한 그림''으로 그려져 있고 옆에는 B로 시작되는 자전거(bicycle)가 있으며 그 둘레를 장식에는 콩(bean), 벌(bee), 종(bell), 새(bird), 단추(button)가 숨어 있는 식이다. 또한 독특한 알파벳 디자인은 말로는 설명하기 힘든 신비한 모습을
+출판사: 한림출판사
+ISBN: 9788970942896
+출간일시: 2003-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=975539&q=ABC+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EB%82%AE%EC%9D%80%ED%95%99%EB%85%84+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 9000, 10.00, 8100, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975539%3Ftimestamp%3D20221011174450', 137, 78, 'ACTIVATE', NULL),
+    (580, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '수영할 수 있어요(네버랜드 마음이 자라는 성장 그림책 22)(양장본 HardCover)', '엘리자베스 드 랑빌리', '9788952780140', '《나도 수영할 수 있어요》는 이처럼 우리 몸을 균형 있게 성장시켜주는 ‘수영’을 소재로 한 작품이다. 친구들과 수영장에 간 톰은 탈의실에서 수영복으로 갈아입고 나와 선생님의 지시에 따라 간단한 준비운동과 샤워를 마친다. 높이가 얕은 풀에서부터 시작한 톰과 친구들은 엄마와 선생님의 지도 아래 물속에 있는 물건 잡기, 잠수하기, 발차기 등 물속에서 할 수 있는 재미있는 놀이들을 하며 즐거워한다.
+출판사: 시공주니어
+ISBN: 9788952780140
+출간일시: 2014-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=646269&q=%EB%82%98%EB%8F%84+%EC%88%98%EC%98%81%ED%95%A0+%EC%88%98+%EC%9E%88%EC%96%B4%EC%9A%94%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EB%A7%88%EC%9D%8C%EC%9D%B4+%EC%9E%90%EB%9D%BC%EB%8A%94+%EC%84%B1%EC%9E%A5+%EA%B7%B8%EB%A6%BC%EC%B1%85+22%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 33.68, 6300, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F646269%3Ftimestamp%3D20220512165822', 140, 80, 'ACTIVATE', NULL),
+    (581, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '책벌레 찌르찌르(푸른숲 그림책 6)(양장본 HardCover)', '제니퍼 번', '9788971849330', '아이들에게 책 읽는 즐거움을 일깨워주는 그림책 『책벌레 찌르찌르』. 책과 가까워진 찌르레기 ‘찌르찌르’가 비해 중 태풍이 몰려오는 상황에서 책에서 발견한 지식을 활용하여 수많은 찌르레기들을 피신시킨 이야기를 다루는 그림책이다. 고난의 상황에서 빛을 발하는 책의 진정한 가치를 그려냄으로써 책을 왜 읽어야 하는지에 대한 깨달음을 전하고 있다.
+출판사: 푸른숲주니어
+ISBN: 9788971849330
+출간일시: 2011-12-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=989637&q=%EC%B1%85%EB%B2%8C%EB%A0%88+%EC%B0%8C%EB%A5%B4%EC%B0%8C%EB%A5%B4%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EA%B7%B8%EB%A6%BC%EC%B1%85+6%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989637%3Ftimestamp%3D20211117155811', 143, 82, 'ACTIVATE', NULL),
+    (582, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '여행 그림책 5: 스페인편(여행 그림책)(양장본 HardCover)', '안노 미쓰마사', '9788970944524', '독특한 세계관을 가진 그림책 작가 안노 미쯔마사의『여행 그림책』시리즈 제5권《스페인 편》. 본 시리즈는 글이 없습니다. 대신 시원시원한 그림으로 각 나라를 여행하도록 구성되어 있습니다. 어린이는 한 장 한 장의 그림 속에 숨겨진 명소를 ''숨은그림찾기'' 하듯이 재미있게 살펴볼 수 있습니다.  5권 〈스페인 편〉에서 여행자는 남부의 가우디의 건축물이 유명한 남부 해안가의 바로셀로나를 거쳐 돈키호테로 유명한 라만차, 이슬람의 흔적을 잘 보여주는 알람브라 궁전
+출판사: 한림출판사
+ISBN: 9788970944524
+출간일시: 2014-06-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=976005&q=%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85+5%3A+%EC%8A%A4%ED%8E%98%EC%9D%B8%ED%8E%B8%28%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F976005%3Ftimestamp%3D20220829105419', 146, 84, 'ACTIVATE', NULL),
+    (583, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '마사지 그림책(조근조근 조물조물)(CD1장포함)(푸른숲 그림책 22)', '사라 비칸데르', '9791156750222', '《조근조근 조물조물 마사지 그림책》은 신체 접촉을 통한 정서적 교감을 길러 주는 ‘마사지’와 아이의 상상력과 창의력을 키워 주는 ‘이야기’가 결합된 그림책이다. 열기구를 타고 열대 초원으로 가서 동물들을 구경하고, 고양이를 따라 요정의 숲으로 놀러 가고, 산타클로스를 도와 친구들에게 나눠 줄 선물을 포장하는 등 아이들의 호기심을 자극할 수 있는 4가지의 이야기가 담겨 있다.
+출판사: 푸른숲주니어
+ISBN: 9791156750222
+출간일시: 2014-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1570423&q=%EB%A7%88%EC%82%AC%EC%A7%80+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%A1%B0%EA%B7%BC%EC%A1%B0%EA%B7%BC+%EC%A1%B0%EB%AC%BC%EC%A1%B0%EB%AC%BC%29%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EA%B7%B8%EB%A6%BC%EC%B1%85+22%29', 12000, 10.00, 10800, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1570423%3Ftimestamp%3D20221025152231', 149, 86, 'ACTIVATE', NULL),
+    (584, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '숨바꼭질 그림책(보드북)', '솔트앤페퍼', '9791196163518', '집중력을 길러요! 페이지마다 5개씩, 총 25개의 플랩이 들어 있는 유아용 들춰 보기 놀이 책입니다. 두툼한 보드북으로 만들어져 여러 번 반복하여 사용해도 쉽게 훼손되지 않으며, 플랩의 크기가 큼직하여 연령이 어린 아기들도 혼자서 플랩을 들추며 놀이할 수 있습니다. 아이와 함께 보다 즐겁고 다채롭게 놀이할 수 있도록 매 페이지마다 다양한 팁이 담겨 있습니다.  따뜻한 색감의 예쁜 그림은 아이들의 시선을 사로잡고 미적 감각을 길러 줍니다. 플랩을 들추며 손의
+출판사: Think Stone
+ISBN: 9791196163518
+출간일시: 2017-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1671575&q=%EC%88%A8%EB%B0%94%EA%BC%AD%EC%A7%88+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EB%B3%B4%EB%93%9C%EB%B6%81%29', 12000, 10.00, 10800, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1671575%3Ftimestamp%3D20190131163954', 152, 88, 'ACTIVATE', NULL),
+    (585, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '여행 그림책 2: 이탈리아편(여행 그림책)', '안노 미쓰마사', '9788970943121', '이탈리아의 풍경과 명소 유적 등을 엄선해 파노라마처럼 전개하는 글자없는 그림책.여행 그림책 시리즈2 이탈리아편. 펼치는 장면마다 명화, 명작, 영화의 한 장면, 역사적 에피소드, 유명인의 얼굴 등 숨은 그림들이 이탈리아의 풍경과 함께 수록되어 있다.
+출판사: 한림출판사
+ISBN: 9788970943121
+출간일시: 2001-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=975582&q=%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85+2%3A+%EC%9D%B4%ED%83%88%EB%A6%AC%EC%95%84%ED%8E%B8%28%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 11000, 10.00, 9900, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975582%3Ftimestamp%3D20220730175540', 155, 90, 'ACTIVATE', NULL),
+    (586, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '여행 그림책 3: 영국편(여행 그림책)', '안노 미쓰마사', '9788970943404', '글 없는 그림책. 각구의 풍경과 명소, 유적 등을 엄선하여 파노라마처럼 전개하였다. 펼친 장면들마다 많은 비밀들이 숨겨져 있다. 명화, 명작, 영화의 한 장면, 역사적 사건 등등이 그림책 속에 숨겨져 있다.
+출판사: 한림출판사
+ISBN: 9788970943404
+출간일시: 2003-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=975641&q=%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85+3%3A+%EC%98%81%EA%B5%AD%ED%8E%B8%28%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 11000, 10.00, 9900, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975641%3Ftimestamp%3D20220630115022', 158, 92, 'ACTIVATE', NULL),
+    (587, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '어이 친구(알이알이 명작그림책 21)(양장본 HardCover)', 'Adam Rex', '9788997175451', '『어이 친구』는 동물원에 간 소녀가 동물들의 수상한 부탁을 들어주면서 벌어지는 이야기를 담은 그림책입니다. 고릴라, 멧돼지, 펭귄, 칠면조 등 동물원에서 흔히 볼 수 있는 동물들은 어디에 쓸 지 알 수 없는 물건들을 부탁합니다. 부탁을 하면서도 당당한 동물들의 태도가 웃음을 자아내고, 마지막까지 알 수 없는 이야기는 아이들의 호기심과 상상력을 자극합니다.  ''어이, 친구!'' 고릴라가 소녀를 불러 세우고, 새 타이어 2개를 부탁합니다. 멧돼지는 쓰레기통을
+출판사: 현북스
+ISBN: 9788997175451
+출간일시: 2013-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1479484&q=%EC%96%B4%EC%9D%B4+%EC%B9%9C%EA%B5%AC%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+21%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1479484%3Ftimestamp%3D20220922040309', 161, 94, 'ACTIVATE', NULL),
+    (588, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '줄 하나(알이알이 창작그림책 4)(양장본 HardCover)', '김슬기', '9788997175741', '제1회 앤서니 브라운 신인작가 공모전 수상작가 김슬기의 두 번째 그림책 『줄 하나』. 짧은 줄 하나를 발견한 아기 생쥐가 친구들이 가져온 다양한 줄을 하나로 이어 다함께 줄넘기를 할 수 있는 긴 줄 하나를 만드는 이야기입니다. 하나만 있을 때는 아무것도 할 수 없는 불완전한 줄이지만 여러 개가 이어지면 다함께 갖고 놀 수 있는 장난감이 되듯이, 모자라고 부족한 것은 여럿이 힘을 모아 해결해 나갈 수 있다는 메시지가 들어 있습니다. 리놀륨 판화로 표현
+출판사: 현북스
+ISBN: 9788997175741
+출간일시: 2013-09-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1483629&q=%EC%A4%84+%ED%95%98%EB%82%98%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483629%3Ftimestamp%3D20220922040511', 164, 96, 'ACTIVATE', NULL),
+    (589, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '알고리즘이 보이는 그림책', 'ANK CO LTD, Ltd', '9788931553413', '이 책은 프로그래머가 되기 위해 알고리즘을 공부하는 사람들에게 입문서로 가장 적절한 도서입니다. 그림을 이용한 풍부한 예제를 통해 설명함으로써 어려운 내용을 보다 쉽게 이해할 수 있게 해줍니다. 프로그램 작성의 어느 한 부분에 대한 예만을 제시하는 것이 아니라 문제의 이해에서부터 프로그램을 디자인하고 알고리즘을 만들어 코딩을 하는 전 과정을 상세하게 단계별로 설명해 줌으로써 프로그램 작성의 모든 과정에 대한 이해를 돕습니다.
+출판사: 성안당
+ISBN: 9788931553413
+출간일시: 2015-02-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=487003&q=%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9D%B4+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 15000, 5.00, -1, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487003%3Ftimestamp%3D20221025145611', 167, 98, 'ACTIVATE', NULL),
+    (590, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '쌀이 된 프랭키(프랭키와 친구들 친환경 참살이 그림책)', '리퀴드 브레인', '9788966071050', '『쌀이 된 프랭키』은 눈사람을 닮은 꼬마 곰 프랭키와 황토 빛 땅을 상징하는 꼬마 도깨비 뚜, 파란 물을 상징하는 꼬마 도깨비 쿠앙, 초록 식물을 상징하는 꼬마 도깨비 퐁의 모험 가득한 이야기가 대자연 속에서 펼쳐진다. 바라만 봐도 기분이 좋아지는 싱그러운 그림과 상큼한 글 속에는 ‘자연’과 ‘먹을거리’ 그리고 친구와의 우정에 대한 따듯한 메시지가 살아 숨 쉰다.
+출판사: 거북이북스
+ISBN: 9788966071050
+출간일시: 2014-04-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=923213&q=%EC%8C%80%EC%9D%B4+%EB%90%9C+%ED%94%84%EB%9E%AD%ED%82%A4%28%ED%94%84%EB%9E%AD%ED%82%A4%EC%99%80+%EC%B9%9C%EA%B5%AC%EB%93%A4+%EC%B9%9C%ED%99%98%EA%B2%BD+%EC%B0%B8%EC%82%B4%EC%9D%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 11000, 10.00, 9900, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F923213%3Ftimestamp%3D20211114183851', 170, 100, 'ACTIVATE', NULL),
+    (591, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '여행 그림책: 중부유럽편(여행 그림책 시리즈 1)(양장본 HardCover)', '안노 미쓰마사', '9788970942438', '독특한 세계관을 가진 그림책 작가 안노 미쯔마사의『여행 그림책』시리즈 제1권《중부유럽편 편》. 본 시리즈는 글이 없습니다. 대신 시원시원한 그림으로 각 나라를 여행하도록 구성되어 있습니다. 어린이는 한 장 한 장의 그림 속에 숨겨진 명소를 ''숨은그림찾기'' 하듯이 재미있게 살펴볼 수 있습니다.  제1권《중부유럽편 편》에는 주인공이 말을 타고 중부유럽을 여행하며 마을과 사람들을 스케치한 내용이 담겨 있습니다. 밀레와 쇠라 등 명화 속의 장면들이 마을 사람
+출판사: 한림출판사
+ISBN: 9788970942438
+출간일시: 2019-04-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=975463&q=%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85%3A+%EC%A4%91%EB%B6%80%EC%9C%A0%EB%9F%BD%ED%8E%B8%28%EC%97%AC%ED%96%89+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%8B%9C%EB%A6%AC%EC%A6%88+1%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975463%3Ftimestamp%3D20220716190727', 173, 102, 'ACTIVATE', NULL),
+    (592, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '어린이가 처음 만나는 수학그림책 3:논리수학편(수학 그림책)', 'MITSUMASA ANNO', '9788970941288', '출판사: 한림출판사
+ISBN: 9788970941288
+출간일시: 1994-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=975133&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EA%B0%80+%EC%B2%98%EC%9D%8C+%EB%A7%8C%EB%82%98%EB%8A%94+%EC%88%98%ED%95%99%EA%B7%B8%EB%A6%BC%EC%B1%85+3%3A%EB%85%BC%EB%A6%AC%EC%88%98%ED%95%99%ED%8E%B8%28%EC%88%98%ED%95%99+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 14000, 10.00, 12600, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975133%3Ftimestamp%3D20220528152451', 176, 104, 'ACTIVATE', NULL),
+    (593, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '영유아를 위한 감성 그림책과 정보 그림책 세트', '풀빛 편집부', '9788974746247', '풀빛 출판사에서 유아들의 감성을 키우는데 도움이 될 만한 그림책만을 선별하여 한데 묶었습니다. 본 제품은 스테디셀러인 샬로트 졸로토의 〈바람이 몸출 때〉를 비롯해 총 13권이 들어 있습니다. 각 작품은 사랑, 우정, 가족 등의 주제를 비롯해 유아들이 인지해야 할 기초지식을 다룬 그림책이 포함되어 있습니다.
+출판사: 풀빛
+ISBN: 9788974746247
+출간일시: 2008-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1047327&q=%EC%98%81%EC%9C%A0%EC%95%84%EB%A5%BC+%EC%9C%84%ED%95%9C+%EA%B0%90%EC%84%B1+%EA%B7%B8%EB%A6%BC%EC%B1%85%EA%B3%BC+%EC%A0%95%EB%B3%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8', 109000, 10.00, 98100, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1047327%3Ftimestamp%3D20260331110841', 179, 106, 'ACTIVATE', NULL),
+    (594, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '초등 공부가 쉬워지는 그림책 수업', '그림책사랑교사모임', '9788946422933', '그림책으로 수업하고 학급을 운영하는 교사들의 모임인 그림책사랑교사모임에서 초등학교 입학 전후의 아이들이 독서 습관을 형성하고 사고력을 키우는 데 그림책을 활용하는 방법을 안내한다. 나와 친구, 가족과 이웃, 동물과 사회, 전쟁과 세계 평화, 지구와 자연환경, 미래와 과학 기술 등 1~6학년 교과 핵심 주제 30개를 담은 그림책을 소개한 뒤 아이들 눈높이에 맞게 배경지식을 설명하고 사고력 향상을 위한 다양한 독후 활동을 제시한다.  초등학교 입학 전
+출판사: 샘터(샘터사)
+ISBN: 9788946422933
+출간일시: 2024-11-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6778602&q=%EC%B4%88%EB%93%B1+%EA%B3%B5%EB%B6%80%EA%B0%80+%EC%89%AC%EC%9B%8C%EC%A7%80%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%88%98%EC%97%85', 18000, 10.00, 16200, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6778602%3Ftimestamp%3D20250208153049', 182, 108, 'ACTIVATE', NULL),
+    (595, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '멋쟁이 상어 죠스(와그작 그림책)', '베아트리체 코스타마그나', '9788915101135', '『멋쟁이 상어 죠스』는 날카로운 이빨 때문에 친구가 없던 상어 죠스에게 친구가 생긴 이야기를 담고 있습니다. 상어 죠스는 친구를 사귀고 싶어 하지만 아무도 다가와 주지 않아요. 다들 죠스의 날카로운 이빨을 무서워하거든요. 어느날, 죠스의 꼬리를 꽉 꼬집은 작은 게 때문에 죠스는 몹시 화가 났어요. 과연 죠스는 화를 풀고 다른 동물들과 친해질 수 있을까요?
+출판사: 삼성출판사
+ISBN: 9788915101135
+출간일시: 2016-07-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=387915&q=%EB%A9%8B%EC%9F%81%EC%9D%B4+%EC%83%81%EC%96%B4+%EC%A3%A0%EC%8A%A4%28%EC%99%80%EA%B7%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 6900, 10.00, 6210, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F387915%3Ftimestamp%3D20220217162412', 185, 110, 'ACTIVATE', NULL),
+    (596, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '낮과 밤(알이알이 명작 그림책 34)', '무르티 부난타', '9791157410026', '『낮과 밤』은 인도네시아에서 전해지는 민담을 각색한 이야기다. 마사라세나니는 우연히 태양이 어디에서 떠오르는지를 알아낸다. 어느 날 밤, 그는 아무도 모르게 태양이 떠오르는 곳으로 가서 덫을 놓는다. 태양을 사로잡을 생각이었던 것이다. 다음 날, 사람들은 깜짝 놀란다. 바구니가 사고야자나무 가루로 가득 차도록 일을 했는데 아직도 하늘에 태양이 떠 있는 게 아닌가. 사람들은 길어진 낮 시간 동안 먹을거리를 충분히 마련할 수 있어 기뻐했지만, 마사라
+출판사: 현북스
+ISBN: 9791157410026
+출간일시: 2014-08-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1574743&q=%EB%82%AE%EA%B3%BC+%EB%B0%A4%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+34%29', 12000, 10.00, 10800, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1574743%3Ftimestamp%3D20220922035753', 188, 112, 'ACTIVATE', NULL),
+    (597, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '닭들이 이상해(알맹이 그림책 5)(양장본 HardCover)', '브루스 맥밀란', '9788990878380', '출판사: 바람의아이들
+ISBN: 9788990878380
+출간일시: 2007-02-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1334158&q=%EB%8B%AD%EB%93%A4%EC%9D%B4+%EC%9D%B4%EC%83%81%ED%95%B4%28%EC%95%8C%EB%A7%B9%EC%9D%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+5%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9000, 10.00, 8100, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1334158%3Ftimestamp%3D20211014160116', 191, 114, 'ACTIVATE', NULL),
+    (598, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '웅진 우리 그림책 세트(웅진 우리 그림책)(전50권)', '최숙희', '9788901238975', '우리 작가들이 쓰고 그린 우리 이야기를 담은 그림책 ''웅진 우리그림책''시리즈는 아이들에게 생각의 빛, 감성의 빛을 비추는 국내 창작 그림책 시리즈입니다. 다양한 주제와 개성 넘치는 그림으로 우리의 정서와 생활을 담아내어 아이의 생각이 자라게 하고 감성이 풍부해 지도록 도와줍니다.
+출판사: 웅진주니어
+ISBN: 9788901238975
+출간일시: 2020-09-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5477425&q=%EC%9B%85%EC%A7%84+%EC%9A%B0%EB%A6%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8%28%EC%9B%85%EC%A7%84+%EC%9A%B0%EB%A6%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%A0%8450%EA%B6%8C%29', 499000, 10.00, 449100, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5477425%3Ftimestamp%3D20220925174620', 194, 116, 'ACTIVATE', NULL),
+    (599, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '코알라 키드(양장본 HardCover)', '삼성출판사 편집부', '9788915081642', '3D 애니메이션 〈코알라 키드〉를 그림책으로 만나는 『코알라 키드』. 털이 새하얗다는 이유로 외톨이였던 코알라 ''쟈니''가 최고의 영웅 ''코알라 키드''가 되기까지의 스펙터클한 사파리 모험 속으로 초대하는 3D 애니메이션 〈코알라 키드〉의 이야기와 그림을 고스란히 담아낸 그림책이다. 오스트레일리아의 신비로운 땅 아웃백에는 털이 새하얗다는 이유로 친구들에게 놀림을 당하는 코알라 쟈니가 살고 있었다. 어느 날 주머니쥐 하미쉬워 원숭이 히긴스가 찾아 와 쟈니
+출판사: 삼성출판사
+ISBN: 9788915081642
+출간일시: 2012-01-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=387394&q=%EC%BD%94%EC%95%8C%EB%9D%BC+%ED%82%A4%EB%93%9C%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9800, 10.00, 8820, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F387394%3Ftimestamp%3D20220318173049', 197, 118, 'ACTIVATE', NULL),
+    (600, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '나의 첫 우주 그림책(초등학생이 보는 지식정보 그림책 12)(양장본 HardCover)', '테즈카 아케미, 무라타 히로코', '9788958285410', '출판사: 사계절
+ISBN: 9788958285410
+출간일시: 2011-04-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=776766&q=%EB%82%98%EC%9D%98+%EC%B2%AB+%EC%9A%B0%EC%A3%BC+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%B4%88%EB%93%B1%ED%95%99%EC%83%9D%EC%9D%B4+%EB%B3%B4%EB%8A%94+%EC%A7%80%EC%8B%9D%EC%A0%95%EB%B3%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+12%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10800, 10.00, 9720, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F776766%3Ftimestamp%3D20220524160013', 0, 0, 'ACTIVATE', NULL),
+    (601, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '어린이가 알아야 할 세계명화 13(그림이 좋아지는 그림책 2)(양장본 HardCover)', '앙겔라 벤첼', '9788992914550', '아이들을 예술의 세계로 안내하여 예술 감각을 키워주는 「그림이 좋아지는 그림책」 제2권 『어린이가 알아야 할 세계명화 13』. 독일 태생의 미술 교육가 앙겔라 벤첼이 아이들이 알아야 할 세계명화 13점에 대해 알기 쉽게 소개하고 있다. 오랜 시간이 흘러서도 변함없이 인정받는 유명한 명화의 매력 속에 푹 빠져들도록 이끈다.  얀 반 베이크의 《아르놀피니 부부의 초상》, 빈센트 반 고흐의 《별이 빛나는 밤》, 파블로 피카소의 《비둘기를 안고 있는 소녀》, 그리고
+출판사: 터치아트
+ISBN: 9788992914550
+출간일시: 2013-04-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1394573&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EA%B0%80+%EC%95%8C%EC%95%84%EC%95%BC+%ED%95%A0+%EC%84%B8%EA%B3%84%EB%AA%85%ED%99%94+13%28%EA%B7%B8%EB%A6%BC%EC%9D%B4+%EC%A2%8B%EC%95%84%EC%A7%80%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+2%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1394573%3Ftimestamp%3D20220902175326', 3, 2, 'ACTIVATE', NULL),
+    (602, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '더러운 옷(지평 그림책 시리즈 3)', '로버트 찰스 스프라울', '9788964970416', '『더러운 옷』은 신학자이자 교육가인 스프롤 박사가 복음의 핵심 메시지를 어린아이들도 쉽게 이해할 수 있도록 하였다. 이 책은 십자가에 못 박히신 예수 그리스도의 대속의 은혜를 독특한 방식으로 표현한다. 더불어 부모님과 함께하는 질문과 성경 구절들을 이야기의 배경이 되는 위대한 진리를 가르치는데 도움을 줄 것이다.
+출판사: 지평서원
+ISBN: 9788964970416
+출간일시: 2013-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=909296&q=%EB%8D%94%EB%9F%AC%EC%9A%B4+%EC%98%B7%28%EC%A7%80%ED%8F%89+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%8B%9C%EB%A6%AC%EC%A6%88+3%29', 9000, 10.00, 8100, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F909296%3Ftimestamp%3D20221025130550', 6, 4, 'ACTIVATE', NULL),
+    (603, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '줌 그림 속의 그림(그림책 보물창고 60)(양장본 HardCover)', '이슈트반 바녀이', '9788961703468', '세계적인 일러스트레이터 이슈트반 바녀이의 공간에 대한 개성적인 시선을 담은 그림책 『줌 그림 속의 그림』. 아주 크게 확대된 닭의 볏으로 시작해 우주 공간의 아득한 점으로 멀어진 지구의 모습으로 끝나는 글 없는 그림책입니다. 한정된 지면을 초월해 제약 없이 뻗어나가는 상상력을 실현해 보이는 이 책은 펼침과 동시에 자신이 있는 공간에서 더 나아가 지역, 나라, 세계, 우주 속의 자신을 실감하면서 세계가 무한히 확장되는 것 같은 경험을 할 수 있습니다
+출판사: 보물창고
+ISBN: 9788961703468
+출간일시: 2013-09-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=857039&q=%EC%A4%8C+%EA%B7%B8%EB%A6%BC+%EC%86%8D%EC%9D%98+%EA%B7%B8%EB%A6%BC%28%EA%B7%B8%EB%A6%BC%EC%B1%85+%EB%B3%B4%EB%AC%BC%EC%B0%BD%EA%B3%A0+60%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12800, 10.00, 11520, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F857039%3Ftimestamp%3D20221025124033', 9, 6, 'ACTIVATE', NULL),
+    (604, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '일이 너무 커졌어요(노란돼지 창작그림책 13)(양장본 HardCover)', '이재민', '9788994975139', '『일이 너무 커졌어요』는 어려움에 빠진 친구를 도와주려는 따뜻한 마음을 가진 동물친구들이 자기 일에 몰두하고 자기 일을 먼저 하느라 정확하게 듣지도 전달하지도 못해 생기는 에피소드를 재미있게 담은 그림책이다. 못 하나가 필요할 뿐인데, 포크레인까지 등장하는 이 어처구니없는 사건은 그래도 친구를 위하는 따뜻한 마음에서 비롯된 것이니 미워할 수 없는 귀여운 실수로 마무리된다. 우리 아이들에게 다른 사람의 말을 듣고 전달할 때, 특히 전화로 커뮤니케이션이
+출판사: 노란돼지
+ISBN: 9788994975139
+출간일시: 2011-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1435241&q=%EC%9D%BC%EC%9D%B4+%EB%84%88%EB%AC%B4+%EC%BB%A4%EC%A1%8C%EC%96%B4%EC%9A%94%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+13%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 23.85, 9900, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1435241%3Ftimestamp%3D20220823190953', 12, 8, 'ACTIVATE', NULL),
+    (605, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '날아라 막내야(사계절 그림책 17)', '배봉기', '9788958281504', '출판사: 사계절
+ISBN: 9788958281504
+출간일시: 2014-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=776380&q=%EB%82%A0%EC%95%84%EB%9D%BC+%EB%A7%89%EB%82%B4%EC%95%BC%28%EC%82%AC%EA%B3%84%EC%A0%88+%EA%B7%B8%EB%A6%BC%EC%B1%85+17%29', 11500, 10.00, 10350, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F776380%3Ftimestamp%3D20200429125450', 15, 10, 'ACTIVATE', NULL),
+    (606, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '색깔 있는 그림책 세트(색깔 있는 그림책 시리즈)(전12권)', '티에리 마리쿠르', '9791187043287', '[색깔 있는 그림책 세트]는 알록달록 예쁜 색깔의 그림동화를 모아 구성했습니다. 시각 장애가 있는 어린이의 감각을 섬세하게 보여준 [색깔은 어떤 맛일까?], 아이들의 풍부하고 감성적인 모습을 보여준 [그래요 정말 그래요], 천진난만하면서도 어른처럼 자신에게 유리한 상황을 만들어내는 아이들의 이중성을 잘 묘사해낸 [미운 네 살] 등의 책들을 만나볼 수 있습니다.
+출판사: 해솔
+ISBN: 9791187043287
+출간일시: 2016-10-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1641956&q=%EC%83%89%EA%B9%94+%EC%9E%88%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8%28%EC%83%89%EA%B9%94+%EC%9E%88%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%8B%9C%EB%A6%AC%EC%A6%88%29%28%EC%A0%8412%EA%B6%8C%29', 90000, 10.00, 81000, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1641956%3Ftimestamp%3D20211023202504', 18, 12, 'ACTIVATE', NULL),
+    (607, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '너도 뿡 나도 뿡 방귀 뿡뿡(노란우산 그림책 24)(양장본 HardCover)', '무라카미 야치요', '9788963056371', '『너도 뿡 나도 뿡 방귀 뿡뿡』은 방귀에 대한 아이들의 궁금증을 재미있는 이야기와 앙증맞은 그림을 통해 설명하고 있습니다. 방귀 소리를 ''뿌웅 뿡''과 ''쉬이 잉''으로 표현해 방귀의 특성을 설명하고 음식의 균형과 방귀의 의미를 설명합니다.
+출판사: 노란우산
+ISBN: 9788963056371
+출간일시: 2013-08-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=876961&q=%EB%84%88%EB%8F%84+%EB%BF%A1+%EB%82%98%EB%8F%84+%EB%BF%A1+%EB%B0%A9%EA%B7%80+%EB%BF%A1%EB%BF%A1%28%EB%85%B8%EB%9E%80%EC%9A%B0%EC%82%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+24%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F876961%3Ftimestamp%3D20220922040126', 21, 14, 'ACTIVATE', NULL),
+    (608, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '탬버린을 찰찰찰(탬버린 동요 그림책)', '애플비 편집부', '9788926204474', '탬버린 동요 그림책. 가운데 버튼을 누르면 찰찰찰 탬버린 소리가 나고, 동요 버튼을 누르면 신나는 동요가 흘러나온다. 구슬비, 비행기, 옹달샘, 맴맴, 산토끼, 짝짜꿍 등 6곡의 동요를 재미있게 부를 수 있도록 구성되어 있다.
+출판사: 애플비
+ISBN: 9788926204474
+출간일시: 2010-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=432336&q=%ED%83%AC%EB%B2%84%EB%A6%B0%EC%9D%84+%EC%B0%B0%EC%B0%B0%EC%B0%B0%28%ED%83%AC%EB%B2%84%EB%A6%B0+%EB%8F%99%EC%9A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 13800, 10.00, 12420, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F432336%3Ftimestamp%3D20240629112912', 24, 16, 'ACTIVATE', NULL),
+    (609, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '유아문학활동(그림이야기책을 통한)', '김소양 외', '9788970076072', '출판사: 양서원
+ISBN: 9788970076072
+출간일시: 2001-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=951304&q=%EC%9C%A0%EC%95%84%EB%AC%B8%ED%95%99%ED%99%9C%EB%8F%99%28%EA%B7%B8%EB%A6%BC%EC%9D%B4%EC%95%BC%EA%B8%B0%EC%B1%85%EC%9D%84+%ED%86%B5%ED%95%9C%29', 16000, 1.00, 15840, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F951304%3Ftimestamp%3D20221025125305', 27, 18, 'ACTIVATE', NULL),
+    (610, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '뿌지직 똥(마음이 커지는 그림책 2)(양장본 HardCover)', '사토 신', '9788950924300', '친구를 찾아 나선 똥의 이야기『뿌지직 똥』. 아이들의 마음을 깊고 넓게 키워주는 세계의 걸작 그림책들을 선보이는「마음이 커지는 그림책」시리즈의 두 번째 책이다. 고약한 냄새 때문에 모두가 피하는 똥의 이야기를 통해 존재의 진정한 가치, 외로움을 이겨내는 방법 등의 주제를 경쾌하게 풀어놓는다. 뿌지직, 툭! 드디어 세상 구경을 하게 된 똥. 처음에는 지나가던 동물들이 호기심을 보이며 똥에게 다가오지만, 곧 지독한 냄새 때문에 모두 달아나 버린다. 속이
+출판사: 을파소
+ISBN: 9788950924300
+출간일시: 2010-06-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=623213&q=%EB%BF%8C%EC%A7%80%EC%A7%81+%EB%98%A5%28%EB%A7%88%EC%9D%8C%EC%9D%B4+%EC%BB%A4%EC%A7%80%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+2%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F623213%3Ftimestamp%3D20220829110016', 30, 20, 'ACTIVATE', NULL),
+    (611, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '돌 씹어 먹는 아이(그림책)', '송미경', '9788954656719', '2014년 출간된 이래 독자 및 평단으로부터 큰 사랑을 받아 온 동화 「돌 씹어 먹는 아이」가 그림책으로 새로이 출간됐다. 두 나라 두 작가의 공동 작업으로 탄생한 그림책이다. 세계적 일러스트레이터 세르주 블로크가 그림을 맡았다. 원작 특유의 독특한 분위기, ‘다름’을 응원하고 지지하는 다정한 메시지가 세르주 블로크의 간결하고도 유쾌한 그림과 만나 강렬한 하모니를 빚어낸다.
+출판사: 문학동네
+ISBN: 9788954656719
+출간일시: 2019-06-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4977943&q=%EB%8F%8C+%EC%94%B9%EC%96%B4+%EB%A8%B9%EB%8A%94+%EC%95%84%EC%9D%B4%28%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 14000, 10.00, 12600, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4977943%3Ftimestamp%3D20260108124703', 33, 22, 'ACTIVATE', NULL),
+    (612, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '처음 그림을 그린 아이(베스트 세계 걸작 그림책)(양장본 HardCover)', '모디캐이 저스타인', '9788925551524', '『처음 그림을 그린 아이』는 세상에 그림이 어떻게 생겨나게 되었는지를 미국 그림책의 거장 모디캐이 저스타인이 나름대로 상상해서 쓴 이야기다. 모디캐이 저스타인은 평생 그림을 그려 온 사람으로서 최초의 화가가 누구든, 그 사람은 어린아이가 틀림없을 것만 같다고 생각했다. 그리고 1994년 프랑스의 남부 한 동굴에서 발견된 그림과 동굴 속에서 함께 발견 된 여덟 산 난 아이의 발자국을 보고 자신의 생각을 확신하게 된다. 그림책을 읽는 아이들은 세상에서 맨
+출판사: 주니어RHK
+ISBN: 9788925551524
+출간일시: 2013-11-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=415373&q=%EC%B2%98%EC%9D%8C+%EA%B7%B8%EB%A6%BC%EC%9D%84+%EA%B7%B8%EB%A6%B0+%EC%95%84%EC%9D%B4%28%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EC%84%B8%EA%B3%84+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F415373%3Ftimestamp%3D20220925173649', 36, 24, 'ACTIVATE', NULL),
+    (613, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아기용을 어떻게 보내지(바우솔 그림책 3)(양장본 HardCover)', '설용수', '9788983894762', '출판사: 바우솔
+ISBN: 9788983894762
+출간일시: 2011-03-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175141&q=%EC%95%84%EA%B8%B0%EC%9A%A9%EC%9D%84+%EC%96%B4%EB%96%BB%EA%B2%8C+%EB%B3%B4%EB%82%B4%EC%A7%80%28%EB%B0%94%EC%9A%B0%EC%86%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+3%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175141%3Ftimestamp%3D20220527191555', 39, 26, 'ACTIVATE', NULL),
+    (614, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '우리의 고전과 옛 교과서 629책. 629 국민교육헌장 (그림책)', '참빛아카이브, 한국학술정보', '9791168011175', '문교부(지은이겸펴낸이), 문화서적공사(되박아펴낸이), 1969년6월1일(처음지음), 1969년9월1일(펴냄); 20.9×14.9cm.    “한국의 고전적 교과서 629책, 드디어 복간하다!” ● 참빛아카이브와 한국학술정보(주)는 공동으로 협력하여, 학술적·역사적·문화적으로 ‘되새기고 기억할 만한 가치’를 지닌 우리의 고전과 옛교과서 629책을 영인본으로 복간했다. ● 총 5년의 시간이 소요된 이 복간 작업은 1446년 집현전에서 펴낸 [훈민정음]에서
+출판사: 한국학술정보
+ISBN: 9791168011175
+출간일시: 2021-09-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5842002&q=%EC%9A%B0%EB%A6%AC%EC%9D%98+%EA%B3%A0%EC%A0%84%EA%B3%BC+%EC%98%9B+%EA%B5%90%EA%B3%BC%EC%84%9C+629%EC%B1%85.+629+%EA%B5%AD%EB%AF%BC%EA%B5%90%EC%9C%A1%ED%97%8C%EC%9E%A5+%28%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 20500, 10.00, -1, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5842002', 42, 28, 'ACTIVATE', NULL),
+    (615, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '꼬마 책도둑(개정판)(햇살그림책 16)(양장본 HardCover)', '헬렌 도허티', '9791186979280', '잠잘 준비를 마친 아이들에게 그림책을 읽어 주는 것은 어느 집에서나 볼 수 있는 풍경이지요. 그런데 엄마 아빠가 밤마다 읽어주던 그림책들이 모두 사라진다면 어떤 일이 벌어질까요? 버로운 다운 마을에 놀라운 일들이 일어났어요. 엘리자가 잠자기 전 책을 읽고 있는데, 창문이 저절로 열리더니 읽고 있던 책들이 눈 깜짝할 사이에 없어졌어요. 그런데 책이 없어진 집은 엘리자네 집뿐만 아니었어요. 아기 올빼미네 집도, 아기 다람쥐네 집에서도, 매일 밤 책이
+출판사: 봄볕
+ISBN: 9791186979280
+출간일시: 2017-05-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1640315&q=%EA%BC%AC%EB%A7%88+%EC%B1%85%EB%8F%84%EB%91%91%28%EA%B0%9C%EC%A0%95%ED%8C%90%29%28%ED%96%87%EC%82%B4%EA%B7%B8%EB%A6%BC%EC%B1%85+16%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1640315%3Ftimestamp%3D20221025151358', 45, 30, 'ACTIVATE', NULL),
+    (616, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '우리나라 창작동화 그림책 세트(우리나라 창작 그림책 시리즈)(전4권)', '박지훈', '9791187043072', '[우리나라 창작동화 그림책 세트]는 마음이 따뜻해지는 우리나라 창작동화로 구성했습니다. 제주 소녀 은정이가 해녀인 엄마를 이해하는 과정을 그려낸 ''어멍 강옵서''부터 선입견과 편견보다는 상대방을 이해하는 법을 배우는 ''악어 룰라''까지 총 4권의 책을 만나볼 수 있습니다.
+출판사: 해솔
+ISBN: 9791187043072
+출간일시: 2012-12-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1638450&q=%EC%9A%B0%EB%A6%AC%EB%82%98%EB%9D%BC+%EC%B0%BD%EC%9E%91%EB%8F%99%ED%99%94+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8%28%EC%9A%B0%EB%A6%AC%EB%82%98%EB%9D%BC+%EC%B0%BD%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%8B%9C%EB%A6%AC%EC%A6%88%29%28%EC%A0%844%EA%B6%8C%29', 25000, 10.00, 22500, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1638450%3Ftimestamp%3D20200104142436', 48, 32, 'ACTIVATE', NULL),
+    (617, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '콩알 특공대와 빨간 단추(두고두고 보고 싶은 그림책 63)(양장본 HardCover)', '나카가와 치히로', '9788955823974', '콩알 특공대, 출동!” 언제 어디서든 무슨 일이 생겨도 걱정 마세요! 콩알 특공대가 해결해 줍니다!  기발한 상상력과 깜찍한 그림이 돋보이는 [콩알 특공대] 시리즈는 일본에서 출간되어 아이는 물론 어른들에게도 큰 인기를 끌고 있는 그림책입니다. 사람들에게 복잡하고 어려운 일이 생기면 중장비를 타고 달려가 반짝이는 아이디어로 무엇이든 해결해 주는 귀여운 콩알 특공대. 이 작은 특공대는 포크레인, 덤프트럭, 불도저 등 커다란 중장비를 타고 우리 집과 주변 구석
+출판사: 길벗어린이
+ISBN: 9788955823974
+출간일시: 2017-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=719382&q=%EC%BD%A9%EC%95%8C+%ED%8A%B9%EA%B3%B5%EB%8C%80%EC%99%80+%EB%B9%A8%EA%B0%84+%EB%8B%A8%EC%B6%94%28%EB%91%90%EA%B3%A0%EB%91%90%EA%B3%A0+%EB%B3%B4%EA%B3%A0+%EC%8B%B6%EC%9D%80+%EA%B7%B8%EB%A6%BC%EC%B1%85+63%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F719382%3Ftimestamp%3D20211017165012', 51, 34, 'ACTIVATE', NULL),
+    (618, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '정글곰(알이알이 창작그림책 3)(양장본 HardCover)', '주엘', '9788997175598', '《정글곰》은 작가인 주엘과 이룬 남매의 자연주의적 가치관을 반영한 첫 번째 그림책이다. 두 사람은 지금은 누구나 북극곰에 대해 알지만 지구온난화와 같은 환경 문제가 해결되지 않는다면 북극곰 역시 다른 멸종 동물들처럼 결국에는 이름마저 잊혀진 존재가 되고 말 것이라고 생각한다. 그리고 다른 한편으로는 아직도 가끔씩 멸종 동물들이 인간의 손이 닿지 않는 곳에서 평화롭게 모여 살고 있지 않을까 하는 상상을 한다. 《정글곰》은 바로 이와 같은 현실 인식과
+출판사: 현북스
+ISBN: 9788997175598
+출간일시: 2013-06-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1483119&q=%EC%A0%95%EA%B8%80%EA%B3%B0%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+3%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483119%3Ftimestamp%3D20220922035811', 54, 36, 'ACTIVATE', NULL),
+    (619, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '1999년 6월 29일(미래그림책 27)', '데이비드 위스너', '9788983942449', '출판사: 미래아이
+ISBN: 9788983942449
+출간일시: 2004-02-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1177965&q=1999%EB%85%84+6%EC%9B%94+29%EC%9D%BC%28%EB%AF%B8%EB%9E%98%EA%B7%B8%EB%A6%BC%EC%B1%85+27%29', 9000, 10.00, 8100, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177965%3Ftimestamp%3D20200625131833', 57, 38, 'ACTIVATE', NULL),
+    (620, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '처음 만나는 날씨 그림책(초등학생이 보는 지식정보그림책 10)(양장본...', '무라타 히로코', '9788958288039', '『처음 만나는 날씨 그림책』은 아이들이 날씨를 보다 쉽게 이해하고 배울 수 있도록 구성한 책입니다. 아주 작은 물방울과 얼음 알갱이로 구성된 구름이 어떻게 생기고, 얼마나 다양한 종류의 구름들이 있는지 차근차근 알려줍니다. 특히나 구름을 통해 날씨의 변화도 확인할 수 있도록 각각의 구름 모양을 제시했습니다. 구름 속에 있던 물방울이 한데 뭉치면서 떨어지는 것을 말하는 ‘비’나 ‘눈’에 대해서도 들려줍니다.  번쩍 번개가 친 다음에 천둥소리가 들리는 건
+출판사: 사계절
+ISBN: 9788958288039
+출간일시: 2015-01-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=776623&q=%EC%B2%98%EC%9D%8C+%EB%A7%8C%EB%82%98%EB%8A%94+%EB%82%A0%EC%94%A8+%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%B4%88%EB%93%B1%ED%95%99%EC%83%9D%EC%9D%B4+%EB%B3%B4%EB%8A%94+%EC%A7%80%EC%8B%9D%EC%A0%95%EB%B3%B4%EA%B7%B8%EB%A6%BC%EC%B1%85+10%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F776623%3Ftimestamp%3D20220524163050', 60, 40, 'ACTIVATE', NULL),
+    (621, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '나의 꿈꾸는 눈동자(세계 걸작 그림책 지크 76)(양장본 HardCover)', '제니 수 코스테키-쇼', '9788943307646', '''세계 걸작 그림책 지크'' 시리즈, 제76권 『나의 꿈꾸는 눈동자』. 미국 태생의 일러스트레이터 제니 수 코스테키-쇼의 첫 번째 그림책입니다. 지은이 자신의 자전적 이야기를 천진난만하면서도 감동적으로 담아냈습니다. 일러스트레이터다운 화려하고 감각적인 그림이 아이들의 눈과 마음을 사로잡습니다.  이 그림책은 친구들과 조금 다른 눈동자 때문에 놀림을 받아온 꼬마 숙녀 ''제니 수''가, 세상의 편견에 맞서 펼치는 유쾌한 기적 속으로 아이들을 초대합니다. 아이들
+출판사: 보림
+ISBN: 9788943307646
+출간일시: 2009-03-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=590000&q=%EB%82%98%EC%9D%98+%EA%BF%88%EA%BE%B8%EB%8A%94+%EB%88%88%EB%8F%99%EC%9E%90%28%EC%84%B8%EA%B3%84+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%A7%80%ED%81%AC+76%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9800, 10.00, 8820, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590000%3Ftimestamp%3D20220903161302', 63, 42, 'ACTIVATE', NULL),
+    (622, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '해와나무 아기 그림책 3 세트(전3권)', '이태수', '9788962680546', '우리나라 자연을 따뜻한 시선으로 그려온 이태수 생태화가의 그림 놀이책「해와나무 아기 그림책」시리즈 제3세트(전3권). 우리나라 동식물을 아름다운 생태 세밀화로 그려내고, 동식물 특징을 쉬운 이야기로 풀어냈다. 생생하고 고운 그림을 보면서 아기들이 우리와 함께 사는 동식물을 친구로 느끼고 따뜻한 감성을 키울 수 있도록 돕는다. 단순히 넘기는 책이 아니라 ㄱㄴ 모양으로 들추어 보고, 십자로 풀어서 짝을 맞춰 보고, 병풍처럼 펼쳐 보고, 창문을 열어서 볼
+출판사: 해와나무
+ISBN: 9788962680546
+출간일시: 2010-05-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=870877&q=%ED%95%B4%EC%99%80%EB%82%98%EB%AC%B4+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+3+%EC%84%B8%ED%8A%B8%28%EC%A0%843%EA%B6%8C%29', 28500, 10.00, 25650, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F870877%3Ftimestamp%3D20220630125631', 66, 44, 'ACTIVATE', NULL),
+    (623, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '하나만 더(베스트 세계 걸작 그림책)(양장본 HardCover)', 'I C 스프링맨', '9788925548616', '『하나만 더』는 욕심 많은 까치의 이야기를 들려주며 갖고 싶은 것이 생기면 꼭 가져야 하고, ‘내 것’으로 만들어야만 직성이 풀리는 아이에게 반성과 교훈을 전달하는 그림책입니다. 어느 날 생쥐에게 구슬 하나를 선물 받은 까치는 ‘내 것’이라는 소유의 개념을 깨우치게 됩니다. 이후 까치는 이것 저것 예뻐 보이는 물건을 모으기 시작하고 둥지는 물건으로 가득 채워집니다. 결국 점점 무거워진 둥지 때문에 나뭇가지가 부러지고 까치는 그만 그 밑에 깔리고 맙니다. 간결
+출판사: 주니어RHK
+ISBN: 9788925548616
+출간일시: 2012-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=414823&q=%ED%95%98%EB%82%98%EB%A7%8C+%EB%8D%94%28%EB%B2%A0%EC%8A%A4%ED%8A%B8+%EC%84%B8%EA%B3%84+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 10.00, 9000, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F414823%3Ftimestamp%3D20220922041624', 69, 46, 'ACTIVATE', NULL),
+    (624, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '소중해 소중해 나도 너도', '엔미 사키코', '9788925578774', '900여 개 학교에서 성교육을 활발하게 펼쳐 온 성교육 전문가이자 산부인과 전문의, 동시에 두 아이의 엄마인 저자가 쓴 이 책의 출간이 그래서 더욱 반갑다. 《소중해 소중해 나도 너도》는 아이와 어른 독자 모두를 아우르는 성교육 그림책이다. 제대로 된 성교육을 받아 본 적도 해 본 적도 없는 어른들의 필요와 갈증을 해소해 주고, 영유아기 아이들에게는 나와 너의 소중함을 명확하게 알려 주어 출간 직후부터 일본 아마존 어린이책 분야에서 베스트 1위 자리를 차지하며
+출판사: 주니어RHK
+ISBN: 9788925578774
+출간일시: 2022-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6014876&q=%EC%86%8C%EC%A4%91%ED%95%B4+%EC%86%8C%EC%A4%91%ED%95%B4+%EB%82%98%EB%8F%84+%EB%84%88%EB%8F%84', 14000, 10.00, 12600, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6014876%3Ftimestamp%3D20260410121000', 72, 48, 'ACTIVATE', NULL),
+    (625, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '잭과 못된 나무(네버랜드 세계의 걸작 그림책 64)', '브라이언 와일드스미스', '9788972594178', '출판사: 시공주니어
+ISBN: 9788972594178
+출간일시: 1997-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1004098&q=%EC%9E%AD%EA%B3%BC+%EB%AA%BB%EB%90%9C+%EB%82%98%EB%AC%B4%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%84%B8%EA%B3%84%EC%9D%98+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+64%29', 7000, 5.00, -1, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1004098%3Ftimestamp%3D20221025151657', 75, 50, 'ACTIVATE', NULL),
+    (626, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '염소 시즈카(세계 걸작 그림책 지크 78)(양장본 HardCover)', '다시마 세이조', '9788943307967', '일본의 대표적인 예술가 다시마 세이조의 그림책『염소 시즈카』. 화가와 설치 미술가로 널리 알려진 거장 다시마 세이조의 천진하고 역동적인 그림 세계가 집약된 작품이다. 아기 염소 시즈카가 엄마 염소가 되기까지의 과정을 그리고 있다. 나호코네 집에 온 하얀 염소 시즈카가 가족과 친해지고, 풀을 먹고 자라고, 말썽을 피우고, 어른이 되어 새끼를 낳고, 새끼를 떠나 보내고, 다시 듬직한 시즈카로 돌아와 말썽을 피우는 일곱 가지 이야기가 펼쳐진다.
+출판사: 보림
+ISBN: 9788943307967
+출간일시: 2010-03-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=590276&q=%EC%97%BC%EC%86%8C+%EC%8B%9C%EC%A6%88%EC%B9%B4%28%EC%84%B8%EA%B3%84+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%A7%80%ED%81%AC+78%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 25000, 10.00, 22500, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590276%3Ftimestamp%3D20220630125906', 78, 52, 'ACTIVATE', NULL),
+    (627, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '해와나무 아기 그림책 1세트(전3권)', '이태수', '9788962680461', '우리나라 자연을 따뜻한 시선으로 그려온 이태수 생태화가의 그림 놀이책「해와나무 아기 그림책」시리즈 제1세트(전3권). 우리나라 동식물을 아름다운 생태 세밀화로 그려내고, 동식물 특징을 쉬운 이야기로 풀어냈다. 생생하고 고운 그림을 보면서 아기들이 우리와 함께 사는 동식물을 친구로 느끼고 따뜻한 감성을 키울 수 있도록 돕는다. 단순히 넘기는 책이 아니라 ㄱㄴ 모양으로 들추어 보고, 십자로 풀어서 짝을 맞춰 보고, 병풍처럼 펼쳐 보고, 창문을 열어서 볼
+출판사: 해와나무
+ISBN: 9788962680461
+출간일시: 2010-05-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=872640&q=%ED%95%B4%EC%99%80%EB%82%98%EB%AC%B4+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+1%EC%84%B8%ED%8A%B8%28%EC%A0%843%EA%B6%8C%29', 28500, 10.00, 25650, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F872640%3Ftimestamp%3D20220830195315', 81, 54, 'ACTIVATE', NULL),
+    (628, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '달이 지구로 떨어지고 있다니(길벗어린이 지식그림책 4)(양장본 HardCover)', '권수진', '9788955820799', '출판사: 길벗어린이
+ISBN: 9788955820799
+출간일시: 2008-03-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=719246&q=%EB%89%B4%ED%84%B4%3A+%EB%8B%AC%EC%9D%B4+%EC%A7%80%EA%B5%AC%EB%A1%9C+%EB%96%A8%EC%96%B4%EC%A7%80%EA%B3%A0+%EC%9E%88%EB%8B%A4%EB%8B%88%28%EA%B8%B8%EB%B2%97%EC%96%B4%EB%A6%B0%EC%9D%B4+%EC%A7%80%EC%8B%9D%EA%B7%B8%EB%A6%BC%EC%B1%85+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F719246%3Ftimestamp%3D20221025115248', 84, 56, 'ACTIVATE', NULL),
+    (629, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '이건 우리 강아지가 아니야(우리 아기 첫 촉감 그림책)', '피오나 와트', '9791186872239', '우리 아기 첫 촉감 그림책 『이건 우리 강아지가 아니야』는 다양한 질감과 재미난 의태어가 어우진 책입니다. 반복되는 이야기와 아기 수준에 맞게 제작되어 아기의 두뇌가 자극되고 어휘력과 표현력을 키우는 데 도움을 줄 수 있도록 구성되었습니다.
+출판사: 어스본코리아
+ISBN: 9791186872239
+출간일시: 2016-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1632132&q=%EC%9D%B4%EA%B1%B4+%EC%9A%B0%EB%A6%AC+%EA%B0%95%EC%95%84%EC%A7%80%EA%B0%80+%EC%95%84%EB%8B%88%EC%95%BC%28%EC%9A%B0%EB%A6%AC+%EC%95%84%EA%B8%B0+%EC%B2%AB+%EC%B4%89%EA%B0%90+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 9500, 10.00, 8550, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1632132%3Ftimestamp%3D20220423152838', 87, 58, 'ACTIVATE', NULL),
+    (630, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아빠 비행기 타고 슈웅(네버랜드 아기 그림책 114)(보드북)', '호박별', '9788952759436', '엄마, 아빠, 동물 친구들과 함께 재미있는 몸놀이를 따라하는「아기 몸놀이 그림책」시리즈 제2권『아빠 비행기 타고 슈웅』. 따뜻하고 사랑스러운 그림과 경쾌한 글을 보면서 엄마 아빠와 몸을 맞대는 몸놀이를 통해 서로의 사랑을 확인하고 친밀감을 쌓도록 도와주는 시리즈이다. 이번 책에서는 아빠 몸 위에서 비행기도 타고, 말도 타고, 펭귄 놀이도 하고, 산을 오르거나 미끄럼을 타는 등 아빠와 함께 할 수 있는 다양한 몸놀이를 보여준다. 아빠와 몸을 맞대고 놀다
+출판사: 시공주니어
+ISBN: 9788952759436
+출간일시: 2010-09-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=644771&q=%EC%95%84%EB%B9%A0+%EB%B9%84%ED%96%89%EA%B8%B0+%ED%83%80%EA%B3%A0+%EC%8A%88%EC%9B%85%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+114%29%28%EB%B3%B4%EB%93%9C%EB%B6%81%29', 8000, 10.00, 7200, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F644771%3Ftimestamp%3D20221025135544', 90, 60, 'ACTIVATE', NULL),
+    (631, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '불을 꺼 봐요(큐비 아기놀이책)(팝업북)', '리처드 파울러', '9788943306847', '출판사: 보림큐비
+ISBN: 9788943306847
+출간일시: 2007-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=589769&q=%EB%B6%88%EC%9D%84+%EA%BA%BC+%EB%B4%90%EC%9A%94%28%ED%81%90%EB%B9%84+%EC%95%84%EA%B8%B0%EB%86%80%EC%9D%B4%EC%B1%85%29%28%ED%8C%9D%EC%97%85%EB%B6%81%29', 18000, 10.00, 16200, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F589769%3Ftimestamp%3D20220826232916', 93, 62, 'ACTIVATE', NULL),
+    (632, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '탈것(책빛나라 인지 그림책)', '책빛 편집부', '9788993004137', '출판사: 책빛
+ISBN: 9788993004137
+출간일시: 2007-12-14T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1384302&q=%ED%83%88%EA%B2%83%28%EC%B1%85%EB%B9%9B%EB%82%98%EB%9D%BC+%EC%9D%B8%EC%A7%80+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 1100, 10.00, 990, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1384302%3Ftimestamp%3D20190128064841', 96, 64, 'ACTIVATE', NULL),
+    (633, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '딸기는 빨개요(알록달록 아기 그림책 5)(보드북)', '베뜨르 호라체크', '9788952723314', '출판사: 시공주니어
+ISBN: 9788952723314
+출간일시: 2002-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=641912&q=%EB%94%B8%EA%B8%B0%EB%8A%94+%EB%B9%A8%EA%B0%9C%EC%9A%94%28%EC%95%8C%EB%A1%9D%EB%8B%AC%EB%A1%9D+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+5%29%28%EB%B3%B4%EB%93%9C%EB%B6%81%29', 6500, 5.00, -1, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F641912%3Ftimestamp%3D20221025182524', 99, 66, 'ACTIVATE', NULL),
+    (634, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '알고리즘이 보이는 그림책', 'ANK CO LTD', '9788931555813', '있다. 그러나 실제로 알고리즘만을 떼어서 가르치는 과목은 많지 않고 쉽게 설명하는 책도 흔치 않다. 또, 컴퓨터과학 전공 대학생들에게도 알고리즘은 어려운 과목 중의 하나이다.  이 책은 ‘알고리즘’이라는 어려운 주제를 그림으로 쉽게 설명하는 책이다. 이제는 코딩 교육 시대이므로 꼭 프로그래머가 되겠다는 유소년부터 전공 대학생, 일반인, 전문 프로그래머에게까지 폭넓게 추천할 수 있는 알고리즘 입문서이다. 그림을 이용한 풍부한 예제를 통해 설명함으로써 어려운 내용
+출판사: 성안당
+ISBN: 9788931555813
+출간일시: 2018-09-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3750351&q=%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9D%B4+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 17000, 10.00, 15300, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3750351%3Ftimestamp%3D20221025145631', 102, 68, 'ACTIVATE', NULL),
+    (635, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '소중해 소중해 너의 마음도', '아다치 히로미', '9788925577142', '일본 전문가 해설 수록  “이겨 내는 힘×다시 일어서는 힘=회복탄력성” 5~7세, 아이의 마음 근육을 단단하게 키워 줄 가장 중요한 시기입니다!  포스트 코로나 시대, 전 세계 각 분야의 화두로 떠오른 ‘회복탄력성’을 주제로 한 그림책 《소중해 소중해 너의 마음도》가 주니어RHK에서 첫선을 보인다. 출간 직후부터 독자들의 큰 호응을 불러온 영유아 성교육 그림책 《소중해 소중해 나도 너도》에서 ‘몸’의 소중함을 이야기했다면, 이 책에서는 ‘마음’을 강하게 하는
+출판사: 주니어RHK
+ISBN: 9788925577142
+출간일시: 2023-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6285550&q=%EC%86%8C%EC%A4%91%ED%95%B4+%EC%86%8C%EC%A4%91%ED%95%B4+%EB%84%88%EC%9D%98+%EB%A7%88%EC%9D%8C%EB%8F%84', 14000, 10.00, 12600, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6285550%3Ftimestamp%3D20250123151207', 105, 70, 'ACTIVATE', NULL),
+    (636, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '줄넘기를 깡충깡충(책콩 그림책 28)(양장본 HardCover)', '오하시 에미코', '9788994077581', '『줄넘기를 깡충깡충』은 줄넘기를 잘하지 못했던 예나가 열심히 노력해서 줄넘기를 잘할 수 있게 되는 이야기를 통해 노력과 끈기, 성취감을 가르쳐주는 그림책입니다. 아침 일찍 유치원에 와서 줄넘기 연습을 하는 예나. 자꾸만 줄이 발에 걸려 줄넘기가 잘 되지 않는 그 때 토끼 ''토토''가 나타나 줄넘기를 가르쳐 줍니다. 그리고 친구들과의 단체 줄넘기에서 멋지게 성공시킵니다. 이 책을 통해 아이들은 잘하지 못하는 일이라도 열심히 노력하면 언젠가는 잘 할 수 있게
+출판사: 책과콩나무
+ISBN: 9788994077581
+출간일시: 2013-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1413452&q=%EC%A4%84%EB%84%98%EA%B8%B0%EB%A5%BC+%EA%B9%A1%EC%B6%A9%EA%B9%A1%EC%B6%A9%28%EC%B1%85%EC%BD%A9+%EA%B7%B8%EB%A6%BC%EC%B1%85+28%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1413452%3Ftimestamp%3D20220820173628', 108, 72, 'ACTIVATE', NULL),
+    (637, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, 'VBA가 보이는 그림책', 'ANK CO LTD', '9788931554564', '『VBA가 보이는 그림책』은 엑셀이나 액세스를 이용할 때 자주 사용하는 반복적이고 복잡한 작업들을 VBA 프로그래밍을 통해 보다 편리하게 처리할 수 있게 해주는 기본적인 아이디어를 제공한다. 기본 개념과 구문들을 풍부한 이미지를 사용해 쉽게 설명하고 있으므로, 처음 접하는 분들도 어렵지 않게 VBA에 친숙해질 수 있게 해준다.
+출판사: 성안당
+ISBN: 9788931554564
+출간일시: 2016-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=487241&q=VBA%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 16000, 5.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487241%3Ftimestamp%3D20221025145423', 111, 74, 'ACTIVATE', NULL),
+    (638, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '우리 몸 대탐험(살림 지식 그림책 1)(양장본 HardCover)', 'Dan Green', '9788952236005', '의사나 간호사를 꿈꾸는 친구들은 물론, 건강하게 자라고픈 친구들이라면 꼭 읽어야 할 책 『우리 몸 대탐험』. 우리 몸을 거대한 공장의 구조와 부서에 비유하여 정확하면서도 재치 있는 말로 낱낱이 설명해 줍니다. 몸 안팎 어디를 탐험하든, 몸을 위해 일하는 아주 작은 크기의 일꾼들을 만나게 되는데 이 그림들은 우리 몸에서 일어나는 움직임을 정확하면서도 재치 있게 묘사하고 있습니다.
+출판사: 살림어린이
+ISBN: 9788952236005
+출간일시: 2017-04-13T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=635929&q=%EC%9A%B0%EB%A6%AC+%EB%AA%B8+%EB%8C%80%ED%83%90%ED%97%98%28%EC%82%B4%EB%A6%BC+%EC%A7%80%EC%8B%9D+%EA%B7%B8%EB%A6%BC%EC%B1%85+1%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F635929%3Ftimestamp%3D20221025122331', 114, 76, 'ACTIVATE', NULL),
+    (639, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '올챙이 그림책 세트 3: 바른 습관 형성을 돕는 책', '윤구병', '9788992527606', '그림책의 고전, 올챙이 그림책을 새롭게 만나다!    20년 이상 꾸준한 사랑을 받아온 윤구병의 최고 역작이자 스테디셀러를 한자리에 모은『올챙이 그림책 세트(전10권)』. 올바른 습관, 풍부한 감성, 소중한 가치관과 깊고 너른 통찰력을 길러 주는 그림책들을 만날 수 있다. 아이가 재미있고 자연스럽게 인지 능력을 기를 수 있도록 돕는 책으로, 사물에 대한 과학적이고 체계적인 인식을 길러 준다. 21권부터 30권은 아이들이 올바른 습관을 기를 수 있도록 도와준다
+출판사: 휴먼어린이
+ISBN: 9788992527606
+출간일시: 2011-02-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1387354&q=%EC%98%AC%EC%B1%99%EC%9D%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8+3%3A+%EB%B0%94%EB%A5%B8+%EC%8A%B5%EA%B4%80+%ED%98%95%EC%84%B1%EC%9D%84+%EB%8F%95%EB%8A%94+%EC%B1%85', 70000, 10.00, 63000, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1387354%3Ftimestamp%3D20240122194629', 117, 78, 'ACTIVATE', NULL),
+    (640, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '나는 괴물이다(우리그림책 일곱)(양장본 HardCover)', '최덕규', '9788911029631', '『나는 괴물이다』는 무한한 잠재력을 지닌 우리 아이들의 모습을 가면 놀이로 풀어낸 그림책이다. 지구에 놀러 온 특별하고 사랑스러운 괴물. 종이봉투에 빨간 망토를 두른 이 괴물은 지구인이 만든 비행선 ''엘리베이터''를 타고 놀이터로 향한다. 지나가는 지구인들에게 ''나는 괴물이다! 우주에서 온…….''이라고 소리쳐도 그저 웃기만 한다. 놀이터에 도착하자, 어린 지구인들은 괴물에게 모여들기 시작하고 그들은 종이봉투 하나로 슈퍼맨, 티라노사우르스, 슈퍼울트라캡숑
+출판사: 국민서관
+ISBN: 9788911029631
+출간일시: 2011-09-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=380641&q=%EB%82%98%EB%8A%94+%EA%B4%B4%EB%AC%BC%EC%9D%B4%EB%8B%A4%28%EC%9A%B0%EB%A6%AC%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%9D%BC%EA%B3%B1%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F380641%3Ftimestamp%3D20221003232649', 120, 80, 'ACTIVATE', NULL),
+    (641, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '에코의 모험(알이알이 호기심 그림책 4)(양장본 HardCover)', '마리아 비예가스, 제니 켄트', '9788997175833', '생각하고 궁리하는 힘을 어린이 눈높이에서 보여주는 사고력 그림책 「알이알이 호기심그림책」제4권 『에코의 모험』. 환경과 관련해서 어린이들이 꼭 알아야 할 12가지 주제가 담겨 있습니다. 대기 오염, 수질 오염처럼 우리 생활과 직결되어 있는 환경오염 문제는 물론이고, 지구 온난화, 사막화, 열대 우림 파괴처럼 피부로 느끼기는 어렵지만 지구 환경에 심각한 영향을 주는 문제들도 포함되어 있습니다. 어렵고 딱딱하게 느껴질 수도 있는 주제들을 이해하기 쉽게 설명
+출판사: 현북스
+ISBN: 9788997175833
+출간일시: 2013-11-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1483906&q=%EC%97%90%EC%BD%94%EC%9D%98+%EB%AA%A8%ED%97%98%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%ED%98%B8%EA%B8%B0%EC%8B%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 15000, 10.00, 13500, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483906%3Ftimestamp%3D20220922040016', 123, 82, 'ACTIVATE', NULL),
+    (642, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '재채기 대장 재재(알이알이 명작그림책 25)(양장본 HardCover)', '닐 게이먼', '9788997175680', '『재채기 대장 재재』는 어마어마한 재채기를 하는 아기 판단 재재의 일상을 재미있게 그려낸 그림책입니다. 엄마 아빠는 재재가 재채기를 할까봐 불안합니다. 재재가 재채기를 하면 엄청난 일이 일어나기 때문입니다. 나올 듯 말 듯한 재재의 재채기는 다행히 도서관에서, 식당에서는 무사히 넘어갑니다. 하지만 서커스장에서 재재의 어마어마한 재채기가 터지고, 서커스장뿐만 아니라 도서관과 식당까지 난장판이 되고 맙니다. 아이들의 일상을 재미있게 만들어주는 상상과 웃음
+출판사: 현북스
+ISBN: 9788997175680
+출간일시: 2013-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1476579&q=%EC%9E%AC%EC%B1%84%EA%B8%B0+%EB%8C%80%EC%9E%A5+%EC%9E%AC%EC%9E%AC%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+25%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476579%3Ftimestamp%3D20220105181001', 126, 84, 'ACTIVATE', NULL),
+    (643, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '대단해 대단해(뜨인돌그림책 18)(양장본 HardCover)', '마스다 유우코', '9788993963144', '「뜨인돌 그림책」시리즈 『대단해 대단해!』. 그냥 그렇게 스쳐 지나면 모르지만, 가만히 주변을 둘러보면 대단한 것들이 많다. 이 그림책은 세상의 모든 것들의 대단한 점을 찾아내서 박수쳐주는 책으로, 아이의 자존감을 높이고 사물을 바라보는 긍정적인 힘을 키워준다. 특히 ‘대단해’, ‘정말로 대단해’라는 반복적인 문장과 리듬감으로 운율이 살아 있어 동화가 쏙쏙 와 닿고, 색채가 선명해 강렬한 생동감을 느끼게 하는 그림이 긍정적인 활기를 불어넣는다.
+출판사: 뜨인돌어린이
+ISBN: 9788993963144
+출간일시: 2010-03-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1418308&q=%EB%8C%80%EB%8B%A8%ED%95%B4+%EB%8C%80%EB%8B%A8%ED%95%B4%28%EB%9C%A8%EC%9D%B8%EB%8F%8C%EA%B7%B8%EB%A6%BC%EC%B1%85+18%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 8800, 10.00, 7920, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1418308%3Ftimestamp%3D20220410083025', 129, 86, 'ACTIVATE', NULL),
+    (644, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '크고 작고(알록달록 아기 그림책 3)(보드북)', '멜라니 월시', '9788952723291', '『크고 작고』는 2~4세 아이들을 위한 장난감 그림책이다. 알록달록한 색감을 가지고 있으며 플랩을 열고 닫으면서 상반되는 단어들을 배울 수 있다. 행복하다-슬프다, 아래-위, 겨울-여름, 어둡다-밝다, 짧다-길다 등을 학습하는 동시에 재미를 얻는다.
+출판사: 시공주니어
+ISBN: 9788952723291
+출간일시: 2013-01-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=641583&q=%ED%81%AC%EA%B3%A0+%EC%9E%91%EA%B3%A0%28%EC%95%8C%EB%A1%9D%EB%8B%AC%EB%A1%9D+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+3%29%28%EB%B3%B4%EB%93%9C%EB%B6%81%29', 6500, 10.00, 5850, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F641583%3Ftimestamp%3D20200203125832', 132, 88, 'ACTIVATE', NULL),
+    (645, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '물고기를 지킨 갈매기 할아버지(내 인생의 그림책 34)(양장본 HardCover)', '엘리자베스 로즈', '9788997980260', '『물고기를 지킨 갈매기 할아버지』는 자연의 소중함을 일깨우며 아끼는 마음과 보호하는 지혜가 필요함을 보여준 그림책이다. 주인공 할아버지는 물고기를 꼭 필요한 만큼만 잡는데다가 어린 물고기는 다시 바다로 놓아 주었다. 다른 어부들은 그런 할아버지를 비웃었지만 할아버지의 모습을 통해 사람과 자연이 조화를 이루고 살아야함을 아이들 스스로가 느낄 수 있다.
+출판사: 내인생의책
+ISBN: 9788997980260
+출간일시: 2013-04-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1499094&q=%EB%AC%BC%EA%B3%A0%EA%B8%B0%EB%A5%BC+%EC%A7%80%ED%82%A8+%EA%B0%88%EB%A7%A4%EA%B8%B0+%ED%95%A0%EC%95%84%EB%B2%84%EC%A7%80%28%EB%82%B4+%EC%9D%B8%EC%83%9D%EC%9D%98+%EA%B7%B8%EB%A6%BC%EC%B1%85+34%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1499094%3Ftimestamp%3D20220925172622', 135, 90, 'ACTIVATE', NULL),
+    (646, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아주 신기한 알(마루벌의 좋은 그림책 13)(양장본 HardCover)', '레오 리오니', '9788956634142', '출판사: 마루벌
+ISBN: 9788956634142
+출간일시: 2011-01-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=739235&q=%EC%95%84%EC%A3%BC+%EC%8B%A0%EA%B8%B0%ED%95%9C+%EC%95%8C%28%EB%A7%88%EB%A3%A8%EB%B2%8C%EC%9D%98+%EC%A2%8B%EC%9D%80+%EA%B7%B8%EB%A6%BC%EC%B1%85+13%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 5000, 10.00, 4500, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F739235%3Ftimestamp%3D20221025152032', 138, 92, 'ACTIVATE', NULL),
+    (647, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '행복한 그림책 3종 세트(Happy Box)', '미스 반 하우트', '9788943310400', '독자를 보고 미소를 지어 보이는 듯한 드로잉과 빛나는 색채는 미스 반 하우트 그림의 특징입니다. 그녀의 생기 넘치는 일러스트레이션이 담긴 책들은 지금껏 20여 개 이상의 국가에서 출판되며 사랑을 받아 왔지요. 언뜻 보면 어린아이가 낙서한 듯 쉽고 친근해 보이는 그림이지만, 사실은 많은 양의 훈련과 습작을 통해 탄생한 드로잉이랍니다. 이 책들의 또 다른 매력은 바로 글씨입니다. 이 책의 글씨는 단순히 뜻을 전하는 글씨를 넘어 시각적으로 감정을 전달해요
+출판사: 보림
+ISBN: 9788943310400
+출간일시: 2014-12-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=590241&q=%ED%96%89%EB%B3%B5%ED%95%9C+%EA%B7%B8%EB%A6%BC%EC%B1%85+3%EC%A2%85+%EC%84%B8%ED%8A%B8%28Happy+Box%29', 35000, 10.00, 31500, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590241%3Ftimestamp%3D20230613165206', 141, 94, 'ACTIVATE', NULL),
+    (648, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '늑대야 울지 말고 노래해(노란돼지 창작그림책 16)(양장본 HardCover)', '최영란', '9788994975160', '아이들과 함께 기쁨과 슬픔, 그리고 고민을 나누며 꿈꾸고 성장하는「노란돼지 창작그림책」 제16권 『늑대야 울지 말고 노래해』. 동물친구들의 노래 소리가 너무나도 부러웠던 늑대는 이사까지 오면서 함께 노래를 부르고 싶어 한다. 그러나 자신의 노래가 남들과 다르다는 것에 실망한 늑대는 동물친구들을 찾아가 그들의 노래비법을 배워보지만 수탉처럼 꼿꼿하게 노래하지도 못하고, 고양이처럼 유연하게 노래하지도 못하는 자신을 확인하고 슬퍼하는데…….
+출판사: 노란돼지
+ISBN: 9788994975160
+출간일시: 2012-04-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1431293&q=%EB%8A%91%EB%8C%80%EC%95%BC+%EC%9A%B8%EC%A7%80+%EB%A7%90%EA%B3%A0+%EB%85%B8%EB%9E%98%ED%95%B4%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+16%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1431293%3Ftimestamp%3D20211219164310', 144, 96, 'ACTIVATE', NULL),
+    (649, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '매듭을 묶으며(사계절 그림책)', '빌 마틴 주니어', '9788971969557', '깊은 밤, 모닥불 가에서 두런두런 이야기를 나누는 인디언 소년과 할아버지. "또 얘기해 주세요, 할아버지. 제가 어떤 아이인지." "여러 번 했잖니, 아가야. 너도 다 외웠겠다." 보채는 손자에게 할아버지는 수십 번도 더 들려주었던 이야기를 싫은 내색 하나 없이 다시 풀어놓는다.  『매듭을 묶으며』는 인디언 소년에게 할아버지가 들려주는 흥미로운 이야기가 담겨 있다. 밤이 깊어가는 줄도 모르고 이야기에 열중한 손자. 도대체 할아버지는 어떤 이야기
+출판사: 사계절
+ISBN: 9788971969557
+출간일시: 2003-05-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=993429&q=%EB%A7%A4%EB%93%AD%EC%9D%84+%EB%AC%B6%EC%9C%BC%EB%A9%B0%28%EC%82%AC%EA%B3%84%EC%A0%88+%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 10500, 10.00, 9450, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F993429%3Ftimestamp%3D20220604114606', 147, 98, 'ACTIVATE', NULL),
+    (650, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '이게 뭐야(물고기그림책 17)', '탕무니우', '9788994621371', '따뜻하고 짜임새 있는 국내외 우수 그림책 시리즈 「물고기 그림책」 제17권 『이게 뭐야』. 유명한 조각가 쿠시 선생에게 텅 빈 공원에 놓을 멋진 조각상을 만들어 달라고 부탁한 동물들의 이야기입니다. 예술작품을 제대로 이해하여 즐기고 평가하는 방법을 깨닫게 하는 그림책입니다. 내 생각과 같지 않다고 해서 틀린 것이 아니라 그 ''다름''과 ''차이''를 인정하는 자세를 배웁니다.  동물들은 쿠시 선생의 조각상이 빨리 완성되기만을 기다립니다. 자신과 닮은 조각상
+출판사: 책속물고기
+ISBN: 9788994621371
+출간일시: 2013-12-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1428958&q=%EC%9D%B4%EA%B2%8C+%EB%AD%90%EC%95%BC%28%EB%AC%BC%EA%B3%A0%EA%B8%B0%EA%B7%B8%EB%A6%BC%EC%B1%85+17%29', 11000, 10.00, 9900, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1428958%3Ftimestamp%3D20220101150348', 150, 100, 'ACTIVATE', NULL),
+    (651, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '아장아장 아기 산책(키다리 그림책 28)', '한태희', '9788992365772', '『아장아장 아기 산책』은 걸음마를 시작하는 아기가 아장아장 걸으며 만나는 아름다운 자연의 모습을 담은 그림책입니다. 아이의 작고 귀여운 발도장을 다양한 풍경에 찍어, 아이가 실제로 걷는 듯한 상상을 할 수 있도록 구성하였습니다. 각장에 펼쳐진 장면마다 연상되는 동식물을 보여줌으로써 아직 경험해 보지 못한 자연에 대해 친근함을 느낄 수 있을 것입니다.  아기는 풀 내음 가득한 풀밭을 걸으며 메뚜기를 만나고, 알록달록한 꽃밭을 걸으며 나비와 인사하고, 꼬불꼬불
+출판사: 키다리
+ISBN: 9788992365772
+출간일시: 2012-11-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1375431&q=%EC%95%84%EC%9E%A5%EC%95%84%EC%9E%A5+%EC%95%84%EA%B8%B0+%EC%82%B0%EC%B1%85%28%ED%82%A4%EB%8B%A4%EB%A6%AC+%EA%B7%B8%EB%A6%BC%EC%B1%85+28%29', 10000, 10.00, 9000, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1375431%3Ftimestamp%3D20220410081052', 153, 102, 'ACTIVATE', NULL),
+    (652, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '수달이 궁금하니(자연그림책 보물창고 6)(양장본 HardCover)', '샌디 랜스포드', '9788961700894', '''자연그림책 보물창고'' 시리즈, 제6권 『수달이 궁금하니?』. 이 시리즈는 아이들이 일상 중에서 쉽게 만나게 되는 자연과 친밀해지도록 인도하는 자연그림책으로 구성되어 있습니다. 따스함이 느껴지는 서정적인 그림을 곁들여 자연을 찬찬히 관찰하는 눈과 코와 귀를 아이들에게 선물해줍니다.  이 자연그림책은 모피의 우수성 때문에 멸종 위기와 맞닥뜨린 수달에 대한 생태를 친근한 글과 생생한 그림으로 이해하기 쉽게 설명해주고 있습니다. 수달의 모습을 사진보다도 생동감
+출판사: 보물창고
+ISBN: 9788961700894
+출간일시: 2009-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=856038&q=%EC%88%98%EB%8B%AC%EC%9D%B4+%EA%B6%81%EA%B8%88%ED%95%98%EB%8B%88%28%EC%9E%90%EC%97%B0%EA%B7%B8%EB%A6%BC%EC%B1%85+%EB%B3%B4%EB%AC%BC%EC%B0%BD%EA%B3%A0+6%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F856038%3Ftimestamp%3D20220122170207', 156, 104, 'ACTIVATE', NULL),
+    (653, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '마법 같은 증강현실 그림책 세트', '보림출판사 편집부', '9788943312183', '증강현실이란 사용자가 눈으로 보는 현실 세계에 3차원 가상 이미지를 겹쳐 보여주는 기술을 말합니다. 증강현실 그림책은 책 속 이미지를 3차원으로 만들고 소리를 들려주거나 진동을 느끼게 해줍니다. 그림책을 보는 완전 새로운 방법! 마법 같은 증강현실 그림책을 소개합니다!
+출판사: 보림
+ISBN: 9788943312183
+출간일시: 2019-06-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4986176&q=%EB%A7%88%EB%B2%95+%EA%B0%99%EC%9D%80+%EC%A6%9D%EA%B0%95%ED%98%84%EC%8B%A4+%EA%B7%B8%EB%A6%BC%EC%B1%85+%EC%84%B8%ED%8A%B8', 54000, 10.00, 48600, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4986176%3Ftimestamp%3D20250116131141', 159, 106, 'ACTIVATE', NULL),
+    (654, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '바보 사냥꾼과 멋진 사냥개(알이알이 명작그림책 11)(양장본 HardCover)', '브라이언 와일드스미스', '9788997175086', '『바보 사냥꾼과 멋진 사냥개』는 날마다 오리 사냥을 나가지만 오리는 한 마리도 잡지 못하는 바보 같은 사냥꾼과 사냥개의 이야기를 담은 그림책이다. 새끼 개가 자라서 제법 사냥개의 모습을 갖추자 사냥꾼은 개와 함께 사냥을 나갔다. 하지만 개는 사냥꾼이 총으로 쏘아 맞힌 오리들을 물어 오지 않고 대신 나뭇가지를 물어다 준다. 그리고 다친 오리들은 섬으로 데려가 상처를 치료해 준다. 어느 날 밤, 사냥꾼은 사냥개의 뒤를 밟아 비밀을 알게 되고, 자신이 저지른
+출판사: 현북스
+ISBN: 9788997175086
+출간일시: 2012-01-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1476575&q=%EB%B0%94%EB%B3%B4+%EC%82%AC%EB%83%A5%EA%BE%BC%EA%B3%BC+%EB%A9%8B%EC%A7%84+%EC%82%AC%EB%83%A5%EA%B0%9C%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+11%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476575%3Ftimestamp%3D20220823183300', 162, 108, 'ACTIVATE', NULL),
+    (655, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '사랑은(마음별 그림책 4)(양장본 Hardcover)', '다이앤 아담스', '9791195787180', '사랑을 완성해가는 매력 넘치는 그림책 『사랑은』. 사랑을 배워가면서 느끼는 설렘, 기쁨, 헌신, 배려, 기다림, 이별, 그리고 그리움을 모두 느껴 보세요. 한 소녀가 아기 오리를 만나 헤어질 때까지의 한 해 이야기를 통해 사랑이 무엇인지를 깨달아 갈 수 있습니다.
+출판사: 나는별
+ISBN: 9791195787180
+출간일시: 2017-03-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1662051&q=%EC%82%AC%EB%9E%91%EC%9D%80%28%EB%A7%88%EC%9D%8C%EB%B3%84+%EA%B7%B8%EB%A6%BC%EC%B1%85+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+Hardcover%29', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1662051%3Ftimestamp%3D20221011170953', 165, 110, 'ACTIVATE', NULL),
+    (656, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '세상(브라이언 와일드스미스의)(알이알이 호기심그림책 7)(양장본 HardCover)', '브라이언 와일드스미스', '9791157410040', '[재미있는 이름, 놀라운 세상]은 지구를 방문한 외계인의 시선으로 바라본 지구 곳곳의 아름다운 풍경을 관찰하며, 그곳에서 만날 수 있는 동물과 식물 그리고 사물의 이름을 익힐 수 있는 독특한 형태의 그림책이다. 그림 사전의 형식을 가져왔지만 사물의 분류 체계, 동식물의 생태, 다양한 삶의 모습 등을 담고 있어 다방면으로 아이들의 호기심을 자극하고 있다.
+출판사: 현북스
+ISBN: 9791157410040
+출간일시: 2014-10-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1577351&q=%EC%9E%AC%EB%AF%B8%EC%9E%88%EB%8A%94+%EC%9D%B4%EB%A6%84%2C+%EB%86%80%EB%9D%BC%EC%9A%B4+%EC%84%B8%EC%83%81%28%EB%B8%8C%EB%9D%BC%EC%9D%B4%EC%96%B8+%EC%99%80%EC%9D%BC%EB%93%9C%EC%8A%A4%EB%AF%B8%EC%8A%A4%EC%9D%98%29%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%ED%98%B8%EA%B8%B0%EC%8B%AC%EA%B7%B8%EB%A6%BC%EC%B1%85+7%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1577351%3Ftimestamp%3D20220922040639', 168, 112, 'ACTIVATE', NULL),
+    (657, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '거짓말 대장(책콩 그림책 4)(양장본 HardCover)', '대런 파렐', '9788994077116', '거짓말에 대한 교훈을 전해주는 그림책『거짓말 대장』. ''거짓말''이라는 익숙한 주제를 만화적인 구성과 매력적인 캐릭터를 통해 유쾌하게 풀어놓는다. 무심코 한 작은 거짓말이 걷잡을 수 없을 정도로 커질 수도 있다는 것과, 거짓말을 했을 때 상황을 원래대로 되돌릴 수 있는 방법을 재미있는 이야기로 그리고 있다. 친한 친구인 괴짜 양 ''덩''과 코끼리 ''덩치''는 서커스를 보러 간다. 덩치의 팝콘을 먹어버린 덩은 자신이 먹지 않았다는 거짓말을 하게 되고, 그 거짓말
+출판사: 책과콩나무
+ISBN: 9788994077116
+출간일시: 2010-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1407112&q=%EA%B1%B0%EC%A7%93%EB%A7%90+%EB%8C%80%EC%9E%A5%28%EC%B1%85%EC%BD%A9+%EA%B7%B8%EB%A6%BC%EC%B1%85+4%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 11000, 10.00, 9900, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1407112%3Ftimestamp%3D20220410085145', 171, 114, 'ACTIVATE', NULL),
+    (658, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '코비의 따뜻한 겨울(반짝반짝 생각 그림책)(양장본 HardCover)', '김복희', '9788939527973', '출판사: 대교출판
+ISBN: 9788939527973
+출간일시: 2011-03-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=558125&q=%EC%BD%94%EB%B9%84%EC%9D%98+%EB%94%B0%EB%9C%BB%ED%95%9C+%EA%B2%A8%EC%9A%B8%28%EB%B0%98%EC%A7%9D%EB%B0%98%EC%A7%9D+%EC%83%9D%EA%B0%81+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, -1, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F558125%3Ftimestamp%3D20220114170832', 174, 116, 'ACTIVATE', NULL),
+    (659, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '안녕 또 봐(단비어린이 그림책 8)', '바이동니', '9788963010809', '『안녕 또 봐』는 이사 간 친구 ''시시''에게 작별 인사를 하지 못한 꼬마 소년이 친구를 찾아가는 이야기를 담고 있는 그림책입니다. 시시가 놓고 간 토끼 인형을 통해 친구에 대한 그리움을 보여주고, 동시에 아이의 순수한 마음을 예쁘게 그려냈습니다. 더불어 헤어질 때 하는 ''안녕''이라는 인사말이 끝이 아닌 다음 만남을 기약하고 있다는 비밀까지 알려줍니다.  옆집에 사는 친구 시시가 이사를 갔습니다. ''안녕''이라고 인사도 못했는데 말입니다. 텅 비어 있는 시시
+출판사: 단비어린이
+ISBN: 9788963010809
+출간일시: 2013-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=878771&q=%EC%95%88%EB%85%95+%EB%98%90+%EB%B4%90%28%EB%8B%A8%EB%B9%84%EC%96%B4%EB%A6%B0%EC%9D%B4+%EA%B7%B8%EB%A6%BC%EC%B1%85+8%29', 10000, 10.00, 9000, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F878771%3Ftimestamp%3D20221025151855', 177, 118, 'ACTIVATE', NULL),
+    (660, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '설국(세계문학그림책)(양장본 HardCover)', '가와바타 야스나리, 허연', '9791168942950', '시마무라는 도쿄에서 설국으로 여행을 왔다. 기차가 터널을 지나자 눈 세상이 펼쳐졌다.  시마무라는 게이샤로 사는 고마코와 순수한 요코라는 두 여인에게 동시에 끌리는데…….  차갑고 쓸쓸하고 깨끗한 눈 세상 속 세 인물이 보여주는 삶의 풍경에 주목해 보자.  현실과 환상으로 대표되는 두 세계 사이에서 갈등하는 인물을 통해 우리는 어떤 삶의 진실을 마주하게 될까?
+출판사: 고래의숲
+ISBN: 9791168942950
+출간일시: 2022-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6044702&q=%EC%84%A4%EA%B5%AD%28%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 13000, 10.00, 11700, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6044702%3Ftimestamp%3D20221011170719', 180, 0, 'ACTIVATE', NULL),
+    (661, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스프링', '온다 리쿠', '9791193235447', '2016년 『꿀벌과 천둥』으로 일본 문학사상 최초로 나오키상과 서점대상을 동시에 수상하며 작품성과 대중성을 인정받은 30년 경력의 소설가 온다 리쿠. 데뷔 30주년을 기념하여 출간한 그의 새로운 대표작 『스프링』은 출간 이후 각종 신문 서평을 통해 “소설로 표현할 수 없는 것을 표현함으로써 진화한 소설” “단숨에 읽어낼 수밖에 없는 매력적인 작품” 등의 찬사를 받았다. 독자 반응도 뜨거워, 출간 즉시 독자 서평 사이트인 독서미터에서 ‘읽고 싶은 책
+출판사: 클레이하우스
+ISBN: 9791193235447
+출간일시: 2025-02-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6819289&q=%EC%8A%A4%ED%94%84%EB%A7%81', 19800, 10.00, 17820, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6819289%3Ftimestamp%3D20260314123205', 183, 2, 'ACTIVATE', NULL),
+    (662, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스프링북 어린이 스도쿠 1(초급 중급)', '브레이니 퍼즐 랩', '9788971422632', '스도쿠는 영국 공교육 교재로 사용될 만큼 논리력 증진에 도움이 되는 게임이고 수학자 트레버 호크스는 “스도쿠는 뇌에 자극을 주는 논리 게임으로 어린이 두뇌 발달에 도움을 준다”라고 말했습니다. 하지만 오직 어린이들을 위해 만들어진 스도쿠는 찾기 힘들어요. 그.래.서. 미취학 아동 및 초등학교 저학년부터 고학년까지 풀 수 있는  어린이 맞춤형 스도쿠를 만들었습니다.
+출판사: 시간과공간사
+ISBN: 9788971422632
+출간일시: 2018-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3783355&q=%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%81+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EC%8A%A4%EB%8F%84%EC%BF%A0+1%28%EC%B4%88%EA%B8%89+%EC%A4%91%EA%B8%89%29', 7700, 10.00, 6930, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3783355%3Ftimestamp%3D20240807112751', 186, 4, 'ACTIVATE', NULL),
+    (663, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스프링북 스도쿠 1(초급 중급)', '스도쿠 존 연구소, 시간과공간사 편집부', '9788971429914', '『스프링북 스도쿠. 1(초급 중급)』는 다른 책과 달리 책 왼쪽에 스프링을 달아 페이지를 넘기기 쉽고, 직접 문제를 풀기에도 편하다. 스도쿠는 연필로 쓰고 지우거나 메모를 해야 하는 책이기 때문에 일단 메모할 곳이 많고 빈칸의 네모에 여러 숫자를 써야 하기 때문에 네모가 큰 것이 유리하다. 그런 면에서 《스프링북 스도쿠》는 독자들의 니즈를 충분히 파악하고 만든 책이라고 단언할 수 있다. 또, 스도쿠 입문자를 위해 초급과 중급을 묶어서 만들고, 고급과
+출판사: 시간과공간사
+ISBN: 9788971429914
+출간일시: 2018-01-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=984602&q=%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%81+%EC%8A%A4%EB%8F%84%EC%BF%A0+1%28%EC%B4%88%EA%B8%89+%EC%A4%91%EA%B8%89%29', 7500, 10.00, 6750, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F984602%3Ftimestamp%3D20250219113912', 189, 6, 'ACTIVATE', NULL),
+    (664, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '오늘의 제철 행복: 계절의 속도로 살아보는 365일 일력(스프링북)', '김신지', '9791168343214', '하루하루 계절의 속도로 제철 행복을 누리며 한 해를 보낼 순 없을까요? 베스트셀러 에세이 《제철 행복》에서 계절이 보여주는 풍경을 놓치지 않고 살아가는 기쁨을 알려주었던 김신지 작가가, 해의 보폭에 맞춘 365일 일력을 선보입니다. 《제철 행복》이 24절기를 따라 살아본 이야기였다면, 《오늘의 제철 행복》은 최소 단위의 계절인 ‘오늘’의 행복을 누리는 법을 빼곡히 담았습니다. 겨울에 더 맛있는 뿌리채소 챙겨 먹기, 봄맞이 소(小)청소 하기, 영춘화
+출판사: 인플루엔셜
+ISBN: 9791168343214
+출간일시: 2025-10-23T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7040717&q=%EC%98%A4%EB%8A%98%EC%9D%98+%EC%A0%9C%EC%B2%A0+%ED%96%89%EB%B3%B5%3A+%EA%B3%84%EC%A0%88%EC%9D%98+%EC%86%8D%EB%8F%84%EB%A1%9C+%EC%82%B4%EC%95%84%EB%B3%B4%EB%8A%94+365%EC%9D%BC+%EC%9D%BC%EB%A0%A5%28%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%81%29', 22000, 10.00, 19800, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7040717%3Ftimestamp%3D20260325153118', 192, 8, 'ACTIVATE', NULL),
+    (665, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '한국사능력검정시험 2주끝장 중급(에듀윌)(스프링)', '한국사기출연구회', '9791136000996', '수험서ㆍ 한국사능력검정시험 베스트셀러 1위 진짜 2주 합격을 증명한 에듀윌 2주끝장의 업그레이드 개정판 출간  1. 에듀윌 한국사능력검정시험 2주끝장 23만 권 출간 돌파! *15.11~19.05. 한국사능력검정시험 2주끝장 고급ㆍ 중급(2종) 순 출고량 기준 2. 에듀윌 한국사능력검정시험 2주끝장 수험서ㆍ 한국사능력검정시험 베스트셀러 1위
+출판사: 에듀윌
+ISBN: 9791136000996
+출간일시: 2019-06-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4970326&q=%ED%95%9C%EA%B5%AD%EC%82%AC%EB%8A%A5%EB%A0%A5%EA%B2%80%EC%A0%95%EC%8B%9C%ED%97%98+2%EC%A3%BC%EB%81%9D%EC%9E%A5+%EC%A4%91%EA%B8%89%28%EC%97%90%EB%93%80%EC%9C%8C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 21000, 10.00, 18900, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4970326%3Ftimestamp%3D20220716193526', 195, 10, 'ACTIVATE', NULL),
+    (666, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '공무원 국어 매일 기출한자(빈출순)(2020)(에듀윌)(스프링)', '정혜련, 진효정', '9791136003447', '〈2020 에듀윌 공무원 국어 매일 기출한자(빈출순)〉는 기출 빅데이터 프로그램을 이용하여 방대한 한자를 빈출순으로 학습할 수 있도록 구성하였습니다. 시험에 출제된 한자는 물론, 출제 가능한 한자까지 수록하여 빈틈없이 학습할 수 있습니다. 또한 DAY별로 구성하여 매일 꾸준히 암기할 수 있으며, 스프링 제본으로 제작하여 휴대성이 높을 뿐 아니라 틈새 시간까지 효율적으로 활용할 수 있습니다.
+출판사: 에듀윌
+ISBN: 9791136003447
+출간일시: 2020-01-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5218982&q=%EA%B3%B5%EB%AC%B4%EC%9B%90+%EA%B5%AD%EC%96%B4+%EB%A7%A4%EC%9D%BC+%EA%B8%B0%EC%B6%9C%ED%95%9C%EC%9E%90%28%EB%B9%88%EC%B6%9C%EC%88%9C%29%282020%29%28%EC%97%90%EB%93%80%EC%9C%8C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5218982%3Ftimestamp%3D20221005053846', 198, 12, 'ACTIVATE', NULL),
+    (667, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영단어 1800(60일 완성)(뜯어먹는)(스프링)', '동아출판 편집부', '9788900357189', '『중학영단어 1800』은 중학교 필수 단어와 고교 대비 단어를 2개월 동안 습득할 수 있도록 고안된 책이다. 쉬운 단어부터 차례로 1일 30개씩 60일분으로 정리되어 있으며, 교과서와 영영 사전에서 가려 뽑은 생생한 예구를 문제화하였다. 일일 테스트와 누적 테스트로 최종으로 암기한 사항을 확인할 수 있다.
+출판사: 동아출판
+ISBN: 9788900357189
+출간일시: 2013-11-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=341478&q=%EC%A4%91%ED%95%99+%EC%98%81%EB%8B%A8%EC%96%B4+1800%2860%EC%9D%BC+%EC%99%84%EC%84%B1%29%28%EB%9C%AF%EC%96%B4%EB%A8%B9%EB%8A%94%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9000, 15.00, -1, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F341478%3Ftimestamp%3D20221025115824', 1, 14, 'ACTIVATE', NULL),
+    (668, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '말빵세 인형의집(말빵세)(스프링)', '헤르미온느 에드워드', '9788963056326', '『말빵세 인형의집』는 엄마랑 재미있는 역할놀이를 할 수 있는 책이다. 접혀 있는 책을 피면 입체적인 인형의 집 공간이 완성된다. 아이들이 스스로 가구를 배치하고 집을 꾸미면서 상상력과 창의력을 키울 수 있다. 추가로 인형, 가구, 스티커가 제공된다.
+출판사: 노란우산
+ISBN: 9788963056326
+출간일시: 2013-07-18T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=876960&q=%EB%A7%90%EB%B9%B5%EC%84%B8+%EC%9D%B8%ED%98%95%EC%9D%98%EC%A7%91%28%EB%A7%90%EB%B9%B5%EC%84%B8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15800, 10.00, 14220, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F876960%3Ftimestamp%3D20220731153842', 4, 16, 'ACTIVATE', NULL),
+    (669, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '풍경 수채화(스프링)(2판)(스프링)', '이즐 해리슨', '9788940803851', '수채화 그리기에 관심을 가진 어떤 이들도 쉽게 따라할 수 있도록 수채화 그리는 방법을 자세하고 친절하게 소개하고 있는 안내서. 세계 각지의 아름다운 풍경 사진과 함께 6단계로 걸쳐 손쉽게 풍경 수채화를 완성해갈 수 있다. 앞부분에는 카메라로 찍은 사진과 육안으로 보는 풍경의 차이점에 대한 설명으로부터 시작해서 사진을 재구성하여 구도를 잡는 방법, 수채화를 그리는 데 있어 기본적인 도구와 원리, 다양한 테크닉을 마스터하는 데 도움이 되는 조언이 실려
+출판사: 미진사
+ISBN: 9788940803851
+출간일시: 2011-01-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=566529&q=%ED%92%8D%EA%B2%BD+%EC%88%98%EC%B1%84%ED%99%94%28%EC%8A%A4%ED%94%84%EB%A7%81%29%282%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 23000, 5.00, 23000, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F566529%3Ftimestamp%3D20190123201030', 7, 18, 'ACTIVATE', NULL),
+    (670, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '우주가 뱅글뱅글(스프링)(뱅글뱅글 두뇌 트레이닝 5)(스프링)', '차승훈', '9788945219817', '출판사: 문공사
+ISBN: 9788945219817
+출간일시: 2011-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=597235&q=%EC%9A%B0%EC%A3%BC%EA%B0%80+%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+5%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 10.00, 8550, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597235%3Ftimestamp%3D20211214135512', 10, 20, 'ACTIVATE', NULL),
+    (671, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '손에 잡히는 꼼꼼한 의학이론 요약집(2021)(개정판)(스프링)', '정혜심', '9788966311965', '『손에 잡히는 꼼꼼한 의학이론 요약집(2021))』은 〈상해 의학 - 기초이론〉, 〈상해 의학 - 상지ㆍ하지〉, 〈상해 의학 - 체간부〉, 〈외상의학 - 합병증〉, 〈질병 의학〉을 수록하고 있는 책이다.
+출판사: 고시아카데미
+ISBN: 9788966311965
+출간일시: 2021-03-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5631806&q=%EC%86%90%EC%97%90+%EC%9E%A1%ED%9E%88%EB%8A%94+%EA%BC%BC%EA%BC%BC%ED%95%9C+%EC%9D%98%ED%95%99%EC%9D%B4%EB%A1%A0+%EC%9A%94%EC%95%BD%EC%A7%91%282021%29%28%EA%B0%9C%EC%A0%95%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5631806%3Ftimestamp%3D20220410075906', 13, 22, 'ACTIVATE', NULL),
+    (672, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '사랑해요 할머니 할아버지(스프링)', '이영', '9788965040798', '출판사: 블루래빗
+ISBN: 9788965040798
+출간일시: 2011-01-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=910106&q=%EC%82%AC%EB%9E%91%ED%95%B4%EC%9A%94+%ED%95%A0%EB%A8%B8%EB%8B%88+%ED%95%A0%EC%95%84%EB%B2%84%EC%A7%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6800, 10.00, 6120, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F910106%3Ftimestamp%3D20220706183749', 16, 24, 'ACTIVATE', NULL),
+    (673, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Vue', '작자미상', '9781976214387', '출판사: 정보 없음
+ISBN: 9781976214387
+출간일시: 2017-09-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3928106&q=Vue', 33390, 15.00, 28380, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3928106%3Ftimestamp%3D20260412112608', 19, 26, 'ACTIVATE', NULL),
+    (674, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Vue.js 퀵 스타트', '원형섭', '9791186710197', '이 책은 Vue.js의 문법과 이론을 시작으로 실무에서 바로 사용할 수 있는 애플리케이션을 직접 작성합니다. 더불어 이 예제 애플리케이션에 상태 관리(Vuex), 서버 통신(axios) 라우팅(Vue-router) 기능까지 계속 업그레이드하는 과정을 모두 담고 있습니다. 또한 크롬 브라우저의 개발자 도구를 이용해 내부 작동 방식과 구성을 이해할 수 있는 세심한 설명까지 곁들이며 Vue.js 개발 시 알아두어야 할 ES6 문법, 실수하기 쉬운 코드와
+출판사: 루비페이퍼
+ISBN: 9791186710197
+출간일시: 2017-09-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633078&q=Vue.js+%ED%80%B5+%EC%8A%A4%ED%83%80%ED%8A%B8', 30000, 10.00, 27000, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633078%3Ftimestamp%3D20230315180249', 22, 28, 'ACTIVATE', NULL),
+    (675, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Full-Stack Vue.Js 2 and Laravel 5', 'Packt Publishing', '9781788299589', '출판사: Packt Publishing
+ISBN: 9781788299589
+출간일시: 2018-06-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3607816&q=Full-Stack+Vue.Js+2+and+Laravel+5', 58570, 15.00, 85480, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3607816', 25, 30, 'ACTIVATE', NULL),
+    (676, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'William, la longue-vue et le tigre', 'Charlotte Lemaire', '9782379620027', '출판사: Bischof Systems
+ISBN: 9782379620027
+출간일시: 2021-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5817267&q=William%2C+la+longue-vue+et+le+tigre', 19520, 3.02, 18930, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5817267%3Ftimestamp%3D20230719162657', 28, 32, 'ACTIVATE', NULL),
+    (677, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, '실전! 스프링 5와 Vue.js 2로 시작하는 모던 웹 애플리케이션 개발', '제임스 J 예', '9791158391850', '아이디어부터 시작해 UI, 기술적 설계, 구현, 테스트, 프로덕션 환경에 배포, 그리고 모니터링까지 개발 수명 주기에서 발생하는 모든 문제를 해결해야 합니다.    이 책을 통해 웹 애플리케이션을 개발하는 방법을 배우면서 스프링 5와 Vue.js 2에 익숙해질 것입니다. 초기 구조화부터 전체 배포까지, Vue.js 2와 스프링 5를 활용해 웹 애플리케이션을 개발하는 모든 단계를 처음부터 설명합니다. 각 장에서 애플리케이션의 다양한 구성 요소를 만드는 방법을 배우고
+출판사: 위키북스
+ISBN: 9791158391850
+출간일시: 2020-01-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5215301&q=%EC%8B%A4%EC%A0%84%21+%EC%8A%A4%ED%94%84%EB%A7%81+5%EC%99%80+Vue.js+2%EB%A1%9C+%EC%8B%9C%EC%9E%91%ED%95%98%EB%8A%94+%EB%AA%A8%EB%8D%98+%EC%9B%B9+%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98+%EA%B0%9C%EB%B0%9C', 36000, 10.00, 32400, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5215301%3Ftimestamp%3D20230201171251', 31, 34, 'ACTIVATE', NULL),
+    (678, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Do it! Vue.js+Nuxt 입문', '박성재', '9791163038139', 'AI 시대, 더욱 빠르고 효율적으로 웹 애플리케이션을 개발하고 싶은 학습자를 위해 ≪Do it! Vue.js+Nuxt 입문≫이 출간되었다. 이 책은 직관적인 문법과 높은 생산성으로 많은 프런트엔드 개발자에게 선택받고 있는 Vue.js를 기초부터 차근차근 익히고, 실무 개발로 확장할 수 있는 Nuxt까지 함께 다룬 실습 중심 입문서다.  기초 문법과 컴포넌트 설계부터 Vue 3의 핵심인 컴포지션 API와 피니아(Pinia), 그리고 Nuxt까지 단계별
+출판사: 이지스퍼블리싱
+ISBN: 9791163038139
+출간일시: 2026-02-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7137072&q=Do+it%21+Vue.js%2BNuxt+%EC%9E%85%EB%AC%B8', 29000, 10.00, 26100, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7137072%3Ftimestamp%3D20260310125422', 34, 36, 'ACTIVATE', NULL),
+    (679, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, '프론트엔드 개발 첫걸음', 'Hara Kazuhiro', '9788956747934', '자바스크립트 프론트엔드 개발 프레임워크의 첫걸음!    이 책은 풍부한 UI를 구축할 수 있는 자바스크립트로 만든 프론트엔드 프레임워크로 React, Angular, Vue.js, React Native를 다룬다. 또한 iOS와 Android용 네이티브 응용 프로그램을 만들 수 있다.    슬랙(Slack) 스타일의 채팅 애플리케이션을 각각의 프레임워크로 만들어보는 과정으로 이루어져 있으며, 이를 위해 먼저 API 서버를 만들어보는 과정을 앞에 추가
+출판사: 정보문화사
+ISBN: 9788956747934
+출간일시: 2018-11-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4790976&q=%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C+%EA%B0%9C%EB%B0%9C+%EC%B2%AB%EA%B1%B8%EC%9D%8C', 18000, 10.00, 16200, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4790976%3Ftimestamp%3D20230103145236', 37, 38, 'ACTIVATE', NULL),
+    (680, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, '코딩 자율학습 Vue.js 프런트엔드 개발 입문', '김기수', '9791140713844', '이 책은 뷰를 빠르게 배울 수 있는 Vue 2의 옵션스 API부터 애플리케이션 로직을 더 유연하고 조직적으로 구성할 수 있는 Vue 3의 컴포지션 API까지 다룹니다. 또한, 라우팅 기능을 사용해 애플리케이션의 유연성과 효율성을 높이는 방법, Pinia로 컴포넌트의 상태를 효율적으로 관리하는 방법, 뷰를 활용해 데이터 통신하는 방법 등을 익혀 웹 개발 경험을 한 단계 더 발전시킬 수 있습니다. 프런트엔드 개발을 처음 해 보는 사람도 이 책을 보며 쉽게
+출판사: 길벗
+ISBN: 9791140713844
+출간일시: 2024-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6638190&q=%EC%BD%94%EB%94%A9+%EC%9E%90%EC%9C%A8%ED%95%99%EC%8A%B5+Vue.js+%ED%94%84%EB%9F%B0%ED%8A%B8%EC%97%94%EB%93%9C+%EA%B0%9C%EB%B0%9C+%EC%9E%85%EB%AC%B8', 35000, 10.00, 31500, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6638190%3Ftimestamp%3D20241008160022', 40, 40, 'ACTIVATE', NULL),
+    (681, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Vue 3와 타입스크립트로 배우는 프런트엔드 개발', 'WINGS 프로젝트, 사이토 신조', '9791169213325', '이 책은 Vue.js와 타입스크립트를 활용한 프런트엔드 개발을 처음부터 끝까지 안내하는 실전 입문서입니다. Vue 3의 최신 기능인 Composition API, 상태 관리를 위한 Pinia 그리고 페이지 전환을 돕는 Vue 라우터를 기반으로 싱글 페이지 애플리케이션(SPA)을 만드는 과정을 실습과 함께 차근차근 설명합니다. 특히 실습 중심의 핸즈온 형식으로 진행되므로 직접 코드를 입력하고 실행해보며 Vue 3와 타입스크립트를 체계적으로 학습할 수
+출판사: 한빛미디어
+ISBN: 9791169213325
+출간일시: 2025-01-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6808174&q=Vue+3%EC%99%80+%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EB%A1%9C+%EB%B0%B0%EC%9A%B0%EB%8A%94+%ED%94%84%EB%9F%B0%ED%8A%B8%EC%97%94%EB%93%9C+%EA%B0%9C%EB%B0%9C', 36000, 10.00, 32400, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6808174%3Ftimestamp%3D20251029152020', 43, 42, 'ACTIVATE', NULL),
+    (682, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Do it! 프런트엔드 UI 개발 with Vue.js', '김윤미', '9791163034940', '프런트엔드 UI 개발의 전체 과정을 실무 프로젝트로 배운다! Vue.js와 부트스트랩 뷰를 활용한 SPA 만들기!  웹어워드코리아(i-award.or.kr)에서 대상과 최우수상을 수상한 17년 차 프런트엔드 개발자가 알려 주는 방법 그대로 웹 사이트 하나를 통째로 만든다. 텅 빈 화면에서 시작해 한 줄씩 코딩하다 보면 조금씩 완성되는 사이트를 눈으로 확인할 수 있다. 웹 프런트엔드 UI를 개발할 때 알아야 할 다양한 기법과 HTML, CSS 활용법
+출판사: 이지스퍼블리싱
+ISBN: 9791163034940
+출간일시: 2023-08-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6408666&q=Do+it%21+%ED%94%84%EB%9F%B0%ED%8A%B8%EC%97%94%EB%93%9C+UI+%EA%B0%9C%EB%B0%9C+with+Vue.js', 25000, 10.00, 22500, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6408666%3Ftimestamp%3D20250709143859', 46, 44, 'ACTIVATE', NULL),
+    (683, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Do it! Vue.js 입문', '장기효', '9791188612789', '실무자 3일 완성! 입문자 7일 완성! 바쁜 개발자의 시간 절약 입문서! 실무의 정글 속에서 살아남기 위한 실전 예제형 Vue.js 입문서! 이 책은 Vue.js 실무 개발 경험을 바탕으로 입문자 대상 강의를 수차례 진행해 온 현업 Vue.js 능력자가 집필했습니다. Vue.js의 기본 동작 원리부터 꼼꼼하게 설명하고, 실제 서비스를 개발할 때 필요한 컴포넌트 기반 설계 방법과 프로젝트 구조화 노하우까지 알차게 담았습니다. 특히 입문자들이 어려워하는 웹팩
+출판사: 이지스퍼블리싱
+ISBN: 9791188612789
+출간일시: 2018-01-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1651447&q=Do+it%21+Vue.js+%EC%9E%85%EB%AC%B8', 15000, 10.00, 13500, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1651447%3Ftimestamp%3D20250709110623', 49, 46, 'ACTIVATE', NULL),
+    (684, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Mastering Vue.js 3 and Nuxt.js 4', 'Neudorf Benjamin', '9798264194689', '출판사: Independently Published
+ISBN: 9798264194689
+출간일시: 2025-09-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7039367&q=Mastering+Vue.js+3+and+Nuxt.js+4', 38710, 0.00, -1, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7039367%3Ftimestamp%3D20251014142032', 52, 48, 'ACTIVATE', NULL),
+    (685, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2026 이지패스 ADsP 데이터분석 준전문가', '박현민, 전용문', '9791158396510', '미어캣 2026 최신 기출문제 수록 앱 제공 | 비전공자 20일 완성  ◎ 빠르고 효율적인 공부를 위한 ADsP 수험서 방대한 데이터 분석 콘텐츠를 ADsP 출제 경향에 맞게 핵심적으로 간결하게 정리하여 시간에 쫓기는 수험생들에게 최대한 공부 효율을 높일 수 있도록 구성했습니다.  ◎ 초심자, 비전공자들을 위해 이해하기 쉽게 풀어 쓴 ADsP 수험서 데이터 분석을 처음 접하는 초심자나 비전공자들이 이해하기 쉽도록 용어와 문장을 다듬었습니다. 아울러 초심자
+출판사: 위키북스
+ISBN: 9791158396510
+출간일시: 2026-01-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7094156&q=2026+%EC%9D%B4%EC%A7%80%ED%8C%A8%EC%8A%A4+ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80', 30000, 10.00, 27000, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7094156%3Ftimestamp%3D20260403154212', 55, 50, 'ACTIVATE', NULL),
+    (686, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '이지패스 2025 ADsP 데이터분석 준전문가', '전용문, 박현민', '9791158395674', '◎ 빠르고 효율적인 공부를 위한 ADsP 수험서 방대한 데이터 분석 콘텐츠를 ADsP 출제 경향에 맞게 컴팩트하게 정리하여 시간에 쫓기는 수험생들에게 최대한 공부 효율을 높일 수 있도록 구성했습니다.  ◎ 초심자, 비전공자들을 위해 이해하기 쉽게 풀어 쓴 ADsP 수험서 데이터 분석을 처음 접하는 초심자나 비전공자들이 이해하기 쉽도록 용어와 문장을 다듬었습니다. 아울러 초심자 비전공자를 위한 ‘EASY BOX’, 출제 경향과 중요도를 안내하는 ‘TIP-BOX
+출판사: 위키북스
+ISBN: 9791158395674
+출간일시: 2025-01-07T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6808882&q=%EC%9D%B4%EC%A7%80%ED%8C%A8%EC%8A%A4+2025+ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80', 30000, 10.00, 27000, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6808882%3Ftimestamp%3D20260327125521', 58, 52, 'ACTIVATE', NULL),
+    (687, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2024 이지패스 ADsP 데이터분석 준전문가', '전용문, 박현민', '9791158394837', '★ 이 책에서 다루는 내용 ★ ◎ 1과목 〈데이터의 이해〉 - 데이터 이해, 데이터의 가치와 미래 ◎ 2과목 〈데이터 분석 기획〉 - 데이터 분석 기획의 이해, 분석 마스터플랜 ◎ 3과목 〈데이터 분석〉 - R 기초와 데이터 마트, 통계 분석, 정형 데이터 마이닝
+출판사: 위키북스
+ISBN: 9791158394837
+출간일시: 2024-01-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6529738&q=2024+%EC%9D%B4%EC%A7%80%ED%8C%A8%EC%8A%A4+ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80', 28000, 10.00, 25200, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6529738%3Ftimestamp%3D20250107153611', 61, 54, 'ACTIVATE', NULL),
+    (688, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2023 ADsP 데이터 분석 준전문가', '윤종식', '9791197889585', '본 도서는 한국데이터베이스진흥원에서 실시하고 있는 『데이터 분석 전문가(ADP)』 자격증과 『데이터 분석 준전문가(ADsP)』 자격증을 준비하는 수험생들을 위한 도서이다. 2014년 4월 이후 시행된 자격증 시험의 기출문제를 분석하여 문제의 의도와 유형을 파악하여 중요한 내용을 표와 그림을 위주로 1과목 데이터의 이해, 2과목 데이터 분석 기획 그리고 3과목 데이터 분석의 내용을 정리하였다. 각 장에는 온라인/오프라인 강의에서 언급한 출제경향을 따로
+출판사: 데이터에듀
+ISBN: 9791197889585
+출간일시: 2023-01-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6258120&q=2023+ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0+%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80', 31000, 10.00, 27900, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6258120%3Ftimestamp%3D20250629130058', 64, 56, 'ACTIVATE', NULL),
+    (689, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '진짜 쓰는 실무 엑셀', '전진권', '9791191600704', '발전을 거듭하였고, Office 365에서 Microsoft 365로 브랜드명을 변경하기까지 다양한 기능, 특히 동적 배열 함수가 추가되면서 매크로를 사용하지 않고도 많은 부분을 해결할 수 있도록 개선되었다. 이 책에서 소개하는 제대로 된 실무 활용 기능을 익힌다면 방대한 데이터에서 특정 자료를 취합하고 분석하기, 분석된 자료를 한눈에 보기 좋게 시각화하기, 반복되는 작업을 효율적으로 개선하기 등 회사에서 원하는 엑셀 사용 능력을 충분히 뛰어넘을 수 있을 것이다
+출판사: 제이펍
+ISBN: 9791191600704
+출간일시: 2022-02-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5965058&q=%EC%A7%84%EC%A7%9C+%EC%93%B0%EB%8A%94+%EC%8B%A4%EB%AC%B4+%EC%97%91%EC%85%80', 21000, 10.00, 18900, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5965058%3Ftimestamp%3D20241109152610', 67, 58, 'ACTIVATE', NULL),
+    (690, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2022 에듀윌 한국사능력검정시험 2주끝장 심화', '에듀윌 한국사교육연구소', '9791136014542', '2022에듀윌 한국사능력검정시험 2주끝장 심화는 단기합격을 목표로 하는 수험생이 효율적으로 학습할 수 있도록 구성된 교재입니다. 한국사능력검정시험의 최근 3개년(56~42회) 기출문제를 분석한 후 핵심적인 내용만 압축하여 이론을 수록하였고, 빈출키워드와 빈출선지를 반복적으로 학습할 수 있도록 구성하였습니다. 뿐만 아니라 주제별 문제와 모의고사를 통해 학습한 내용을 점검하고 실전 감각을 향상할 수 있어 누구나 단기간에 심화 1급 합격이 가능하도록 구성
+출판사: 에듀윌
+ISBN: 9791136014542
+출간일시: 2022-01-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5932805&q=2022+%EC%97%90%EB%93%80%EC%9C%8C+%ED%95%9C%EA%B5%AD%EC%82%AC%EB%8A%A5%EB%A0%A5%EA%B2%80%EC%A0%95%EC%8B%9C%ED%97%98+2%EC%A3%BC%EB%81%9D%EC%9E%A5+%EC%8B%AC%ED%99%94', 21000, 10.00, 18900, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5932805%3Ftimestamp%3D20230707135629', 70, 60, 'ACTIVATE', NULL),
+    (691, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2026 이기적 빅데이터분석기사 필기 기본서', '나홍석, 배원성, 이건길, 이혜영', '9788931480337', '본 도서는 최신 출제기준을 적용한 도서로, 빅데이터분석기사 필기 시험의 출제 경향을 철저히 분석하여 수험생들이 혼자서도 학습할 수 있도록 한 완벽 대비서이다. 시행처인 한국데이터산업진흥원에서 공개한 출제기준을 바탕으로 집필되었다. 꼼꼼한 이론 설명과 예상문제를 공부하며 데이터 분석 지식을 얻을 수 있고, 최신 기출 복원 문제와 출제 키워드를 반영한 모의고사를 통해 시험에 철저하게 대비할 수 있도록 하였다. 또한 시험의 핵심을 다루는 문제 풀이 동영상을
+출판사: 영진닷컴
+ISBN: 9788931480337
+출간일시: 2025-08-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6983437&q=2026+%EC%9D%B4%EA%B8%B0%EC%A0%81+%EB%B9%85%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D%EA%B8%B0%EC%82%AC+%ED%95%84%EA%B8%B0+%EA%B8%B0%EB%B3%B8%EC%84%9C', 33000, 10.00, 29700, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6983437%3Ftimestamp%3D20260411121645', 73, 62, 'ACTIVATE', NULL),
+    (692, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2025 이기적 빅데이터분석기사 필기 기본서', '나홍석, 배원성, 이건길, 이혜영, 고려사이버대학교 AI·빅데이터 연구소', '9788931477184', '최신 출제기준을 적용한 도서로, 빅데이터분석기사 필기 시험의 출제 경향을 철저히 분석하여 수험생들이 혼자서도 학습할 수 있도록 한 완벽 대비서이다. 시행처인 한국데이터산업진흥원에서 공개한 출제기준을 바탕으로 집필되었다.  꼼꼼한 이론 설명과 예상문제를 공부하며 데이터 분석 지식을 얻을 수 있고, 최신 기출 복원 문제와 출제 키워드를 반영한 모의고사를 통해 시험에 철저하게 대비할 수 있도록 하였다. 또한 시험의 핵심을 다루는 문제 풀이 동영상을 독자에게
+출판사: 영진닷컴
+ISBN: 9788931477184
+출간일시: 2024-08-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6693891&q=2025+%EC%9D%B4%EA%B8%B0%EC%A0%81+%EB%B9%85%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D%EA%B8%B0%EC%82%AC+%ED%95%84%EA%B8%B0+%EA%B8%B0%EB%B3%B8%EC%84%9C', 33000, 10.00, 29700, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6693891%3Ftimestamp%3D20260122151953', 76, 64, 'ACTIVATE', NULL),
+    (693, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2026 ADsP 데이터분석 준전문가', '윤종식', '9791193672389', '2026 최신개정 ADsP 데이터에듀 데이터분석 준전문가 11년 연속 베스트셀러 ''민트책''의 2026 최신 개정판! 실제 수험 데이터 분석 기반, ADsP 합격의 모든 것을 담은 교재
+출판사: 데이터에듀
+ISBN: 9791193672389
+출간일시: 2025-12-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7106763&q=2026+ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80', 31000, 10.00, 27900, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7106763%3Ftimestamp%3D20260110152040', 79, 66, 'ACTIVATE', NULL),
+    (694, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, 'ADsP 데이터 분석 준전문가(2024)', '윤종식', '9791193672006', '본 도서는 한국데이터베이스진흥원에서 실시하고 있는 『데이터 분석 전문가(ADP)』 자격증과 『데이터 분석 준전문가(ADsP)』 자격증을 준비하는 수험생들을 위한 도서이다. 2014년 4월 이후 시행된 자격증 시험의 기출문제를 분석하여 문제의 의도와 유형을 파악하여 중요한 내용을 표와 그림을 위주로 1과목 데이터의 이해, 2과목 데이터 분석 기획 그리고 3과목 데이터 분석의 내용을 정리하였다. 각 장에는 온라인/오프라인 강의에서 언급한 출제경향을 따로
+출판사: 데이터에듀
+ISBN: 9791193672006
+출간일시: 2023-12-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6523034&q=ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0+%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80%282024%29', 31000, 10.00, 27900, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6523034%3Ftimestamp%3D20250225152818', 82, 68, 'ACTIVATE', NULL),
+    (695, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2023 이기적 빅데이터분석기사 필기 기본서', '나홍석, 배원성, 이건길, 이혜영, 고려사이버대학교 AI·빅데이터 연구소', '9788931466874', '본 도서는 최신 출제기준을 적용한 도서로, 빅데이터분석기사 필기 시험의 출제 경향을 철저히 분석하여 수험생들이 혼자서도 학습할 수 있도록 한 완벽 대비서이다. 시행처인 한국데이터산업진흥원에서 공개한 출제기준을 바탕으로 집필되었으며, 꼼꼼한 이론과 예상문제를 공부하며 시험 유형을 익힐 수 있고, 기출문제를 복원하고 키워드를 반영한 모의고사를 통해 시험에 철저하게 대비할 수 있도록 하였다. 또한 이론의 핵심을 다루는 모의고사 풀이 동영상을 독자에게 무료
+출판사: 영진닷컴
+ISBN: 9788931466874
+출간일시: 2022-08-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6146019&q=2023+%EC%9D%B4%EA%B8%B0%EC%A0%81+%EB%B9%85%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D%EA%B8%B0%EC%82%AC+%ED%95%84%EA%B8%B0+%EA%B8%B0%EB%B3%B8%EC%84%9C', 33000, 10.00, 29700, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6146019%3Ftimestamp%3D20251016142653', 85, 70, 'ACTIVATE', NULL),
+    (696, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2023 이지패스 ADsP 데이터분석 준전문가', '전용문, 박현민', '9791158394059', '2023년 ADsP 시험 합격을 위한 최신 기출문제 완벽 분석! 총 860문항 압도적 문제 수 + 수험서 앱(16회차 기출 및 모의고사 수록) 제공!  ◎ 빠르고 효율적인 공부를 위한 ADsP 수험서 방대한 데이터 분석 콘텐츠를 ADsP 출제 경향에 맞게 컴팩트하게 정리하여 시간에 쫓기는 수험생들에게 최대한 공부 효율을 높일 수 있도록 구성했습니다.  ◎ 초심자, 비전공자들을 위해 이해하기 쉽게 풀어 쓴 ADsP 수험서 데이터 분석을 처음 접하는 초심자
+출판사: 위키북스
+ISBN: 9791158394059
+출간일시: 2023-01-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6260045&q=2023+%EC%9D%B4%EC%A7%80%ED%8C%A8%EC%8A%A4+ADsP+%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B6%84%EC%84%9D+%EC%A4%80%EC%A0%84%EB%AC%B8%EA%B0%80', 28000, 10.00, 25200, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6260045%3Ftimestamp%3D20250201153228', 88, 72, 'ACTIVATE', NULL),
+    (697, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '비전공자도 이해할 수 있는 AI 지식(10만부 기념 개정판)', '박상길', '9791162543931', '2022년 처음 출간되어 10만 명이 넘는 독자들에게 꾸준한 사랑을 받으며 AI 교양서로 자리매김한 《비전공자도 이해할 수 있는 AI 지식》이 최신 AI 기술 트렌드를 반영한 개정판을 출간했다. 2023년 GPT-4 출시로 화제가 된 챗GPT에 대한 내용이 대폭 보완되었을 뿐 아니라, 2024년이 되면서 변화한 부분들을 전반적으로 새롭게 업데이트했다.  신형 스마트폰이 실시간 통역을 제공하며 언어의 경계를 무너뜨리고 있고, 카카오톡이 대화를 요약
+출판사: 비즈니스북스
+ISBN: 9791162543931
+출간일시: 2024-10-22T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6743936&q=%EB%B9%84%EC%A0%84%EA%B3%B5%EC%9E%90%EB%8F%84+%EC%9D%B4%ED%95%B4%ED%95%A0+%EC%88%98+%EC%9E%88%EB%8A%94+AI+%EC%A7%80%EC%8B%9D%2810%EB%A7%8C%EB%B6%80+%EA%B8%B0%EB%85%90+%EA%B0%9C%EC%A0%95%ED%8C%90%29', 19800, 10.00, 17820, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6743936%3Ftimestamp%3D20250627150344', 91, 74, 'ACTIVATE', NULL),
+    (698, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, 'AI 리터러시: 인공지능 필수 지식부터 완벽 활용까지', '김용성', '9788965404026', '생성형 AI는 이미 우리 생활에 상당히 깊이 들어왔고, 우리는 인공지능 이전으로 돌아갈 수 없다. AI를 모른 채로는 살아갈 수 없는 세상이다. 그렇지만 파편화된 인공지능 정보나 개별 서비스/사이트/툴의 좁은 이야기에만 머물러서는, 인공지능과 우리 개개인, 더 나아가 사회를 제대로 논할 수 없게 될 것이다. 그리하여 여기 인공지능 시대에 꼭 필요한 상식이자 최고 역량이 될 ''AI 종합력'', AI 리터러시(Artificial Intelligence Literacy
+출판사: 프리렉
+ISBN: 9788965404026
+출간일시: 2024-12-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6781568&q=AI+%EB%A6%AC%ED%84%B0%EB%9F%AC%EC%8B%9C%3A+%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5+%ED%95%84%EC%88%98+%EC%A7%80%EC%8B%9D%EB%B6%80%ED%84%B0+%EC%99%84%EB%B2%BD+%ED%99%9C%EC%9A%A9%EA%B9%8C%EC%A7%80', 25000, 10.00, 22500, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6781568%3Ftimestamp%3D20260410121713', 94, 76, 'ACTIVATE', NULL),
+    (699, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '미래의 부', '이지성', '9791191360196', '코로나바이러스감염증-19(이하 코로나19)로 인류는 서로 접촉하지 않는, 이른바 ‘언택트 시대’로 접어들었다. 불과 2년 전까지만 해도 선택의 영역이었던 인공지능과 IT 기술이 코로나19를 기점으로 일상 전반을 지배하게 된 것이다. 2020년 8월, 미국을 대표하는 30개 기업의 주가지수를 보여주는 다우지수가 석유기업 엑슨모빌을 92년 만에 퇴출하고, 그 자리에 클라우드 기업 세일즈포스를 올린 것은 석유 경제로 대표되던 3차 산업혁명 시대가 저물고 4
+출판사: 차이정원
+ISBN: 9791191360196
+출간일시: 2021-07-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5798747&q=%EB%AF%B8%EB%9E%98%EC%9D%98+%EB%B6%80', 17000, 10.00, 15300, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5798747%3Ftimestamp%3D20251218145743', 97, 78, 'ACTIVATE', NULL),
+    (700, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '메타인지의 힘', '구본권', '9791167741066', '인간의 가장 고등한 지적 능력이자 기계와 구별되는 유일한 인지 능력, ‘메타인지’에 관한 종합교양서. 최근 전 세계 뇌과학, 신경과학, 심리학, 인지과학 연구자들이 가장 중요하게 탐구해온 주제이자 인공지능 시대에 반드시 갖춰야 할 경쟁력인 ‘메타인지’를 종합적으로 이해하도록 돕는다. 베스트셀러 《로봇 시대, 인간의 일》 저자이자 디지털 인문학자인 구본권 신작.
+출판사: 어크로스
+ISBN: 9791167741066
+출간일시: 2023-06-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6374163&q=%EB%A9%94%ED%83%80%EC%9D%B8%EC%A7%80%EC%9D%98+%ED%9E%98', 18000, 10.00, 16200, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6374163%3Ftimestamp%3D20251125151715', 100, 80, 'ACTIVATE', NULL),
+    (701, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '인공지능', '블레이 휘트비', '9788991645219', '출판사: 유토피아
+ISBN: 9788991645219
+출간일시: 2007-09-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1359187&q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5', 13000, 10.00, 11700, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1359187%3Ftimestamp%3D20220825221414', 103, 82, 'ACTIVATE', NULL),
+    (702, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '인공지능(한림SA 5)', '사이언티픽 아메리칸 편집부 (엮음)', '9788970948812', '『인공지능』은 시간과 공간의 제약을 극복해 더욱 빠르고 효율적인 컴퓨터를 만들려고 과학자들이 어떤 노력을 해왔는지 보여준다. 또한 인간의 뇌와 닮은 컴퓨터를 만들어 인간의 의식과 사고 능력, 언어 능력을 컴퓨터에 부여하려고 애써온 과학적 연구의 사례들도 나와 있다. 빠른 발전이 가능하리라 예상했던 자동번역이 지지부진할 수밖에 없는 이유를 인간 언어의 비밀을 분석함으로써 알려주며, 딥블루 등 인간과의 체스 대결에 승리한 컴퓨터의 프로그램을 개발하는 과정
+출판사: 한림출판사
+ISBN: 9788970948812
+출간일시: 2016-09-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=980038&q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%28%ED%95%9C%EB%A6%BCSA+5%29', 16000, 10.00, 14400, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F980038%3Ftimestamp%3D20221011185816', 106, 84, 'ACTIVATE', NULL),
+    (703, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '인공지능(독학사 컴퓨터과학과 3단계)(시대에듀)', '최성운', '9791125461043', '이 책은 독학사 시험에 응시하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다. 첫째, 다년간 출제된 독학학위제 평가영역을 철저히 분석하여 시험에 꼭 출제되는 내용을 ‘핵심이론’으로 선별하여 수록하였으며, 중요도 체크 및 이론 안의 ‘알아두기’를 통해 심화 학습과 학습 내용 정리를 효율적으로 할 수 있게 하였습니다. 둘째, 해당 출제영역에 맞는 핵심포인트를 분석하여 풍부한 [실제예상문제]를 수록하였습니다. 또한, 실제
+출판사: 시대고시기획
+ISBN: 9791125461043
+출간일시: 2019-10-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5083776&q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%28%EB%8F%85%ED%95%99%EC%82%AC+%EC%BB%B4%ED%93%A8%ED%84%B0%EA%B3%BC%ED%95%99%EA%B3%BC+3%EB%8B%A8%EA%B3%84%29%28%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80%29', 26000, 10.00, 23400, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5083776%3Ftimestamp%3D20220714034655', 109, 86, 'ACTIVATE', NULL),
+    (704, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '된다! 하루 만에 끝내는 챗GPT 활용법', '프롬프트 크리에이터', '9791163037231', '챗GPT 입문 분야 《된다! 하루 만에 끝내는 챗GPT 활용법》이 2025년 최신 업데이트된 내용을 반영하여 전면 개정 3판으로 돌아왔습니다. 이 책은 용어조차 생소할 초보자를 위해 인공지능에 대한 개념 설명과 챗GPT 가입 방법부터 시작합니다. 이어서 챗GPT에 익숙해질 수 있도록 실무와 일상 전반에 쓸 수 있는 활용도 높은 프롬프트 예제를 다룹니다. 전 국민을 챗GPT에 빠지게 한 이미지 생성 기능도 빠질 수 없겠죠? 어떻게 하면 원하는 이미지를
+출판사: 이지스퍼블리싱
+ISBN: 9791163037231
+출간일시: 2025-06-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6923189&q=%EB%90%9C%EB%8B%A4%21+%ED%95%98%EB%A3%A8+%EB%A7%8C%EC%97%90+%EB%81%9D%EB%82%B4%EB%8A%94+%EC%B1%97GPT+%ED%99%9C%EC%9A%A9%EB%B2%95', 20000, 10.00, 18000, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6923189%3Ftimestamp%3D20250813151833', 112, 88, 'ACTIVATE', NULL),
+    (705, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '인공지능(지식만화도서관 2)(양장본 HardCover)', '장 노엘 라파르그', '9791186921579', '이 책은 각 분야에서 활동하는 전문가와 개성 있는 만화가가 만나 세상의 모든 지식을 알기 쉽고 재미있게 소개하는 시리즈 지식만화도서관 제2권이다. ‘인공지능’은 이제 익숙한 주제가 되었지만, 우리는 그 역사와 현실과 가능성을 얼마나 잘 알고 있을까? 실제로 지금까지 과학의 어떤 분야도 이토록 열띤 논쟁을 일으킨 적이 없었다. ‘트랜스휴머니스트’들은 인공지능이 인류를 구원하고, 심지어 죽음마저도 극복하게 해주리라 믿는다. 반면에 빌 게이츠와 스티븐 호킹
+출판사: 이숲
+ISBN: 9791186921579
+출간일시: 2018-04-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1637943&q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%28%EC%A7%80%EC%8B%9D%EB%A7%8C%ED%99%94%EB%8F%84%EC%84%9C%EA%B4%80+2%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 10.00, 10800, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1637943%3Ftimestamp%3D20221025115908', 115, 90, 'ACTIVATE', NULL),
+    (706, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '인공지능', '김대수', '9788970503349', '인공지능의 물결이 세차게 다가오고 있다. 최근 4차 산업혁명 시대에 접어들면서 인공지능의 중요성이 더욱 커지고 있다. 미국을 비롯한 세계 각국에서 인공지능의 중요성을 강조하며, 인공지능을 차세대의 시장 질서를 주도할 수 있는 핵심 기술로 주목하고 있다.  구글과 마이크로소프트를 비롯한 전 세계의 IT 기업들이 ‘AI First’를 선언했다. 그리고 많은 수의 회사들이 인공지능이란 새로운 시대적 변화의 물결에 발맞추어 인공지능 관련 조직을 신설하고 역량
+출판사: 생능출판
+ISBN: 9788970503349
+출간일시: 2020-01-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5172394&q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5', 25000, 3.00, 24250, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172394%3Ftimestamp%3D20240828141039', 118, 92, 'ACTIVATE', NULL),
+    (707, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '된다! 하루 만에 끝내는 챗GPT 활용법', '프롬프트 크리에이터', '9791163036234', '챗GPT 입문 바이블 《된다! 하루 만에 끝내는 챗GPT 활용법》이 2024년 GPT-4o로 최신 업데이트된 내용을 반영하여 전면 개정 2판으로 돌아왔습니다. 이 책은 용어조차 생소할 초보자를 위해 인공지능에 대한 개념 설명과 챗GPT 가입 방법부터 시작합니다. 이어서 실무에 활용할 프롬프트 작성 예제와 저작권 이슈, 챗GPT가 먹통일 때 해결 방법 등 많은 분들이 챗GPT를 사용할 때 궁금해할 만한 내용을 Q &amp; A 형식으로 꼼꼼하게 다룹니다. 챗
+출판사: 이지스퍼블리싱
+ISBN: 9791163036234
+출간일시: 2024-07-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6689966&q=%EB%90%9C%EB%8B%A4%21+%ED%95%98%EB%A3%A8+%EB%A7%8C%EC%97%90+%EB%81%9D%EB%82%B4%EB%8A%94+%EC%B1%97GPT+%ED%99%9C%EC%9A%A9%EB%B2%95', 17200, 10.00, 15480, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6689966%3Ftimestamp%3D20260225150914', 121, 94, 'ACTIVATE', NULL),
+    (708, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 19, '인공지능(독학학위제 독학사 컴퓨터과학과 3단계)(iMBC 캠퍼스)', '차정희', '9788963922379', '- 독자대상 : 독학학위제(독학사) 컴퓨터과학과 3단계(전공심화과정인정시험) 준비생 - 구성 : 이론 + 문제 - 특징 : ① 시험 평가영역을 철저히 반영한 체계적인 이론 정리 ② 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이 ③ 중요한 단어나 항목을 쉽게 찾아 궁금증을 해결할 수 있는 찾아보기
+출판사: 지식과미래
+ISBN: 9788963922379
+출간일시: 2016-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=893103&q=%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%28%EB%8F%85%ED%95%99%ED%95%99%EC%9C%84%EC%A0%9C+%EB%8F%85%ED%95%99%EC%82%AC+%EC%BB%B4%ED%93%A8%ED%84%B0%EA%B3%BC%ED%95%99%EA%B3%BC+3%EB%8B%A8%EA%B3%84%29%28iMBC+%EC%BA%A0%ED%8D%BC%EC%8A%A4%29', 26000, 10.00, 23400, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F893103%3Ftimestamp%3D20220507170343', 124, 96, 'ACTIVATE', NULL),
+    (709, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, 'Do it! 점프 투 파이썬', '박응용', '9791163034735', '개정 2판으로 새롭게 태어났다! 챗GPT를 시작으로 펼쳐진 생성 AI 시대에 맞춰 설명과 예제를 다듬고, 최신 경향과 심화 내용을 보충했다. 또한 이번 개정 2판도 50만 코딩 유튜버인 조코딩과 협업을 통해 유튜브 동영상을 제공해 파이썬을 더 쉽게 공부할 수 있다.  8년 연속 베스트셀러! 위키독스 누적 방문 300만! 독자의 입에서 입으로 전해진 추천과 수많은 대학 및 학원의 교재 채택을 통해 검증은 이미 끝났다. 코딩을 처음 배우는 중고등학생부터 코딩
+출판사: 이지스퍼블리싱
+ISBN: 9791163034735
+출간일시: 2023-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6361131&q=Do+it%21+%EC%A0%90%ED%94%84+%ED%88%AC+%ED%8C%8C%EC%9D%B4%EC%8D%AC', 22000, 10.00, 19800, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6361131%3Ftimestamp%3D20250709143830', 127, 98, 'ACTIVATE', NULL),
+    (710, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '혼자 공부하는 파이썬', '윤인성', '9791162245651', '『혼자 공부하는 파이썬』이 더욱 흥미있고 알찬 내용으로 개정되었습니다. 프로그래밍이 정말 처음인 입문자도 따라갈 수 있는 친절한 설명과 단계별 학습은 그대로! 혼자 공부하더라도 체계적으로 계획을 세워 학습할 수 있도록 ‘혼공 계획표’를 새롭게 추가했습니다. 또한 입문자가 자주 물어보는 질문과 오류 해결 방법을 적재적소에 배치하여 예상치 못한 문제에 부딪혀도 좌절하지 않고 끝까지 완독할 수 있도록 도와줍니다. 단순한 문법 암기와 코딩 따라하기에 지쳤다면, 새로운
+출판사: 한빛미디어
+ISBN: 9791162245651
+출간일시: 2022-06-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6080832&q=%ED%98%BC%EC%9E%90+%EA%B3%B5%EB%B6%80%ED%95%98%EB%8A%94+%ED%8C%8C%EC%9D%B4%EC%8D%AC', 22000, 10.00, 19800, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6080832%3Ftimestamp%3D20251102123026', 130, 100, 'ACTIVATE', NULL),
+    (711, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '코딩 자율학습 나도코딩의 파이썬 입문', '나도코딩', '9791140703302', '유튜브와 인프런 최고의 인기 강의를 한 권에 담았습니다. 일상 속 재미있는 예제로 파이썬 기본 개념을 배우고 1분 퀴즈, 실습 문제, 셀프체크로 이어지는 단계별 학습으로 파이썬을 완공할 수 있습니다. 이제 코딩은 선택이 아닌 필수! 코딩은 전공자만 배울 수 있다는 생각으로 지레 포기하지 마세요. 파이썬은 초보자가 가장 쉽게 배울 수 있는 프로그래밍 언어입니다. 관심만 있다면 누구나 코딩을 배울 수 있습니다. 나도코딩이 쉽고 재미있게 알려드립니다. 코딩
+출판사: 길벗
+ISBN: 9791140703302
+출간일시: 2023-02-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6282674&q=%EC%BD%94%EB%94%A9+%EC%9E%90%EC%9C%A8%ED%95%99%EC%8A%B5+%EB%82%98%EB%8F%84%EC%BD%94%EB%94%A9%EC%9D%98+%ED%8C%8C%EC%9D%B4%EC%8D%AC+%EC%9E%85%EB%AC%B8', 24000, 10.00, 21600, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6282674%3Ftimestamp%3D20260113152242', 133, 102, 'ACTIVATE', NULL),
+    (712, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '챗GPT로 만드는 주식 & 암호화폐 자동매매 시스템', '설근민', '9791192987033', '프로그램이 뚝딱 만들어진다. 중요한 것은 프로그래밍 언어를 아는 것이 아니라, 문제 해결 방식을 떠올리는 것이다. 어떤 데이터를 어떻게 수집하고, 어떤 모듈로 예측 모델을 만들고, 어떤 조건으로 종목 추천을 받을지 생각했다면, 챗GPT를 이용해 자동매매 시스템으로 조합하는 것은 더 이상 어렵지 않다. 증권사 트레이더에게 챗GPT를 활용하는 방식을 배우고, 초보자도 이해하기 쉬운 파이썬으로 직접 프로그램을 만들면서 자연스럽게 코딩 지식과 금융 지식을 익혀보자
+출판사: 제이펍
+ISBN: 9791192987033
+출간일시: 2023-11-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6480329&q=%EC%B1%97GPT%EB%A1%9C+%EB%A7%8C%EB%93%9C%EB%8A%94+%EC%A3%BC%EC%8B%9D+%26+%EC%95%94%ED%98%B8%ED%99%94%ED%8F%90+%EC%9E%90%EB%8F%99%EB%A7%A4%EB%A7%A4+%EC%8B%9C%EC%8A%A4%ED%85%9C', 20000, 10.00, 18000, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6480329%3Ftimestamp%3D20260327125447', 136, 104, 'ACTIVATE', NULL),
+    (713, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, 'Do it! 점프 투 파이썬', '박응용', '9791163030911', '문과생도 중고등학생도 직장인도 프로그래밍에 눈뜨게 만든 바로 그 책이 전면 개정판으로 새로 태어났다! 2016년 《Do it! 점프 투 파이썬》으로 출간되었던 이 책은 약 4년 동안의 피드백을 반영하여 초보자가 더 빠르게 입문하고, 더 깊이 있게 공부할 수 있도록 개정되었다. 특히 ‘나 혼자 코딩’과 ‘코딩 면허 시험 20제’ 등 독자의 학습 흐름에 맞게 문제를 보강한 점이 눈에 띈다. 실습량도 두 배로 늘었다.  4년 동안 압도적 1위! 위키독스
+출판사: 이지스퍼블리싱
+ISBN: 9791163030911
+출간일시: 2019-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4977247&q=Do+it%21+%EC%A0%90%ED%94%84+%ED%88%AC+%ED%8C%8C%EC%9D%B4%EC%8D%AC', 18800, 10.00, 16920, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4977247%3Ftimestamp%3D20260123124205', 139, 106, 'ACTIVATE', NULL),
+    (714, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '파이썬', 'Y. Daniel Liang', '9788920028892', '이 책은 누구나 쉽게 따라할 수 있는 파이썬 프로그래밍 언어에 기반하고 있기 때문에 프로그래밍을 통해 얻을 수 있는 논리 능력 향상과 문제 해결력 배양에 가장 적합하다.  비전공자도 쉽게 이해하고 활용할 수 있는 풍부한 예제를 제공하여 프로그래밍의 기본 개념 정립에 도움을 주며 실생활과 밀접하게 관련된 다양한 사례 연구를 통해 실생활의 문제 해결 능력을 자연스럽게 배양시킨다.   이 책을 활용한 프로그래밍 학습을 통해 파이썬 프로그램을 스스로 작성하고
+출판사: 에피스테메
+ISBN: 9788920028892
+출간일시: 2018-03-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=397140&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC', 35000, 10.00, 31500, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F397140%3Ftimestamp%3D20230513135958', 142, 108, 'ACTIVATE', NULL),
+    (715, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, 'Do it! 점프 투 파이썬', '박응용', '9788997390915', '《Do it! 점프 투 파이썬》은 지난 10년간 온라인 독자들의 질문 댓글에 답변하며 쌓아온 저자만의 노하우를 초보자들이 이해하기 쉽게 풀어냈다. 책은 파이썬의 문법들을 실생활에서 쉽게 접할 수 있는 일들을 사례로 들어 설명하는 저자의 탁월함이 돋보인다. 더불어 최신 파이썬 3버전을 기준으로 내용을 설명하고, 반드시 기억해야 하는 파이썬 2.7버전 내용까지 책 곳곳에서 수록하였다. 또한, 책에서 제공하는 ‘초보자 30일 코스’ 계획표를 이용해 하루 한
+출판사: 이지스퍼블리싱
+ISBN: 9788997390915
+출간일시: 2016-03-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1481287&q=Do+it%21+%EC%A0%90%ED%94%84+%ED%88%AC+%ED%8C%8C%EC%9D%B4%EC%8D%AC', 18800, 10.00, 16920, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481287%3Ftimestamp%3D20220531214654', 145, 110, 'ACTIVATE', NULL),
+    (716, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '파이썬(열혈강의)(개정판 VER.2)', '이강성', '9788989345770', '출판사: 프리렉
+ISBN: 9788989345770
+출간일시: 2005-08-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1297411&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC%28%EC%97%B4%ED%98%88%EA%B0%95%EC%9D%98%29%28%EA%B0%9C%EC%A0%95%ED%8C%90+VER.2%29', 35000, 0.00, -1, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1297411%3Ftimestamp%3D20221025165925', 148, 112, 'ACTIVATE', NULL),
+    (717, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '혼자 공부하는 파이썬', '윤인성', '9791162241882', '이 책은 독학으로 프로그래밍 언어를 처음 배우려는 입문자가, 혹은 파이썬을 배우려는 입문자가 ‘꼭 필요한 내용을 제대로’ 학습할 수 있도록 구성했다. ‘무엇을’, ‘어떻게’ 학습해야 할지조차 모르는 입문자의 막연한 마음을 살펴, 과외 선생님이 알려주듯 친절하게, 그러나 핵심적인 내용만 콕콕 집어준다. 책의 첫 페이지를 펼쳐서 마지막 페이지를 덮을 때까지, 혼자서도 충분히 파이썬을 배울 수 있다는 자신감과 확신이 계속될 것이다!    27명의 베타리더
+출판사: 한빛미디어
+ISBN: 9791162241882
+출간일시: 2019-06-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4966863&q=%ED%98%BC%EC%9E%90+%EA%B3%B5%EB%B6%80%ED%95%98%EB%8A%94+%ED%8C%8C%EC%9D%B4%EC%8D%AC', 18000, 10.00, 16200, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4966863%3Ftimestamp%3D20251101123437', 151, 114, 'ACTIVATE', NULL),
+    (718, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '파이썬', '한선관, 김태령', '9788970509723', '이 책은 지금까지 경험하지 못한 코딩 교육의 진수를 보여준다. “코딩 교육이 가야 할 방향은 컴퓨팅 사고력을 높이는 것이다.”라고 이 책의 저자들이 말하듯, “디지털 시대에 적합한 창의력과 문제해결력을 기르기 위한 코딩의 기초부터 응용까지 컴퓨터 코드를 작성하는 것은 물론이고, 알고리즘 학습을 통한 컴퓨팅 사고력을 완전 정복한다.
+출판사: 생능출판
+ISBN: 9788970509723
+출간일시: 2019-02-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4888715&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC', 29000, 10.00, 26100, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4888715%3Ftimestamp%3D20240330130853', 154, 116, 'ACTIVATE', NULL),
+    (719, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '파이썬', '염기원, 오지영', '9791159069048', '비전공자의 데이터 분석을 위한 『파이썬』은 〈파이썬 기초〉, 〈파이썬을 이용한 데이터 분석 기초〉, 〈시각화 라이브러리 사용하기〉 등 파이썬의 기초적이고 전반적인 내용이 수록되어 있다.
+출판사: 복두출판사
+ISBN: 9791159069048
+출간일시: 2020-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5460069&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC', 15000, 3.00, 14550, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5460069%3Ftimestamp%3D20250809134413', 157, 118, 'ACTIVATE', NULL),
+    (720, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '파이썬 라이브러리를 활용한 데이터 분석', '웨스 맥키니', '9788968480478', '『파이썬 라이브러리를 활용한 데이터 분석』은 NumPy, pandas, matplotlib, IPython 등의 다양한 파이썬 라이브러리를 사용해서 효과적으로 데이터를 분석할 수 있게 알려준 책이다. 연대별 이름 통계 자료, 미 대선 데이터베이스 자료를 기반으로 한 실제 사례 연구를 따라하다 보면 어느덧 데이터에 알맞게 접근하고 효과적으로 분석할 수 있게 된다.
+출판사: 한빛미디어
+ISBN: 9788968480478
+출간일시: 2013-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=944468&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC+%EB%9D%BC%EC%9D%B4%EB%B8%8C%EB%9F%AC%EB%A6%AC%EB%A5%BC+%ED%99%9C%EC%9A%A9%ED%95%9C+%EB%8D%B0%EC%9D%B4%ED%84%B0+%EB%B6%84%EC%84%9D', 33000, 10.00, 29700, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F944468%3Ftimestamp%3D20251101110751', 160, 0, 'ACTIVATE', NULL),
+    (721, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'DIAT 스프레드시트 엑셀 2010(2017)(이공자)(스프링)', 'ASO R&D Ins', '9788984558823', '- 독자대상 : DIAT 시험 준비생 - 구성 : 이론 + 문제 - 특징 : ① 새롭게 변경된 시험 출제 유형에 맞게 단계별로 체크 ② 유형정복 모의고사 25회, 최신 유형 기출문제 5회 수록
+출판사: 아카데미소프트
+ISBN: 9788984558823
+출간일시: 2016-09-12T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1189984&q=DIAT+%EC%8A%A4%ED%94%84%EB%A0%88%EB%93%9C%EC%8B%9C%ED%8A%B8+%EC%97%91%EC%85%80+2010%282017%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1189984%3Ftimestamp%3D20221025124237', 163, 2, 'ACTIVATE', NULL),
+    (722, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '세계가 뱅글뱅글(스프링)(볼펜포함)(뱅글뱅글 두뇌 트레이닝 2)(스프링)', '권혜정', '9788945219664', '「뱅글뱅글 두뇌 트레이닝」시리즈 제 2권『세계가 뱅글뱅글』은 세계 상식에 도움이 되는 다양한 퍼즐과 게임 총 50가지를 담았다. 이 책은 세계 7대 불가사의, 세렝게티의 얼룩말, 피라미드의 비밀, 구멍 뚫린 만리장성, 맨발의 아베베, 암호 속의 네덜란드, 특명 야자열매 따기, 꽁꽁 얼음 호텔 등 두뇌가 들썩들썩 재미난 두뇌 퍼즐의 세계로 안내한다.
+출판사: 문공사
+ISBN: 9788945219664
+출간일시: 2010-07-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=597209&q=%EC%84%B8%EA%B3%84%EA%B0%80+%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EB%B3%BC%ED%8E%9C%ED%8F%AC%ED%95%A8%29%28%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+2%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 10.00, 8550, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597209%3Ftimestamp%3D20200110141557', 166, 4, 'ACTIVATE', NULL),
+    (723, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '주기도문 쉽게 암송하기(스프링)', '에벤에셀 편집부', '9788985615563', '『주기도문 쉽게 암송하기』는 주기도문 전문, 8항목 기도를 한글, 영어, 중국어, 일본어로 수록한 책으로, 휴대하면서 볼 수 있도록 미니 사이즈로 제작하였다.
+출판사: 에벤에셀
+ISBN: 9788985615563
+출간일시: 2004-10-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1219334&q=%EC%A3%BC%EA%B8%B0%EB%8F%84%EB%AC%B8+%EC%89%BD%EA%B2%8C+%EC%95%94%EC%86%A1%ED%95%98%EA%B8%B0%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1000, 15.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1219334%3Ftimestamp%3D20190127090905', 169, 6, 'ACTIVATE', NULL),
+    (724, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '공룡이 뱅글뱅글(스프링)(펜포함)(뱅글뱅글 두뇌 트레이닝 3)(스프링)', '편집부', '9788945219688', '출판사: 문공사
+ISBN: 9788945219688
+출간일시: 2010-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=597215&q=%EA%B3%B5%EB%A3%A1%EC%9D%B4+%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%ED%8E%9C%ED%8F%AC%ED%95%A8%29%28%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+3%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 0.00, -1, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597215%3Ftimestamp%3D20200110141645', 172, 8, 'ACTIVATE', NULL),
+    (725, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '수능만점영단어 1800+180(60일완성)(뜯어먹는)(스프링)', '동아출판 편집부', '9788900372311', '『수능만점영단어 1800+180(60일완성)』은 수능 기본 단어를 습득한 학습자를 위한 영단어 1800개를 엄선한 책이다. 동사편에서는 영어 구문의 중심이자 여러 파생어의 근간이 되는 동사를 우선 학습하고, 명사편·형용사편에서는 주제별 의미 관련성이 뚜렷한 명사·형용사의 연상적·집중적 암기를 돕는다.
+출판사: 동아출판
+ISBN: 9788900372311
+출간일시: 2014-10-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=341686&q=%EC%88%98%EB%8A%A5%EB%A7%8C%EC%A0%90%EC%98%81%EB%8B%A8%EC%96%B4+1800%2B180%2860%EC%9D%BC%EC%99%84%EC%84%B1%29%28%EB%9C%AF%EC%96%B4%EB%A8%B9%EB%8A%94%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 11000, 10.00, 9900, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F341686%3Ftimestamp%3D20200123123916', 175, 10, 'ACTIVATE', NULL),
+    (726, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '부동산세법 체계도(공인중개사 2차)(2021)(에듀윌)(스프링)', '신성룡', '9791136009067', '부동산세법은 내용이 방대하고 암기 내용이 각 세목별로 비슷하기 때문에 수험생들이 학습하기 까다로운 과목입니다. 하지만 체계를 통하여 접근하면 세법은 더 이상 어려운 과목이 아닙니다. 세법은 체계로 절차와 흐름을 먼저 파악한 후, 체계 안에 있는 세부 내용들을 학습해야 합니다. 세부 내용의 요소들이 비슷하기 때문에 이 요소들의 내용을 구분해서 학습해야 문제가 풀립니다. 본 교재는 이러한 학습방법을 바탕으로, 세법의 큰 틀을 잡을 수 있는 체계도를
+출판사: 에듀윌
+ISBN: 9791136009067
+출간일시: 2021-02-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5582073&q=%EB%B6%80%EB%8F%99%EC%82%B0%EC%84%B8%EB%B2%95+%EC%B2%B4%EA%B3%84%EB%8F%84%28%EA%B3%B5%EC%9D%B8%EC%A4%91%EA%B0%9C%EC%82%AC+2%EC%B0%A8%29%282021%29%28%EC%97%90%EB%93%80%EC%9C%8C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5582073%3Ftimestamp%3D20220803203637', 178, 12, 'ACTIVATE', NULL),
+    (727, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '땡큐땡큐 감사 카드 만들기(내 손으로 만드는 디자인 북 2)(스프링)', '핫초코', '9788960243057', '아이들을 디자이너의 세계로 입문시키는 「내 손으로 만드는 디자인 북」 제2권 『땡큐땡큐 감사 카드 만들기』. 아이들이 직접 생일 카드를 만들 수 있도록 구성한 카드 DIY 책이다. 큰 카드, 중간 카드, 작은 카드로 구성된 카드 26장에다가, 디자인툴 2매, 팝업 이미지 24컷, 패턴지 4장, 그리고 스티커 4장으로 구성했다.  고마운 마음을 전할 때 풍부한 감동을 줄 수 있는 카드를 직접 디자인해서 만들어보도록 꾸몄다. 카드를 예쁘게 꾸미는 데
+출판사: 재미북스
+ISBN: 9788960243057
+출간일시: 2013-05-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=825643&q=%EB%95%A1%ED%81%90%EB%95%A1%ED%81%90+%EA%B0%90%EC%82%AC+%EC%B9%B4%EB%93%9C+%EB%A7%8C%EB%93%A4%EA%B8%B0%28%EB%82%B4+%EC%86%90%EC%9C%BC%EB%A1%9C+%EB%A7%8C%EB%93%9C%EB%8A%94+%EB%94%94%EC%9E%90%EC%9D%B8+%EB%B6%81+2%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1000, 10.00, 900, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F825643%3Ftimestamp%3D20220930230111', 181, 14, 'ACTIVATE', NULL),
+    (728, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Beauty Illustration(스프링)', '박선영, 정승은', '9788964750995', '이 책은 헤어디자이너, 메이크업 아티스트 등이 자신의 아이디어를 스케치하거나 색으로 표현된 작품패턴을 보여주는데 도움을 주고, 뷰티일러스트레이션을 공부하고자 하는 모든 이들에게 도움을 주고자 하였다. 메이크업 이해, 메이크업의 역사, 기초 메이크업, 포인트 메이크업, 뷰티일러스트레이션으로 나누어져 있다.
+출판사: 예림
+ISBN: 9788964750995
+출간일시: 2015-03-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=906860&q=Beauty+Illustration%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 0.00, 15000, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906860%3Ftimestamp%3D20200415131442', 184, 16, 'ACTIVATE', NULL),
+    (729, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '김광민 피아노 베스트(스프링)', '김광민', '9791186471128', '『김광민 피아노 베스트』는 1992년 1집 [지구에서 온 편지]를 발표한 것을 시작으로 현재까지 총 5장의 정규 앨범을 발표한 피아노의 거장이며 작곡가인 김광민의 베스트 피아노 악보집이다. 모든 악보를 김광민 본인이 꼼꼼히 감수하여 높은 완성도를 자랑한다. 인터뷰에는 김광민의 음악 인생과 각 정규 앨범의 주제와 관련 에피소드를 담겨 있어 김광민의 음악 세계를 이해하는 데 큰 도움이 된다. 음악인 김광민의 새로운 음악활동을 위한 이정표라 할 수 있을
+출판사: SRMUSIC
+ISBN: 9791186471128
+출간일시: 2016-02-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1628827&q=%EA%B9%80%EA%B4%91%EB%AF%BC+%ED%94%BC%EC%95%84%EB%85%B8+%EB%B2%A0%EC%8A%A4%ED%8A%B8%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1628827%3Ftimestamp%3D20221025122740', 187, 18, 'ACTIVATE', NULL),
+    (730, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '뷰티 디자인 일러스트레이션(스프링)', '방효진', '9788958096559', '▶ 이 책은 뷰티 디자인 일러스트레이션을 다룬 이론서입니다. 뷰티 디자인 일러스트레이션의 기초적이고 전반적인 내용을 학습할 수 있습니다.
+출판사: 정민사
+ISBN: 9788958096559
+출간일시: 2018-08-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4833029&q=%EB%B7%B0%ED%8B%B0+%EB%94%94%EC%9E%90%EC%9D%B8+%EC%9D%BC%EB%9F%AC%EC%8A%A4%ED%8A%B8%EB%A0%88%EC%9D%B4%EC%85%98%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 10.00, 16000, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4833029%3Ftimestamp%3D20221025142433', 190, 20, 'ACTIVATE', NULL),
+    (731, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '썼다 지웠다 연필잡기(우리아이 처음 선긋기)(스프링본)(스프링)', '지원 편집부', '9788993312850', '우리 아이 만능 영어 공부 『썼다 지웠다 연필잡기』는 유치원 입학 전 유아들을 위한 책이다. 아이들의 호기심과 지적 자극을 한꺼번에 풀어주는 학습교재로, 마카펜과 코팅된 특수지를 이용하여 마음대로 그림그리기와 쓰기가 가능하다. 펜을 사용한 후에는 휴지나 물휴지로 깨끗하게 지워져 새 것처럼 쓸 수 있다.
+출판사: 지원출판사
+ISBN: 9788993312850
+출간일시: 2010-06-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1390945&q=%EC%8D%BC%EB%8B%A4+%EC%A7%80%EC%9B%A0%EB%8B%A4+%EC%97%B0%ED%95%84%EC%9E%A1%EA%B8%B0%28%EC%9A%B0%EB%A6%AC%EC%95%84%EC%9D%B4+%EC%B2%98%EC%9D%8C+%EC%84%A0%EA%B8%8B%EA%B8%B0%29%28%EC%8A%A4%ED%94%84%EB%A7%81%EB%B3%B8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9800, 10.00, 8820, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1390945%3Ftimestamp%3D20221025143533', 193, 22, 'ACTIVATE', NULL),
+    (732, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '영어 확인학습 문법 약점 체크 300제(스프링)', '손재석', '9791189591311', '영어 확인학습 문법약점체크 300제  - 문법 빈출 포인트 90 포함 - 확인학습펜 전용 앱을 통한 정답 제공 - 확인학습펜 전용 앱을 통한 테마별 문제풀이 300제 제공 - 문제풀이시 인공지능이 찾아주는 나의 취약점 집중공략
+출판사: 낙원출판문화원
+ISBN: 9791189591311
+출간일시: 2019-04-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4913778&q=%EC%98%81%EC%96%B4+%ED%99%95%EC%9D%B8%ED%95%99%EC%8A%B5+%EB%AC%B8%EB%B2%95+%EC%95%BD%EC%A0%90+%EC%B2%B4%ED%81%AC+300%EC%A0%9C%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 10.00, 14400, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4913778%3Ftimestamp%3D20221025154301', 196, 24, 'ACTIVATE', NULL),
+    (733, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스튜디오 지브리 피아노 컬렉션: 완전판(스프링)', 'SRMUSIC 편집부', '9791186471333', '가장 폭넓은 곡을 수록한 ‘스튜디오 지브리’ 피아노 악보집『스튜디오 지브리 피아노 컬렉션 완전판』. 이 책은〈이웃집 토토로〉, 〈하울의 움직이는 성〉, 〈센과 치히로의 행방불명〉 등으로 유명한 일본을 대표하는 애니메이션 제작사 ‘스튜디오 지브리’의 피아노 악보집으로 80년이 넘는 역사를 가진 일본 음악출판사 SHINKO MUSIC에서 채보한 악보로, 피아노로 스튜디오 지브리의 명곡을 최대한 멋지고 쉽게 연주할 수 있도록 초보자를 배려한 편곡이 돋보인다
+출판사: SRMUSIC
+ISBN: 9791186471333
+출간일시: 2016-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633621&q=%EC%8A%A4%ED%8A%9C%EB%94%94%EC%98%A4+%EC%A7%80%EB%B8%8C%EB%A6%AC+%ED%94%BC%EC%95%84%EB%85%B8+%EC%BB%AC%EB%A0%89%EC%85%98%3A+%EC%99%84%EC%A0%84%ED%8C%90%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 5.00, -1, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633621%3Ftimestamp%3D20190131101442', 199, 26, 'ACTIVATE', NULL),
+    (734, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '플루트교실 1(스프링)', '정효숙', '9788932626451', '체계적인 교육 방법을 제시하는 『플루트교실』 제1권. 단체 교습에서도 즐겁게 배울 수 있도록 2중주곡이나 3중주곡들이 수록되어 있다. 알맞은 크기의 악보와 간단명료한 설명을 담았으며, 알아보기 쉬운 운지법 표시들을 덧붙였다. 쉽고 재미있게 배우면서도 실력을 탄탄히 쌓을 수 있는 기회를 제공하는 교본이다. 이번 개정판에는 예제곡을 좀더 현실적인 곡들로 교체하였다.
+출판사: 삼호뮤직
+ISBN: 9788932626451
+출간일시: 2006-12-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=502825&q=%ED%94%8C%EB%A3%A8%ED%8A%B8%EA%B5%90%EC%8B%A4+1%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F502825%3Ftimestamp%3D20260331110801', 2, 28, 'ACTIVATE', NULL),
+    (735, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '라바 어린이 스도쿠 스프링북: 초급(라바 스쿨 시리즈)(스프링)', '슈퍼스도쿠퍼즐연구소', '9788964944592', '보물섬을 찾아 떠나고 우주를 탐험하는 라바와 함께 재미난 스도쿠 퍼즐 여행을 떠나요! 스도쿠를 매일 풀다 보면 두뇌 계발은 물론 숫자에 흥미를 느끼고 수학이 재밌어질 거예요. 문제에 도전하고 해결하는 즐거움도 느낄 수 있지요. 《라바 어린이 스도쿠 스프링북 초급》《라바 어린이 스도쿠 스프링북 초급 중급》을 만나 보세요!
+출판사: 바이킹
+ISBN: 9788964944592
+출간일시: 2020-10-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5470545&q=%EB%9D%BC%EB%B0%94+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EC%8A%A4%EB%8F%84%EC%BF%A0+%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%81%3A+%EC%B4%88%EA%B8%89%28%EB%9D%BC%EB%B0%94+%EC%8A%A4%EC%BF%A8+%EC%8B%9C%EB%A6%AC%EC%A6%88%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 7500, 10.00, 6750, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5470545%3Ftimestamp%3D20220410090104', 5, 30, 'ACTIVATE', NULL),
+    (736, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '공인중개사 부동산공법 체계도(2019)(에듀윌)(스프링)', '김희상', '9791159499050', '- 독자대상 : 공인중개사 시험 준비생 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 에듀윌
+ISBN: 9791159499050
+출간일시: 2019-01-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844523&q=%EA%B3%B5%EC%9D%B8%EC%A4%91%EA%B0%9C%EC%82%AC+%EB%B6%80%EB%8F%99%EC%82%B0%EA%B3%B5%EB%B2%95+%EC%B2%B4%EA%B3%84%EB%8F%84%282019%29%28%EC%97%90%EB%93%80%EC%9C%8C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 7000, 10.00, 6300, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844523%3Ftimestamp%3D20220909233318', 8, 32, 'ACTIVATE', NULL),
+    (737, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '썼다 지웠다 ABC(우리아이 만능 영어공부)(스프링본)(스프링)', '지원 편집부', '9788993312843', '우리 아이 만능 영어 공부 『썼다 지웠다 ABC』은 유치원 입학 전 유아들을 위한 책이다. 아이들의 호기심과 지적 자극을 한꺼번에 풀어주는 학습교재로, 마카펜과 코팅된 특수지를 이용하여 마음대로 그림그리기와 쓰기가 가능하다. 펜을 사용한 후에는 휴지나 물휴지로 깨끗하게 지워져 새 것처럼 쓸 수 있다.
+출판사: 지원출판사
+ISBN: 9788993312843
+출간일시: 2010-06-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1387143&q=%EC%8D%BC%EB%8B%A4+%EC%A7%80%EC%9B%A0%EB%8B%A4+ABC%28%EC%9A%B0%EB%A6%AC%EC%95%84%EC%9D%B4+%EB%A7%8C%EB%8A%A5+%EC%98%81%EC%96%B4%EA%B3%B5%EB%B6%80%29%28%EC%8A%A4%ED%94%84%EB%A7%81%EB%B3%B8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9800, 10.00, 8820, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1387143%3Ftimestamp%3D20221025152318', 11, 34, 'ACTIVATE', NULL),
+    (738, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '길에서 읽는 자전거책(플라스틱)(스프링)', '김병훈', '9788992124973', '실전 라이딩 ‘필수 상식’부터 자전거길 ‘베스트 7’까지 담은『길에서 읽는 자전거책』.《월간 자전거생활》의 대표 김병훈이 오랜 경험과 자료를 바탕으로 자전거 초보자에게 꼭 필요하면서 바로 실천할 수 있는 실전 ‘자전거 노하우’를 담은 책이다. 자전거를 소개하는 제원표 읽기부터 응급처치, 펑크 수리, 앞바퀴와 뒷바퀴 빼고 넣기 등의 기본적인 자전거 정비 방법을 사진과 함께 친절하게 설명하였다. ‘한강 팔당역~양평 남한강’, ‘하남 미사리~팔당대교
+출판사: 스마트비즈니스
+ISBN: 9788992124973
+출간일시: 2012-10-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1362736&q=%EA%B8%B8%EC%97%90%EC%84%9C+%EC%9D%BD%EB%8A%94+%EC%9E%90%EC%A0%84%EA%B1%B0%EC%B1%85%28%ED%94%8C%EB%9D%BC%EC%8A%A4%ED%8B%B1%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8500, 10.00, 7650, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1362736%3Ftimestamp%3D20211219162208', 14, 36, 'ACTIVATE', NULL),
+    (739, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '한눈에 가계부(2019)(스프링)', '솜씨연구소', '8809461090832', '더 쉽고, 더 편리하고, 더 똑똑해진 〈2019 한눈에 가계부〉  - 한 달 돈의 흐름이 한눈에 보이는 캘린더형 가계부 - 하루 1분, 캘린더에 낙서하듯 쓱쓱 쉽고 편리하게! - 한눈에 파악하는 재정 현황 &amp; 정기 지출 목록 추가!  한 달 돈의 흐름이 한눈에 보이는 캘린더형 가계부로 분야 1위를 달성했던 〈한눈에 가계부〉가 한층 업그레이드되어 돌아왔다. ‘계획 가계부’와 ‘실제 가계부’를 활용해 한 달 소비 계획과 실제 소비 흐름을 한눈
+출판사: 솜씨컴퍼니
+ISBN: 8809461090832
+출간일시: 2018-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3755764&q=%ED%95%9C%EB%88%88%EC%97%90+%EA%B0%80%EA%B3%84%EB%B6%80%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9800, 30.00, 6860, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3755764%3Ftimestamp%3D20221025123238', 17, 38, 'ACTIVATE', NULL),
+    (740, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Make up Stylebook(스프링)', '서혜경, 이주미, 임희경, 태동숙', '9788964750261', '예비 메이크업 아티스트를 위한 『Make up Stylebook』. 전문적 지식이 없이 메이크업 세계에 입문하는 사람들을 위한 기초교본이다. 메이크업 이론부터 실전까지 바탕을 다져나가도록 만들었다. 자신만의 메이크업 지침서로 활용할 수 있다.
+출판사: 예림
+ISBN: 9788964750261
+출간일시: 2012-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=906575&q=Make+up+Stylebook%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 20000, 3.00, 19400, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906575%3Ftimestamp%3D20220325211556', 20, 40, 'ACTIVATE', NULL),
+    (741, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2 교과서 영문법(동아 윤정미)(2019)(Grammar)(스프링)', '윤정미', '9791163341192', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341192
+출간일시: 2018-12-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844760&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EB%8F%99%EC%95%84+%EC%9C%A4%EC%A0%95%EB%AF%B8%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844760%3Ftimestamp%3D20220325184600', 23, 42, 'ACTIVATE', NULL),
+    (742, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스프링북 스도쿠 2(고급 고수)', '스도쿠 존 연구소, 시간과공간사 편집부', '9788971429921', '『스프링북 스도쿠. 2(고급 고수)』는 다른 책과 달리 책 왼쪽에 스프링을 달아 페이지를 넘기기 쉽고, 직접 문제를 풀기에도 편하다. 스도쿠는 연필로 쓰고 지우거나 메모를 해야 하는 책이기 때문에 일단 메모할 곳이 많고 빈칸의 네모에 여러 숫자를 써야 하기 때문에 네모가 큰 것이 유리하다. 그런 면에서 《스프링북 스도쿠》는 독자들의 니즈를 충분히 파악하고 만든 책이라고 단언할 수 있다. 또, 스도쿠 입문자를 위해 초급과 중급을 묶어서 만들고, 고급과
+출판사: 시간과공간사
+ISBN: 9788971429921
+출간일시: 2018-01-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=986040&q=%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%81+%EC%8A%A4%EB%8F%84%EC%BF%A0+2%28%EA%B3%A0%EA%B8%89+%EA%B3%A0%EC%88%98%29', 7500, 10.00, 6750, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F986040%3Ftimestamp%3D20251223110830', 26, 44, 'ACTIVATE', NULL),
+    (743, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '나무 집 다이어리(2019)(스프링)', '앤디 그리피스', '8809475870062', '2015년 《13층 나무 집》을 시작으로 《26층 나무 집》, 《39층 나무 집》, 《52층 나무 집》, 《65층 나무 집》, 《78층 나무 집》, 《91층 나무 집》이 출간되기까지 3년이 넘는 시간 동안 &lt;나무 집&gt;이 출간될 때마다 독자 반응은 가히 폭발적이었다. 그 인기에 힘입어 《나무 집 FUN BOOK》도 독자들의 많은 사랑을 받았다. 그리고 2018년 10월 《104층 나무 집》출간(2019년 1월 예정)을 앞두고 &lt;2019
+출판사: 시공주니어
+ISBN: 8809475870062
+출간일시: 2018-10-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3778964&q=%EB%82%98%EB%AC%B4+%EC%A7%91+%EB%8B%A4%EC%9D%B4%EC%96%B4%EB%A6%AC%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 40.00, 8400, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3778964%3Ftimestamp%3D20220216180026', 29, 46, 'ACTIVATE', NULL),
+    (744, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 2-1 교과서 씹어먹기(천재 이재영)(2019)(스프링)', '상상대로 편집부', '9791163341406', '- 독자대상 : 중등 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341406
+출간일시: 2018-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844750&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+2-1+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%94%B9%EC%96%B4%EB%A8%B9%EA%B8%B0%28%EC%B2%9C%EC%9E%AC+%EC%9D%B4%EC%9E%AC%EC%98%81%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844750%3Ftimestamp%3D20220807191353', 32, 48, 'ACTIVATE', NULL),
+    (745, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3-1 교과서본문암기 달달달 워크북(천재 김진완)(2019)(스프링)', '씽크플러스 편집부', '9791160631760', '- 독자대상 : 중학교 3학년 - 구성 및 특징 : ① 내신 서술형문제와 수행평가 대비를 위한 교과서 본문암기워크북 1학기 교재 ② 각 과마다 단어→ 숙어 → 청크 → 필수문장 → 본문 파트 4~6단계의 워크시트로 구성 ③ 단어, 숙어, 청크 파트에는 각각 암기장과 영한, 한영, 혼합 테스트지 수록 ④ 필수문장과 본문은 7단계 본문문장 반복활동을 통해 교과서 본문을 암기할 수 있도록 구성
+출판사: 씽크플러스
+ISBN: 9791160631760
+출간일시: 2017-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1596163&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913-1+%EA%B5%90%EA%B3%BC%EC%84%9C%EB%B3%B8%EB%AC%B8%EC%95%94%EA%B8%B0+%EB%8B%AC%EB%8B%AC%EB%8B%AC+%EC%9B%8C%ED%81%AC%EB%B6%81%28%EC%B2%9C%EC%9E%AC+%EA%B9%80%EC%A7%84%EC%99%84%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1596163%3Ftimestamp%3D20190323101434', 35, 50, 'ACTIVATE', NULL),
+    (746, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '일반화학실험(핵심)(스프링)', '일반화학위원회', '9788992603492', '『일반화학실험』은 일반화학의 실험 내용을 정리한 책이다. 화학 실험의 기초적인 내용을 알아볼 수 있도록 했다.
+출판사: 사이플러스
+ISBN: 9788992603492
+출간일시: 2013-02-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1382124&q=%EC%9D%BC%EB%B0%98%ED%99%94%ED%95%99%EC%8B%A4%ED%97%98%28%ED%95%B5%EC%8B%AC%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 23000, 10.00, 23000, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1382124%3Ftimestamp%3D20220224222323', 38, 52, 'ACTIVATE', NULL),
+    (747, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '한글 숫자 알파벳 쓰기 놀이(냉장고 나라 코코몽)(스프링)', '아이즐 편집부', '9788937858437', '출판사: 아이즐
+ISBN: 9788937858437
+출간일시: 2009-10-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=547675&q=%ED%95%9C%EA%B8%80+%EC%88%AB%EC%9E%90+%EC%95%8C%ED%8C%8C%EB%B2%B3+%EC%93%B0%EA%B8%B0+%EB%86%80%EC%9D%B4%28%EB%83%89%EC%9E%A5%EA%B3%A0+%EB%82%98%EB%9D%BC+%EC%BD%94%EC%BD%94%EB%AA%BD%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 13000, 10.00, 11700, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F547675%3Ftimestamp%3D20220410082614', 41, 54, 'ACTIVATE', NULL),
+    (748, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 엑셀 2007(집중공략)(해설집 수록)(스프링)', 'IT 도서 R&D팀', '9788962105094', '- 독자대상 : ITQ 엑셀 2007 시험 준비생 - 구성 : 이론 + 문제 - 특징 : ①문제별 유형을 철저하게 분석 ②좋은 점수를 얻기 위해 반드시 체크해야 할 항목들을 정리 ③실제 시험 문제의 모범 답안을 제시 ④지금까지 학습한 내용을 마무리 하는 단계로 최신 출제 기준과 경향을 반영한 모의고사와 기출문제를 본서의 마지막에 수록
+출판사: 에이스미디어프로덕션
+ISBN: 9788962105094
+출간일시: 2015-09-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=863856&q=ITQ+%EC%97%91%EC%85%80+2007%28%EC%A7%91%EC%A4%91%EA%B3%B5%EB%9E%B5%29%28%ED%95%B4%EC%84%A4%EC%A7%91+%EC%88%98%EB%A1%9D%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F863856%3Ftimestamp%3D20190125134912', 44, 56, 'ACTIVATE', NULL),
+    (749, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '펌킨스 드럼 루디먼트: 싱글 스트로크와 악센트 편(스프링)', '전재욱', '9791186471302', '「펌킨스 드럼 루디먼트」는 〈베이직 드럼〉과 〈드럼 스타일〉에 수록 되었던 루디먼트를 기본으로 하여 저자가 그 동안 레슨하면서 얻은 노하우를 더해 가장 체계적이고 효율적으로 연습할 수 있도록 쓴 책이다. 최대한 주석을 많이 달아 혼자 공부하면 놓칠 수 있는 부분들을 옆에서 레슨 받는 느낌이 들 수 있도록 하였다.
+출판사: SRMUSIC
+ISBN: 9791186471302
+출간일시: 2016-10-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1632415&q=%ED%8E%8C%ED%82%A8%EC%8A%A4+%EB%93%9C%EB%9F%BC+%EB%A3%A8%EB%94%94%EB%A8%BC%ED%8A%B8%3A+%EC%8B%B1%EA%B8%80+%EC%8A%A4%ED%8A%B8%EB%A1%9C%ED%81%AC%EC%99%80+%EC%95%85%EC%84%BC%ED%8A%B8+%ED%8E%B8%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1632415%3Ftimestamp%3D20190131100155', 47, 58, 'ACTIVATE', NULL),
+    (750, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '어린왕자 탁상달력: 체크 리스트형(2021)(스프링)', '미르북컴퍼니 편집부', '8809529011724', '『어린왕자 탁상달력: 체크 리스트형(2021)』은 세상에서 가장 순수한 영혼 별처럼 빛나는 어린 왕자와 2021년을 만난다. 앞면에 체크리스트가 있어 매월 중요한 일정을 기입할 수 있다.
+출판사: 미르북컴퍼니(미르북스)
+ISBN: 8809529011724
+출간일시: 2020-11-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5511568&q=%EC%96%B4%EB%A6%B0%EC%99%95%EC%9E%90+%ED%83%81%EC%83%81%EB%8B%AC%EB%A0%A5%3A+%EC%B2%B4%ED%81%AC+%EB%A6%AC%EC%8A%A4%ED%8A%B8%ED%98%95%282021%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 7500, 40.00, 4500, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5511568%3Ftimestamp%3D20220507163849', 50, 60, 'ACTIVATE', NULL),
+    (751, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Little Hands. 1:  Student Book(스프링)', '편집부', '9791189906092', '처음 영어를 배우는 EFL 환경의 유치 아동들을 위한 쉽고 재미있는 영어 코스북 시리즈!  Little Hands는 만 3세에서 만 6세의 유치 아동들을 대상으로 한 4단계 영어 코스북입니다. Little Hands는 아이들의 연령별 특성을 고려하여 처음 시작하는 영어를 쉽고 재미있게 익힐 수 있도록 신나는 노래와 챈트, 스토리와 다양한 활동 등을 포함하고 있습니다. 의사소통과 소근육 기술을 발달시키면서 미술, 음악, 놀이를 통해 창의성을 길러
+출판사: 이퓨쳐
+ISBN: 9791189906092
+출간일시: 2019-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5115480&q=Little+Hands.+1%3A++Student+Book%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115480%3Ftimestamp%3D20211023204325', 53, 62, 'ACTIVATE', NULL),
+    (752, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Little Hands. 1: Activity Book(스프링)', '편집부', '9791189906207', '처음 영어를 배우는 EFL 환경의 유치 아동들을 위한 쉽고 재미있는 영어 코스북 시리즈!  Little Hands는 만 3세에서 만 6세의 유치 아동들을 대상으로 한 4단계 영어 코스북입니다. Little Hands는 아이들의 연령별 특성을 고려하여 처음 시작하는 영어를 쉽고 재미있게 익힐 수 있도록 신나는 노래와 챈트, 스토리와 다양한 활동 등을 포함하고 있습니다. 의사소통과 소근육 기술을 발달시키면서 미술, 음악, 놀이를 통해 창의성을 길러
+출판사: 이퓨쳐
+ISBN: 9791189906207
+출간일시: 2019-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5115244&q=Little+Hands.+1%3A+Activity+Book%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115244%3Ftimestamp%3D20221025142208', 56, 64, 'ACTIVATE', NULL),
+    (753, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '번뜩이 창의그림 스케치북. 2(스프링)', '편집부', '8809455410011', '[번뜩이 창의그림 스케치북]은 아이들이 기발한 상상력으로 자유롭게 생각하고, 그릴 수 있도록 구성된 스케치북입니다. ''초록색 눈이 내리고 있어요'', ''햇님이 북극에 놀러갔어요'', ''개구리 가족의 소풍'' 등 12개의 주제로 구성했습니다.
+출판사: 루트창작연구소
+ISBN: 8809455410011
+출간일시: 2016-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4966844&q=%EB%B2%88%EB%9C%A9%EC%9D%B4+%EC%B0%BD%EC%9D%98%EA%B7%B8%EB%A6%BC+%EC%8A%A4%EC%BC%80%EC%B9%98%EB%B6%81.+2%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9500, 10.00, 8550, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4966844%3Ftimestamp%3D20200619133242', 59, 66, 'ACTIVATE', NULL),
+    (754, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '감정평가사 합격이 보이는 민법 조문&기출(스프링)', '백운정', '9791167040909', '본 교재는 수험생이 스스로 시험에 나올 부분을 확인함으로써 공부방향과 공부방법을 설정하고, 그 내용을 정확하게 숙지하여 공부의 효율성을 높이는 것입니다. 따라서 기본서와 함께 활용한다면 방대한 기본서의 양을 효과적으로 줄일 수 있어 그 효율성이 배가될 것입니다. 출제 포인트임에도 불구하고 중요성이 간과되고 있는 조문과 2015년부터 올해 2021년까지 감정평가사 기출지문을 조문과 연계하여 수록함으로서 감정평가사 민법 수험공부의 시작과 끝을 함께
+출판사: 박문각
+ISBN: 9791167040909
+출간일시: 2021-07-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5752506&q=%EA%B0%90%EC%A0%95%ED%8F%89%EA%B0%80%EC%82%AC+%ED%95%A9%EA%B2%A9%EC%9D%B4+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EB%AF%BC%EB%B2%95+%EC%A1%B0%EB%AC%B8%26%EA%B8%B0%EC%B6%9C%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5752506%3Ftimestamp%3D20220728203142', 62, 68, 'ACTIVATE', NULL),
+    (755, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '영문 필기체 노트 바르다 핸디 스프링북(스프링)', '편집부', '8809482280274', '거친 종이에 사각사각 써 내려가는 것을 상상하시나요? 이제는 따로 시간을 내거나 일부러 자리를 만들지 않아도 언제 어디서나 편리하게 영문 필기체를 연습할 수 있습니다. 베스트셀러 [영문 필기체 노트 바르다]를 실용적인 포켓용 스프링북으로 리뉴얼한 [영문 필기체 노트 바르다 : 핸디 스프링북]은 가방 안에 쏙 들어가는 앙증맞은 사이즈로 원하는 장소와 시간에 언제 어디서나 손쉽게 꺼내 자유롭게 악필 교정을 할 수 있습니다. 다양한 영문장은 물론 캘리그라피로
+출판사: 42미디어콘텐츠
+ISBN: 8809482280274
+출간일시: 2017-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3760968&q=%EC%98%81%EB%AC%B8+%ED%95%84%EA%B8%B0%EC%B2%B4+%EB%85%B8%ED%8A%B8+%EB%B0%94%EB%A5%B4%EB%8B%A4+%ED%95%B8%EB%94%94+%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%81%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8800, 50.00, 4400, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3760968%3Ftimestamp%3D20220106172431', 65, 70, 'ACTIVATE', NULL),
+    (756, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'EMERGENCY CARE(스프링)(HANDBOOK OF)(스프링)', '김호중', '9788964804049', '출판사: E PUBLIC
+ISBN: 9788964804049
+출간일시: 2011-01-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=906151&q=EMERGENCY+CARE%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28HANDBOOK+OF%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 28000, 0.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906151%3Ftimestamp%3D20221025135545', 68, 72, 'ACTIVATE', NULL),
+    (757, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '일반생물학실험(스프링)', '남석현, 민철기', '9788997140268', '『일반생물학실험』은 그동안 저자가 학생들의 실험교육을 담당해 온 경험을 바탕으로 일반생물학의 실험교육내용을 정리하여 엮은 책이다. 실험실에서 지켜야 할 기본적인 주의사항 및 실험보고서 작성 요령을 담은 생물학 실험안내부터 식물의 구조와 기능을 이해하기 위해 식물의 잎과 줄기의 관찰, 식물의 증산작용, 광합성, 식물의 호흡에 대한 실험을 소개한다.
+출판사: 범문에듀케이션
+ISBN: 9788997140268
+출간일시: 2012-03-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1481609&q=%EC%9D%BC%EB%B0%98%EC%83%9D%EB%AC%BC%ED%95%99%EC%8B%A4%ED%97%98%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 3.00, 15520, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481609%3Ftimestamp%3D20200418134027', 71, 74, 'ACTIVATE', NULL),
+    (758, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3 교과서 영문법(천재 정사열)(2019)(Grammar)(스프링)', '편집부', '9791163341765', '- 독자대상 : 중학교 3학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341765
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4868509&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EC%B2%9C%EC%9E%AC+%EC%A0%95%EC%82%AC%EC%97%B4%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4868509%3Ftimestamp%3D20221025130248', 74, 76, 'ACTIVATE', NULL),
+    (759, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '한글 2005(스프링)(E TEST PROFESSSIONAL)(스프링)', '이종국', '9788984556638', '출판사: 아카데미소프트
+ISBN: 9788984556638
+출간일시: 2010-08-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1190761&q=%ED%95%9C%EA%B8%80+2005%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28E+TEST+PROFESSSIONAL%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 10.00, 12600, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1190761%3Ftimestamp%3D20220831172228', 77, 78, 'ACTIVATE', NULL),
+    (760, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '21C 반주용 새찬송가(블루그레이/특대/스프링)(스프링)', '한국찬송가공회', '9788953722262', '한 눈에 보이는 큰 악보, 큰 글자 반주를 도와주는 기타 코드, 피아노 코드 기타 반주자들을 위한 쉬운 기타 코드와 리듬 자세한 해설의 피아노 반주 가이드 수록 찬송 인도자를 위한 관련 찬송 안내 통일 찬송가 병용을 위한 통일 찬송가 별도 표시 코드, 전주 부분 별색 인쇄 트윈링 제작으로 완전 펼침 실현 쉽게 찾을 수 있는 컬러 색인과 최고급 장정
+출판사: 아가페출판사
+ISBN: 9788953722262
+출간일시: 2019-02-08T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4918692&q=21C+%EB%B0%98%EC%A3%BC%EC%9A%A9+%EC%83%88%EC%B0%AC%EC%86%A1%EA%B0%80%28%EB%B8%94%EB%A3%A8%EA%B7%B8%EB%A0%88%EC%9D%B4%2F%ED%8A%B9%EB%8C%80%2F%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 37000, 10.00, 33300, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4918692%3Ftimestamp%3D20221025144720', 80, 80, 'ACTIVATE', NULL),
+    (761, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 2-1 교과서 씹어먹기(동아 윤정미)(2019)(스프링)', '상상대로 편집부', '9791163341352', '- 독자대상 : 중등 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341352
+출간일시: 2018-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844707&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+2-1+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%94%B9%EC%96%B4%EB%A8%B9%EA%B8%B0%28%EB%8F%99%EC%95%84+%EC%9C%A4%EC%A0%95%EB%AF%B8%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844707%3Ftimestamp%3D20221025114355', 83, 82, 'ACTIVATE', NULL),
+    (762, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '워십 기타 바이블(스프링)(예배인도자를 위한)(스프링)', '유성환', '9788959162659', '출판사: 예솔
+ISBN: 9788959162659
+출간일시: 2009-10-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=794625&q=%EC%9B%8C%EC%8B%AD+%EA%B8%B0%ED%83%80+%EB%B0%94%EC%9D%B4%EB%B8%94%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%98%88%EB%B0%B0%EC%9D%B8%EB%8F%84%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F794625%3Ftimestamp%3D20221025123550', 86, 84, 'ACTIVATE', NULL),
+    (763, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내손에 헌법(5판)(스프링)', '윤우혁', '9791130336596', '- 독자대상 : 7급 9급 국회직 법원 검찰직 법무사 경찰승진 변호사 5급공채 시험 준비생 - 구성 및 특징 : 이론
+출판사: 박영사
+ISBN: 9791130336596
+출간일시: 2020-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5375179&q=%EB%82%B4%EC%86%90%EC%97%90+%ED%97%8C%EB%B2%95%285%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 5.00, 9500, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5375179%3Ftimestamp%3D20211219161410', 89, 86, 'ACTIVATE', NULL),
+    (764, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '2022 남정선 세법 합격생 단권화 필기노트(스프링)', '남정선', '9791186024812', '◈ 책의 특징 세무직 수험생들이 세법을 힘들어한다. 그 이유는 무엇인가?  세무공무원은 아무나 할 수 있는 것이 아니다. 매년 조세정책목적에 따라 이루어지는 변화무쌍한 개정과 원칙보다 많은 예외 등 방대한 공부 범위 그리고 심도 있는 내용 때문에 공무원 중에서도 가장 전문적인 공무원이기 때문이다.  유능한 공무원이 되려면 전문지식을 갖추는 것이 절대적으로 필요하다. 세무공무원에게는 의사 그 이상의 전문성을 요구하며, 우리는 세무공무원에 대해 무한
+출판사: 피앤피커뮤니케이션즈
+ISBN: 9791186024812
+출간일시: 2021-08-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5826609&q=2022+%EB%82%A8%EC%A0%95%EC%84%A0+%EC%84%B8%EB%B2%95+%ED%95%A9%EA%B2%A9%EC%83%9D+%EB%8B%A8%EA%B6%8C%ED%99%94+%ED%95%84%EA%B8%B0%EB%85%B8%ED%8A%B8%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 13000, 10.00, 11700, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5826609%3Ftimestamp%3D20220917062953', 92, 88, 'ACTIVATE', NULL),
+    (765, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 한글2010(스텐드형)(2019)(이공자)(스프링)', 'KIE기획팀', '9788984559585', '- 최근 3개년 시험 분석! - 고득점 취득을 위한 출제유형 그대로 따라하기 제공! - 자동채점프로그램 무료 제공!  ● 출제유형 완전정복하기 최근에 출제된 ITQ 시험의 출제유형을 분석하여 새롭게 변경된 내용과 시험에 자주 출제되는 부분을 단계별로 체크하고 작성할 수 있도록 구성하였습니다. ● 유형정복 모의고사 15회 출제유형에서 학습한 내용을 바탕으로 시험에 대한 전반적인 유형을 파악하고 실력을 향상시킬 수 있도록 모의고사를 구성하였습니다.  ● 최신
+출판사: 아카데미소프트
+ISBN: 9788984559585
+출간일시: 2019-01-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4872862&q=ITQ+%ED%95%9C%EA%B8%802010%28%EC%8A%A4%ED%85%90%EB%93%9C%ED%98%95%29%282019%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 10.00, 14400, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4872862%3Ftimestamp%3D20211126151026', 95, 90, 'ACTIVATE', NULL),
+    (766, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '먀리의 무작정 치는 핑거스타일 기타 연주곡집(스프링)', '김성규(먀리)', '9788966852970', '《먀리의 무작정 치는 핑거스타일 기타》교본에 이어 초급~중급의 난이도에 맞추어 제작된 연주곡집으로, ‘걱정말아요 그대’, ‘야생화’, ‘옛 사랑’, ‘벚꽃 엔딩’, ‘이럴거면 그러지 말지’ 등의 꾸준히 사랑받고 있는 가요와 ‘Lost Stars'', ''Rolling In The Deep'', ''Don''t Know Why'' 등의 인기 Pop, 그리고 ''인생의 회전목마’, ‘Summer'', ''Mo'' Better Blues'' 등의 대중들의 귀에 익숙한 연주곡
+출판사: 음악세계
+ISBN: 9788966852970
+출간일시: 2016-12-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=930698&q=%EB%A8%80%EB%A6%AC%EC%9D%98+%EB%AC%B4%EC%9E%91%EC%A0%95+%EC%B9%98%EB%8A%94+%ED%95%91%EA%B1%B0%EC%8A%A4%ED%83%80%EC%9D%BC+%EA%B8%B0%ED%83%80+%EC%97%B0%EC%A3%BC%EA%B3%A1%EC%A7%91%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 10.00, 14400, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F930698%3Ftimestamp%3D20221025115728', 98, 92, 'ACTIVATE', NULL),
+    (767, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 엑셀2010(2018)(스텐드형)(이공자)(스프링)', 'ASO R&D Center', '9788984559134', '- 독자대상 : ITQ 시험 준비생 - 구성 및 특징 : 1 새롭게 변경된 2018년 1월 시험유형을 모두 반영! 2 고득점 취득을 위한 출제유형 그대로 따라하기 제공! 3 자동채점프로그램 무료 제공!
+출판사: 아카데미소프트
+ISBN: 9788984559134
+출간일시: 2017-08-16T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1188808&q=ITQ+%EC%97%91%EC%85%802010%282018%29%28%EC%8A%A4%ED%85%90%EB%93%9C%ED%98%95%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1188808%3Ftimestamp%3D20211125144846', 101, 94, 'ACTIVATE', NULL),
+    (768, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '파퓰러 피아노 연주곡집(스프링)(작품성있는)', '삼호뮤직 편집부', '9788932630373', '출판사: 삼호뮤직
+ISBN: 9788932630373
+출간일시: 2010-02-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=504101&q=%ED%8C%8C%ED%93%B0%EB%9F%AC+%ED%94%BC%EC%95%84%EB%85%B8+%EC%97%B0%EC%A3%BC%EA%B3%A1%EC%A7%91%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%9E%91%ED%92%88%EC%84%B1%EC%9E%88%EB%8A%94%29', 12000, 10.00, 10800, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F504101%3Ftimestamp%3D20221025123005', 104, 96, 'ACTIVATE', NULL),
+    (769, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '개론 이영섭 기출문제(공인중개사 1차)(2021)(스프링)(합격기준 박문각)(스프링)', '이영섭', '9791164449729', '본 교재는 박문각 공인중개사학원에서 강의 중이신 이영섭 선생님의 학원용 기출강의 교재입니다. 본 교재에는 정답 및 해설이 포함되어 있으며, 스프링 제본 형태로 되어 있습니다.
+출판사: 박문각
+ISBN: 9791164449729
+출간일시: 2021-02-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5665683&q=%EB%B6%80%EB%8F%99%EC%82%B0%ED%95%99%EA%B0%9C%EB%A1%A0+%EC%9D%B4%EC%98%81%EC%84%AD+%EA%B8%B0%EC%B6%9C%EB%AC%B8%EC%A0%9C%28%EA%B3%B5%EC%9D%B8%EC%A4%91%EA%B0%9C%EC%82%AC+1%EC%B0%A8%29%282021%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%ED%95%A9%EA%B2%A9%EA%B8%B0%EC%A4%80+%EB%B0%95%EB%AC%B8%EA%B0%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5665683%3Ftimestamp%3D20220829103028', 107, 98, 'ACTIVATE', NULL),
+    (770, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'C. S. Lewis 365 Daily Messages(스프링)', 'C. S. 루이스, 홍성사편집팀 (엮음)', '9788936511210', '『C. S. Lewis 365 Daily Messages』는 C. S. 루이스의 저작 22종에서 발췌한 문장들을 토대로 했으며, 우리의 삶에 좀더 깊은 감동과 도전을 주는 글들로 선별했다. “유혹에 맞서 싸워 본 사람만이 유혹의 힘이 얼마나 강력한지 안다”는 루이스의 말처럼, 그리스도인이 맞이하는 하루하루는 결코 녹록지 않다. 독자들은 루이스의 탁월한 통찰을 담은 메시지를 매일 묵상하면서, 자신의 신앙과 영성이 더욱 견고해지고 삶이 풍요로워지는
+출판사: 홍성사
+ISBN: 9788936511210
+출간일시: 2015-11-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=535183&q=C.+S.+Lewis+365+Daily+Messages%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 12600, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F535183%3Ftimestamp%3D20211114174131', 110, 100, 'ACTIVATE', NULL),
+    (771, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '응답하라 감성기타 1(CD1장포함)(스프링)', '박지은', '9788966853823', '꾸준한 인기를 얻고 있는 응답하라 감성기타 교본이 스프링 제본으로 새롭게 출간되었습니다. 그동안 책을 펴기에 어려웠던 단점을 보완하여 더욱 편하게 책을 볼 수 있도록 만들었으며 악보에 QR코드로 볼 수 있는 모범연주동영상을 수록하여 연주법을 직접 보고 들으며 배울 수 있도록 하였고, 부록 CD로 예제연주 및 모범연주음원을 수록하였습니다. 수록곡은 대중적으로 사랑 받는 벚꽃 엔딩, 여수 밤바다, 사랑은 은하수 다방에서, 다행이다, 취중진담, 붉은 노을
+출판사: 음악세계
+ISBN: 9788966853823
+출간일시: 2018-04-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=932646&q=%EC%9D%91%EB%8B%B5%ED%95%98%EB%9D%BC+%EA%B0%90%EC%84%B1%EA%B8%B0%ED%83%80+1%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F932646%3Ftimestamp%3D20220514173422', 113, 102, 'ACTIVATE', NULL),
+    (772, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '뭘까뭘까 새콤달콤 과일(스프링)(반짝반짝 투명스티커 놀이북)(스프링)', '이명선', '9788931923087', '출판사: 지경사
+ISBN: 9788931923087
+출간일시: 2011-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=494792&q=%EB%AD%98%EA%B9%8C%EB%AD%98%EA%B9%8C+%EC%83%88%EC%BD%A4%EB%8B%AC%EC%BD%A4+%EA%B3%BC%EC%9D%BC%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EB%B0%98%EC%A7%9D%EB%B0%98%EC%A7%9D+%ED%88%AC%EB%AA%85%EC%8A%A4%ED%8B%B0%EC%BB%A4+%EB%86%80%EC%9D%B4%EB%B6%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8000, 10.00, 7200, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F494792%3Ftimestamp%3D20221025152028', 116, 104, 'ACTIVATE', NULL),
+    (773, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '맘마미아 어린이 가계부(2019)(스프링)', '맘마미아', '8809479180075', '엄마는 &lt;맘마미아 가계부&gt; 아이는 &lt;맘마미아 어린이 가계부&gt; 출간 이후 3년 연속 1등 국민가계부 자리를 지키는 &lt;맘마미아 가계부&gt;. 초보자도 쉽고 빠르게 절약 효과를 경험할 수 있다는 후기가 계속해서 올라오고 있다. &lt;맘마미아 가계부&gt;를 통해 불필요한 지출은 줄이고, 흑자 가계부를 완성시킨 부모님들은 이제 아이 경제교육으로 눈을 돌렸다. 가계부 습관을 어릴 때부터 시작하면 더 큰 효과를 볼 수 있겠다는
+출판사: 진서원
+ISBN: 8809479180075
+출간일시: 2018-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3752846&q=%EB%A7%98%EB%A7%88%EB%AF%B8%EC%95%84+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EA%B0%80%EA%B3%84%EB%B6%80%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 50.00, 6000, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3752846%3Ftimestamp%3D20220527191017', 119, 106, 'ACTIVATE', NULL),
+    (774, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '아주 특별한 클래식 기타 교본(아주 특별한)(스프링)', '황선면', '9788964861035', '『아주 특별한 클래식 기타 교본』은 어렵고 따분한 곡으로만 배웠던 클래식 기타를 쉽고 재밌게 배울 수 있는 책이다. 중요한 내용을 되짚어 볼 수 있는 연습문제와 실력을 향상시켜주는 난이도를 감안한 연습곡을 제공한다. 또한 고전곡과 현대곡을 조화시킨 다양한 독주곡을 함께 수록하고 있다.
+출판사: 삼정출판사
+ISBN: 9788964861035
+출간일시: 2013-10-05T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=906819&q=%EC%95%84%EC%A3%BC+%ED%8A%B9%EB%B3%84%ED%95%9C+%ED%81%B4%EB%9E%98%EC%8B%9D+%EA%B8%B0%ED%83%80+%EA%B5%90%EB%B3%B8%28%EC%95%84%EC%A3%BC+%ED%8A%B9%EB%B3%84%ED%95%9C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 10.00, 12600, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906819%3Ftimestamp%3D20190125214001', 122, 108, 'ACTIVATE', NULL),
+    (775, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중21 내신 문제집(시사 송미정)(2019)(내신만점 플러스)(스프링)', '편집부', '9791163342021', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163342021
+출간일시: 2019-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4900156&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%9121+%EB%82%B4%EC%8B%A0+%EB%AC%B8%EC%A0%9C%EC%A7%91%28%EC%8B%9C%EC%82%AC+%EC%86%A1%EB%AF%B8%EC%A0%95%29%282019%29%28%EB%82%B4%EC%8B%A0%EB%A7%8C%EC%A0%90+%ED%94%8C%EB%9F%AC%EC%8A%A4%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4900156%3Ftimestamp%3D20221025130326', 125, 110, 'ACTIVATE', NULL),
+    (776, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 수학 중2-1 중간고사(2019)(풀풀 수학)(스프링)', '씽크플러스 편집부', '9791160631586', '- 독자대상 : 중학교 2학년 - 구성 : 이론 + 문제 - 특징 : ① 24회분 600문항 모두 학교 기출문제에서 엄선하여 수록 ② 전국 460여개 중학교 시험지를 단원과 수준별로 이미지 캡쳐 분류 ③ 기초문항, 빈출문항, 필수문항 등을 고려하여 집필 ④ 수준별로 구성
+출판사: 씽크플러스
+ISBN: 9791160631586
+출간일시: 2017-12-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1602203&q=%EC%A4%91%ED%95%99+%EC%88%98%ED%95%99+%EC%A4%912-1+%EC%A4%91%EA%B0%84%EA%B3%A0%EC%82%AC%282019%29%28%ED%92%80%ED%92%80+%EC%88%98%ED%95%99%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9000, 10.00, 8100, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1602203%3Ftimestamp%3D20190323101416', 128, 112, 'ACTIVATE', NULL),
+    (777, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '천체관측노트(탐구과정)(스프링)', '편집부', '9788997487288', '어린이천문대에서 발간한 천체관측노트다. 달, 북극성, 주변 별자치, 봄철, 여름철, 가을철, 겨울철의 사계절 천체를 관찰하고, 기록할 수 있도록 구성했다.
+출판사: 어린이천문대
+ISBN: 9788997487288
+출간일시: 2015-05-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1486058&q=%EC%B2%9C%EC%B2%B4%EA%B4%80%EC%B8%A1%EB%85%B8%ED%8A%B8%28%ED%83%90%EA%B5%AC%EA%B3%BC%EC%A0%95%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1486058%3Ftimestamp%3D20221025124359', 131, 114, 'ACTIVATE', NULL),
+    (778, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '부자 레시피 캘린더 가계부(2019)(스프링)', '달곰미디어 콘텐츠 연구소', '8809416540672', '2019년 홈 재정과 일정 관리를 동시에 잡아 주고, 한 달의 계획을 한눈에 보여 주는 캘린더 가계부! &lt;2019 캘린더 가계부&gt;는 실용성을 높인 소비자 중심의 가계부입니다. 하루하루의 결정뿐만 아니라 한 달, 일 년간의 빅픽처를 그릴 수 있도록 도와주는 &lt;홈 재정 관리사&gt;를 만나 보세요.
+출판사: 달곰미디어
+ISBN: 8809416540672
+출간일시: 2018-09-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3753964&q=%EB%B6%80%EC%9E%90+%EB%A0%88%EC%8B%9C%ED%94%BC+%EC%BA%98%EB%A6%B0%EB%8D%94+%EA%B0%80%EA%B3%84%EB%B6%80%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10800, 30.00, 7560, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3753964%3Ftimestamp%3D20220129190907', 134, 116, 'ACTIVATE', NULL),
+    (779, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 한글 2010(2019)(이기적)(스프링)', '영진정보연구소', '9788931457575', '본 도서는 최신 출제기준을 적용한 도서로, ITQ 한글 2010 시험 경향을 분석하여 수험생들이 혼자서도 학습할 수 있도록 한 완벽 대비서입니다. 한글 2010을 기준으로 작성되었으며, 꼼꼼한 이론과 함께 유형을 확인하는 기출문제를 통해 시험 유형을 익힐 수 있고, 모의고사 10회와 기출문제 10회를 풀고 나면 시험에 능수능란하게 대비할 수 있습니다. 또한 홈페이지에서 제공되는 답안 작성 프로그램은 ITQ 시험장에서 사용하는 프로그램과 동일한 방법
+출판사: 영진닷컴
+ISBN: 9788931457575
+출간일시: 2018-07-06T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=484657&q=ITQ+%ED%95%9C%EA%B8%80+2010%282019%29%28%EC%9D%B4%EA%B8%B0%EC%A0%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F484657%3Ftimestamp%3D20220630132304', 137, 118, 'ACTIVATE', NULL),
+    (780, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '보육실습일지(스프링)', '윤혜경', '9788982518157', '『보육실습일지』는 예비교사의 입장과 실습을 담당한 지도교수의 입장에서 서술하고, 불필요한 이론들은 과감하게 제거하고 실용적으로 활용 가능한 내용들만을 담아 최대한 몸집을 줄여놓은 책이 되게 하였다.
+출판사: 동문사
+ISBN: 9788982518157
+출간일시: 2016-02-29T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1146727&q=%EB%B3%B4%EC%9C%A1%EC%8B%A4%EC%8A%B5%EC%9D%BC%EC%A7%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 0.00, 10000, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1146727%3Ftimestamp%3D20211228193414', 140, 0, 'ACTIVATE', NULL),
+    (781, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'DIAT 스프레드시트 2010(백전백승)(스프링)', '웰북수험서개발팀', '9791186296370', '- 독자대상 : DIAT 스프레드시트 2010 시험 준비생 - 구성 : 출제유형 + 문제 - 특징 : ① 출제유형을 미리 확인하고 집중해서 학습해야할 부분 등 체크 ② 각 기능별로 출제 가능성이 높은 예제 수록 ③ 실전 모의고사 10회 수록 ④ 연습기출문제, 최신기출문제 수록
+출판사: 웰북
+ISBN: 9791186296370
+출간일시: 2016-01-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1631245&q=DIAT+%EC%8A%A4%ED%94%84%EB%A0%88%EB%93%9C%EC%8B%9C%ED%8A%B8+2010%28%EB%B0%B1%EC%A0%84%EB%B0%B1%EC%8A%B9%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1631245%3Ftimestamp%3D20200107122349', 143, 2, 'ACTIVATE', NULL),
+    (782, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '어드밴스드 CCM 피아노: 기본편 (스프링)(예배팀과 찬양팀 피아노 반주자를...', '김정인', '9788996229810', '출판사: TONIC
+ISBN: 9788996229810
+출간일시: 2009-08-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1463679&q=%EC%96%B4%EB%93%9C%EB%B0%B4%EC%8A%A4%EB%93%9C+CCM+%ED%94%BC%EC%95%84%EB%85%B8%3A+%EA%B8%B0%EB%B3%B8%ED%8E%B8+%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%98%88%EB%B0%B0%ED%8C%80%EA%B3%BC+%EC%B0%AC%EC%96%91%ED%8C%80+%ED%94%BC%EC%95%84%EB%85%B8+%EB%B0%98%EC%A3%BC%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C%29%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 10.00, 12600, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1463679%3Ftimestamp%3D20221025120211', 146, 4, 'ACTIVATE', NULL),
+    (783, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3-1 교과서본문암기 달달달 워크북(동아 김성곤)(2019)(스프링)', '씽크플러스 편집부', '9791160631715', '- 독자대상 : 중학교 3학년 - 구성 및 특징 : ① 내신 서술형문제와 수행평가 대비를 위한 교과서 본문암기워크북 1학기 교재 ② 각 과마다 단어→ 숙어 → 청크 → 필수문장 → 본문 파트 4~6단계의 워크시트로 구성 ③ 단어, 숙어, 청크 파트에는 각각 암기장과 영한, 한영, 혼합 테스트지 수록 ④ 필수문장과 본문은 7단계 본문문장 반복활동을 통해 교과서 본문을 암기할 수 있도록 구성
+출판사: 씽크플러스
+ISBN: 9791160631715
+출간일시: 2017-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1598716&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913-1+%EA%B5%90%EA%B3%BC%EC%84%9C%EB%B3%B8%EB%AC%B8%EC%95%94%EA%B8%B0+%EB%8B%AC%EB%8B%AC%EB%8B%AC+%EC%9B%8C%ED%81%AC%EB%B6%81%28%EB%8F%99%EC%95%84+%EA%B9%80%EC%84%B1%EA%B3%A4%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1598716%3Ftimestamp%3D20190323101444', 149, 6, 'ACTIVATE', NULL),
+    (784, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Anatomical Chart for Fitness Professional(스프링)', '김용수, 이윤관, 김수미, 정구중', '9788956765570', '▶ 이 책은 신체단련을 다룬 이론서입니다. 신체단련의 기초적이고 전반적인 내용을 학습할 수 있도록 구성했습니다.
+출판사: 대경북스
+ISBN: 9788956765570
+출간일시: 2016-03-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=743523&q=Anatomical+Chart+for+Fitness+Professional%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 36000, 10.00, 32400, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F743523%3Ftimestamp%3D20221025135807', 152, 8, 'ACTIVATE', NULL),
+    (785, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '이정환의 파퓰러 & 뉴에이지 컬렉션. 3(스프링)', '이정환', '9788966853229', '클래식 뿐 아니라, 영화 O.S.T., 가요, 뉴에이지 등 여러 장르의 명곡들을 수록한 피아노 병용곡집으로, 성인 연주자들에게 폭 넓은 선곡을 제공하고, 난이도별 편곡으로 연주의 완성도를 높인 도서다. [이정환의 파퓰러 &amp; 뉴에이지 컬렉션]은 다양한 장르의 곡들을 난이도에 따라 배열하며, 총 3권으로 구성하였다. 원곡을 최대한 살리면서 저자 선생님만의 스타일로 쉽고 클래식하게 편곡하였다. 각 곡에 어울리는 다양한 반주 패턴을 익힐 수 있다
+출판사: 음악세계
+ISBN: 9788966853229
+출간일시: 2017-03-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=930256&q=%EC%9D%B4%EC%A0%95%ED%99%98%EC%9D%98+%ED%8C%8C%ED%93%B0%EB%9F%AC+%26+%EB%89%B4%EC%97%90%EC%9D%B4%EC%A7%80+%EC%BB%AC%EB%A0%89%EC%85%98.+3%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F930256%3Ftimestamp%3D20200724134854', 155, 10, 'ACTIVATE', NULL),
+    (786, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '감각. 1(점자)(스프링)', '편집부', '9788996155423', '출판사: 빛을만지는아이들
+ISBN: 9788996155423
+출간일시: 2008-11-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1464413&q=%EA%B0%90%EA%B0%81.+1%28%EC%A0%90%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 43000, 10.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1464413%3Ftimestamp%3D20190130051656', 158, 12, 'ACTIVATE', NULL),
+    (787, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'DIAT 워드프로세서 한글 2010(2019)(이공자)(스프링)', 'KIE기획팀', '9788984559509', '◆ 출제유형 완전정복하기 : 최근에 출제된 DIAT 시험의 출제유형을 분석하여 새롭게 변경된 내용과 시험에 자주 출제되는 부분을 단계별로 체크하고 작성할 수 있도록 구성하였습니다. ◆ 유형정복 모의고사 20회 : 출제유형에서 학습한 내용을 참고하여 시험에 대한 전반적인 유형을 파악하고 실력을 향상시킬 수 있도록 모의고사를 구성하였습니다. ◆ 최신 기출 유형문제 10회 : 최근에 출제된 기출문제의 유형을 파악하여 DIAT 시험을 완벽하게 대비할 수
+출판사: 아카데미소프트
+ISBN: 9788984559509
+출간일시: 2018-09-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3756328&q=DIAT+%EC%9B%8C%EB%93%9C%ED%94%84%EB%A1%9C%EC%84%B8%EC%84%9C+%ED%95%9C%EA%B8%80+2010%282019%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3756328%3Ftimestamp%3D20221025115258', 161, 14, 'ACTIVATE', NULL),
+    (788, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '유키 구라모토 피아노 컬렉션(완전판)(스프링)', '유키 구라모토', '9791186471678', '작품이 한국의 드라마, 영화의 음악으로 사용되어 한국에서 높은 인기를 자랑하는 유키 구라모토의 대표작들을 ‘이야기’라는 테마로 32개의 악보를 엄선한 공식악보집이다. 유키 구라모토의 연주회와 앨범의 연주를 재연할 수 있는 악보를 수많은 팬들이 요청해왔다. 때문에 유키 구라모토가 이번 악보집에서 초점을 맞춘 것은 원곡 그대로의 악보집, 앨범에 담긴 바로 자신이 연주한 악보이다.  악보의 작성, 감수는 모두 유키 구라모토 본인이 꼼꼼하게 했으며, 피아노곡
+출판사: 서울음악출판사
+ISBN: 9791186471678
+출간일시: 2018-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1632109&q=%EC%9C%A0%ED%82%A4+%EA%B5%AC%EB%9D%BC%EB%AA%A8%ED%86%A0+%ED%94%BC%EC%95%84%EB%85%B8+%EC%BB%AC%EB%A0%89%EC%85%98%28%EC%99%84%EC%A0%84%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1632109%3Ftimestamp%3D20190131095848', 164, 16, 'ACTIVATE', NULL),
+    (789, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '인물 스케치(누구나 쉽게 따라 그리는)(스프링)', '편집부', '9788983397683', '누구나 쉽게 따라 그리는 《인물 스케치》 연습장. 디자이너나 화가를 꿈꾸는 사람들을 위한 스케치북 형태의 책으로, 직접 따라 그리면서 인물 스케치하는 방법을 익힐 수 있도록 구성하였다. 한 컷 한 컷 따라 그리면서 사물의 구도와 형태, 공간을 파악하는 능력을 기를 수 있도록 도와준다.
+출판사: 효리원
+ISBN: 9788983397683
+출간일시: 2014-07-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1168762&q=%EC%9D%B8%EB%AC%BC+%EC%8A%A4%EC%BC%80%EC%B9%98%28%EB%88%84%EA%B5%AC%EB%82%98+%EC%89%BD%EA%B2%8C+%EB%94%B0%EB%9D%BC+%EA%B7%B8%EB%A6%AC%EB%8A%94%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6500, 10.00, 5850, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1168762%3Ftimestamp%3D20190127032439', 167, 18, 'ACTIVATE', NULL),
+    (790, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '코딩 자율학습 스프링 부트 3 자바 백엔드 개발 입문', '박세홍(홍팍)', '9791140705078', '스프링 부트를 처음 접하는 입문자와 이미 공부했지만 부족하다고 느끼는 분들을 위한 책입니다. 게시판을 만들며 클라이언트와 서버가 데이터를 주고받을 때 적용되는 핵심 개념 3가지, MVC 패턴, JPA, REST API를 배우고 그 과정에서 자바 백엔드 개발의 전반을 이해할 수 있습니다. 책을 마치고 나면 자신만의 프로젝트를 만들 수 있고, 스프링 심화 학습을 따라갈 수 있는 수준이 됩니다. 단계별로 진행되는 실습을 따라 하다 보면 자연스럽게 필수 개념
+출판사: 길벗
+ISBN: 9791140705078
+출간일시: 2023-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6381817&q=%EC%BD%94%EB%94%A9+%EC%9E%90%EC%9C%A8%ED%95%99%EC%8A%B5+%EC%8A%A4%ED%94%84%EB%A7%81+%EB%B6%80%ED%8A%B8+3+%EC%9E%90%EB%B0%94+%EB%B0%B1%EC%97%94%EB%93%9C+%EA%B0%9C%EB%B0%9C+%EC%9E%85%EB%AC%B8', 33000, 10.00, 29700, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6381817%3Ftimestamp%3D20250926141143', 170, 20, 'ACTIVATE', NULL),
+    (791, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3 교과서 영문법(동아 이병민)(2019)(Grammar)(스프링)', '편집부', '9791163341789', '- 독자대상 : 중학교 3학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341789
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4867660&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EB%8F%99%EC%95%84+%EC%9D%B4%EB%B3%91%EB%AF%BC%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867660%3Ftimestamp%3D20220807194134', 173, 22, 'ACTIVATE', NULL),
+    (792, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3-2 교과서본문암기 달달달 워크북(동아 김성곤)(2019)(스프링)', '씽크플러스 편집부', '9791160631074', '- 독자대상 : 중학교 3학년 - 구성 : 이론 - 특징 : ① 워크시트(Worksheet) 자료집 ② 중학교 내신과 수행평가 대비 ③ 암기와 평가를 할 수 있도록 4~6단계의 워크시트로 구성 ④ 교과서 본문을 쉽게 암기할 수 있도록 구성
+출판사: 씽크플러스
+ISBN: 9791160631074
+출간일시: 2017-07-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1602198&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913-2+%EA%B5%90%EA%B3%BC%EC%84%9C%EB%B3%B8%EB%AC%B8%EC%95%94%EA%B8%B0+%EB%8B%AC%EB%8B%AC%EB%8B%AC+%EC%9B%8C%ED%81%AC%EB%B6%81%28%EB%8F%99%EC%95%84+%EA%B9%80%EC%84%B1%EA%B3%A4%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1602198%3Ftimestamp%3D20211114180217', 176, 24, 'ACTIVATE', NULL),
+    (793, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '고등 영어 기출문제 모음(시사 한상호)(2019)(스프링)', '투씨 편집부', '9791163341963', '- 독자대상 : 고등학교 전학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 투씨
+ISBN: 9791163341963
+출간일시: 2019-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4895583&q=%EA%B3%A0%EB%93%B1+%EC%98%81%EC%96%B4+%EA%B8%B0%EC%B6%9C%EB%AC%B8%EC%A0%9C+%EB%AA%A8%EC%9D%8C%28%EC%8B%9C%EC%82%AC+%ED%95%9C%EC%83%81%ED%98%B8%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4895583%3Ftimestamp%3D20221025130332', 179, 26, 'ACTIVATE', NULL),
+    (794, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'BINGO GAMES FOR ENGLISH LANGUAGE TEACHING(스프링)', '편집부', '9798992134261', '출판사: 팬컴
+ISBN: 9798992134261
+출간일시: 2007-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1670111&q=BINGO+GAMES+FOR+ENGLISH+LANGUAGE+TEACHING%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1670111%3Ftimestamp%3D20221025141429', 182, 28, 'ACTIVATE', NULL),
+    (795, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2 교과서 영문법(천재 이재영)(2019)(Grammar)(스프링)', '이재영', '9791163341246', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341246
+출간일시: 2018-12-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844719&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EC%B2%9C%EC%9E%AC+%EC%9D%B4%EC%9E%AC%EC%98%81%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844719%3Ftimestamp%3D20221025114848', 185, 30, 'ACTIVATE', NULL),
+    (796, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2 교과서 영문법(능률 김성곤)(2019)(Grammar)(스프링)', '김성곤', '9791163341185', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341185
+출간일시: 2018-12-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844780&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EB%8A%A5%EB%A5%A0+%EA%B9%80%EC%84%B1%EA%B3%A4%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844780%3Ftimestamp%3D20220705161851', 188, 32, 'ACTIVATE', NULL),
+    (797, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Little Hands. 2:  Student Book(스프링)', '편집부', '9791189906108', '처음 영어를 배우는 EFL 환경의 유치 아동들을 위한 쉽고 재미있는 영어 코스북 시리즈!  Little Hands는 만 3세에서 만 6세의 유치 아동들을 대상으로 한 4단계 영어 코스북입니다. Little Hands는 아이들의 연령별 특성을 고려하여 처음 시작하는 영어를 쉽고 재미있게 익힐 수 있도록 신나는 노래와 챈트, 스토리와 다양한 활동 등을 포함하고 있습니다. 의사소통과 소근육 기술을 발달시키면서 미술, 음악, 놀이를 통해 창의성을 길러
+출판사: 이퓨쳐
+ISBN: 9791189906108
+출간일시: 2019-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5115249&q=Little+Hands.+2%3A++Student+Book%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115249%3Ftimestamp%3D20221025141649', 191, 34, 'ACTIVATE', NULL),
+    (798, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Little Hands. 2: Activity Book(스프링)', '편집부', '9791189906214', '처음 영어를 배우는 EFL 환경의 유치 아동들을 위한 쉽고 재미있는 영어 코스북 시리즈!  Little Hands는 만 3세에서 만 6세의 유치 아동들을 대상으로 한 4단계 영어 코스북입니다. Little Hands는 아이들의 연령별 특성을 고려하여 처음 시작하는 영어를 쉽고 재미있게 익힐 수 있도록 신나는 노래와 챈트, 스토리와 다양한 활동 등을 포함하고 있습니다. 의사소통과 소근육 기술을 발달시키면서 미술, 음악, 놀이를 통해 창의성을 길러
+출판사: 이퓨쳐
+ISBN: 9791189906214
+출간일시: 2019-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5115302&q=Little+Hands.+2%3A+Activity+Book%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115302%3Ftimestamp%3D20221025141658', 194, 36, 'ACTIVATE', NULL),
+    (799, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Song Book 1001(송북)(찬양악보집)(프레이즈앤워십)(스프링)', '필데이브', '9788998522476', '『Song Book 1001(송북)(찬양악보집)』는 올드 CCM부터 최근 곡까지 총 1090곡을 수록하여 국내외 찬양악보를 집대성 한 것으로, 찬양인도자를 위해 교회 현장에서 바로 사용할 수 있는 말씀팁을 곡과 곡 사이에 적절히 배치하였으며, 본문은 ‘키(Key)’별과 ‘가나다’ 순으로 되어 있어 인덱스를 보지 않고도 원하는 곡을 바로 찾을 수 있도록 구성되어 있다.
+출판사: 스코어(score)
+ISBN: 9788998522476
+출간일시: 2013-11-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1503906&q=Song+Book+1001%28%EC%86%A1%EB%B6%81%29%28%EC%B0%AC%EC%96%91%EC%95%85%EB%B3%B4%EC%A7%91%29%28%ED%94%84%EB%A0%88%EC%9D%B4%EC%A6%88%EC%95%A4%EC%9B%8C%EC%8B%AD%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 28000, 10.00, 25200, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1503906%3Ftimestamp%3D20220803212058', 197, 38, 'ACTIVATE', NULL),
+    (800, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '밀라미아 원더랜드(스프링)', '밀라미아', '9788994643755', '『밀라미아 원더랜드』는 0세에서 8세까지 나이별로 손뜨개 옷+아이템을 소개하고 있다. 갓난아기를 위한 로바 베이비그로부터 아장아장 걷기 시작한 아기들을 위한 편안한 팬츠, 어린이들을 위한 카디건, 니트까지 다양한 아이템이 수록되어 있다. 또한, 연령에 따른 사이즈 표기와 상세하고 친절한 설명으로 뜨개 마니아는 물론 목도리 뜨기만 시도했던 초보자들도 니트, 카디건, 원피스 등 다양한 뜨개 작업이 가능하다.
+출판사: 솜씨
+ISBN: 9788994643755
+출간일시: 2014-12-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1429221&q=%EB%B0%80%EB%9D%BC%EB%AF%B8%EC%95%84+%EC%9B%90%EB%8D%94%EB%9E%9C%EB%93%9C%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12800, 10.00, 11520, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1429221%3Ftimestamp%3D20211128153009', 0, 40, 'ACTIVATE', NULL),
+    (801, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 1-1 교과서 씹어먹기(지학 민찬규)(2019)(스프링)', '편집부', '9791163341635', '- 독자대상 : 중학교 1학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341635
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4867652&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+1-1+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%94%B9%EC%96%B4%EB%A8%B9%EA%B8%B0%28%EC%A7%80%ED%95%99+%EB%AF%BC%EC%B0%AC%EA%B7%9C%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867652%3Ftimestamp%3D20221025130319', 3, 42, 'ACTIVATE', NULL),
+    (802, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 2-1 교과서 씹어먹기(능률 김성곤)(2019)(스프링)', '상상대로 편집부', '9791163341345', '- 독자대상 : 중등 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341345
+출간일시: 2018-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844721&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+2-1+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%94%B9%EC%96%B4%EB%A8%B9%EA%B8%B0%28%EB%8A%A5%EB%A5%A0+%EA%B9%80%EC%84%B1%EA%B3%A4%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844721%3Ftimestamp%3D20220807193044', 6, 44, 'ACTIVATE', NULL),
+    (803, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 1-1 교과서 씹어먹기(비상 김진완)(2019)(스프링)', '상상대로 편집부', '9791163341307', '- 독자대상 : 중등 1학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341307
+출간일시: 2018-12-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844677&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+1-1+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%94%B9%EC%96%B4%EB%A8%B9%EA%B8%B0%28%EB%B9%84%EC%83%81+%EA%B9%80%EC%A7%84%EC%99%84%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844677%3Ftimestamp%3D20221025122659', 9, 46, 'ACTIVATE', NULL),
+    (804, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3-2 교과서본문암기 달달달 워크북(천재 김진완)(2019)(스프링)', '씽크플러스 편집부', '9791160631128', '- 독자대상 : 중학교 3학년 - 구성 : 이론 - 특징 : ① 워크시트(Worksheet) 자료집 ② 중학교 내신과 수행평가 대비 ③ 암기와 평가를 할 수 있도록 4~6단계의 워크시트로 구성 ④ 교과서 본문을 쉽게 암기할 수 있도록 구성
+출판사: 씽크플러스
+ISBN: 9791160631128
+출간일시: 2017-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1600194&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913-2+%EA%B5%90%EA%B3%BC%EC%84%9C%EB%B3%B8%EB%AC%B8%EC%95%94%EA%B8%B0+%EB%8B%AC%EB%8B%AC%EB%8B%AC+%EC%9B%8C%ED%81%AC%EB%B6%81%28%EC%B2%9C%EC%9E%AC+%EA%B9%80%EC%A7%84%EC%99%84%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1600194%3Ftimestamp%3D20211114180212', 12, 48, 'ACTIVATE', NULL),
+    (805, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내가 바로 디자이너: 액세서리(스프링)', '달리 편집부', '9788959981137', '『내가 바로 디자이너: 액세서리』는 액세서리를 만들어 보는 디자인 북이다. 여러 가지 재료를 이용해 예쁘게 색칠하고, 밑그림에 어울릴 만한 장신구나 무늬를 그리면서 놀 수 있다. 또한 헤어 액세서리, 목걸이 팔찌 등 각각의 액세서리를 활용하는 방법과 가죽 끈으로 간단하게 팔찌를 만드는 방법 등 다양한 정보도 함께 담았다.
+출판사: 달리
+ISBN: 9788959981137
+출간일시: 2013-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=820336&q=%EB%82%B4%EA%B0%80+%EB%B0%94%EB%A1%9C+%EB%94%94%EC%9E%90%EC%9D%B4%EB%84%88%3A+%EC%95%A1%EC%84%B8%EC%84%9C%EB%A6%AC%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 7500, 10.00, 6750, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F820336%3Ftimestamp%3D20220203161324', 15, 50, 'ACTIVATE', NULL),
+    (806, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '고등 영어 기출문제 모음(능률 김성곤)(2019)(스프링)', '투씨 편집부', '9791163341918', '- 독자대상 : 고등학교 전학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 투씨
+ISBN: 9791163341918
+출간일시: 2019-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4895335&q=%EA%B3%A0%EB%93%B1+%EC%98%81%EC%96%B4+%EA%B8%B0%EC%B6%9C%EB%AC%B8%EC%A0%9C+%EB%AA%A8%EC%9D%8C%28%EB%8A%A5%EB%A5%A0+%EA%B9%80%EC%84%B1%EA%B3%A4%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4895335%3Ftimestamp%3D20221025130325', 18, 52, 'ACTIVATE', NULL),
+    (807, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '풍경수채화 1(스프링)', '김수산나', '9788993399271', '『수행평가 대비 풍경수채화』제 1권.학생들이 야외에서 직접 그림을 그리는 사생에 도움을 주고자 한 책이다. 채색의 기초부터 구도, 주제의 선택, 계절별 나무, 종류별 나무, 공원, 집, 바다, 시골, 계곡 등 다양한 테마로 학생들이 쉽게 따라할 수 있도록 하였으며, 색상표도 함께 게재하여 어떤 색으로 그렸는지를 참고할 수 있도록 구성했다.
+출판사: 미대입시사
+ISBN: 9788993399271
+출간일시: 2011-07-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1400733&q=%ED%92%8D%EA%B2%BD%EC%88%98%EC%B1%84%ED%99%94+1%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 10.00, 14400, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1400733%3Ftimestamp%3D20220504023310', 21, 54, 'ACTIVATE', NULL),
+    (808, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '썼다 지웠다 123(스프링)', '편집부', '8809574290112', '마음껏 썼다 지웠다 하며 반복해서 숫자 공부해요. 쓰고 지우는 반복 학습으로 올바른 펜 사용법을 배워요. 붙였다 떼었다 할 수 있는 예쁜 스티커로 신 나게 공부해요. 우리아이가 재미있게 처음 글쓰기 공부를 시작할 수 있도록 도와주는 썼다 지웠다 시리즈는 선긋기, 123, ㄱㄴㄷ, 한글, ABC로 이루어져 있습니다.
+출판사: 아이키움
+ISBN: 8809574290112
+출간일시: 2017-09-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3781679&q=%EC%8D%BC%EB%8B%A4+%EC%A7%80%EC%9B%A0%EB%8B%A4+123%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 13000, 30.00, 9100, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3781679%3Ftimestamp%3D20200204124753', 24, 56, 'ACTIVATE', NULL),
+    (809, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '문재인 대통령 탁상달력(2019)(스프링)', '더휴먼 편집부', '8809529010413', '2019년 탁상달력으로, 문재인 대통령 사진으로 구성되어 있다.
+출판사: 더휴먼
+ISBN: 8809529010413
+출간일시: 2018-12-24T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4834510&q=%EB%AC%B8%EC%9E%AC%EC%9D%B8+%EB%8C%80%ED%86%B5%EB%A0%B9+%ED%83%81%EC%83%81%EB%8B%AC%EB%A0%A5%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6500, 10.00, 5850, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4834510%3Ftimestamp%3D20221025121634', 27, 58, 'ACTIVATE', NULL),
+    (810, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2-1 내신 문제집(동아 이병민)(2019)(내신만점 플러스)(스프링)', '편집부', '9791163341048', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341048
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4867676&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912-1+%EB%82%B4%EC%8B%A0+%EB%AC%B8%EC%A0%9C%EC%A7%91%28%EB%8F%99%EC%95%84+%EC%9D%B4%EB%B3%91%EB%AF%BC%29%282019%29%28%EB%82%B4%EC%8B%A0%EB%A7%8C%EC%A0%90+%ED%94%8C%EB%9F%AC%EC%8A%A4%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867676%3Ftimestamp%3D20221025130309', 30, 60, 'ACTIVATE', NULL),
+    (811, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '마이 로맨틱 유럽 스티커 컬러링북(스프링)', '이수현', '8809474875464', '누구나 한번은 가보고 싶어 하는 낭만적인 그곳, 유럽! 《마이 로맨틱 유럽 스티커 컬러링북》이 그러한 당신에게 유럽의 빈티지 감성이 물씬 풍기는 380가지의 다양한 컬러링 스티커를 선물합니다. 러시아의 마트료시카, 터키의 전통 공예, 크로아티아의 레이스 공예, 영국의 빈티지 마켓, 이탈리아의 카니발 가면 등 유럽을 대표하는 여러 나라에서 볼 수 있는 낭만적인 빈티지 소품 이미지들이 우표와 라벨, 인덱스 등 다양한 형태의 컬러링 스티커로 들어 있는
+출판사: 참돌
+ISBN: 8809474875464
+출간일시: 2020-05-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5384393&q=%EB%A7%88%EC%9D%B4+%EB%A1%9C%EB%A7%A8%ED%8B%B1+%EC%9C%A0%EB%9F%BD+%EC%8A%A4%ED%8B%B0%EC%BB%A4+%EC%BB%AC%EB%9F%AC%EB%A7%81%EB%B6%81%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 30.00, 8400, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5384393%3Ftimestamp%3D20220423141058', 33, 62, 'ACTIVATE', NULL),
+    (812, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '반주용 새찬송가(대)(그레이)(스프링)', '한국찬송가공회', '9788904503858', '▶ 시원한 큰 글자, 큰 악보 ▶ 잘 펴지는 스프링 제본 ▶ 통일찬송가 장수 표시 ▶ 전주 부분 컬러 인쇄 ▶ 100장 단위 컬러 색인 ▶ 한눈에 보는 기타 · 피아노 코드 수록 ▶ 각 찬송별 연관 찬송 수록
+출판사: 생명의말씀사
+ISBN: 9788904503858
+출간일시: 2019-05-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4925767&q=%EB%B0%98%EC%A3%BC%EC%9A%A9+%EC%83%88%EC%B0%AC%EC%86%A1%EA%B0%80%28%EB%8C%80%29%28%EA%B7%B8%EB%A0%88%EC%9D%B4%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 38000, 10.00, 34200, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4925767%3Ftimestamp%3D20211204203708', 36, 64, 'ACTIVATE', NULL),
+    (813, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '선율에 의한 예배용 오르간 곡집 8: 사순, 부활, 성령강림, 일반주일(스프링)', '김한나', '9788960577091', '『찬송 선율에 의한 예배용 오르간 곡집. 8: 사순, 부활, 성령강림, 일반주일』은 〈거룩 거룩 거룩 전능하신 주님〉, 〈전능왕 오셔서〉, 〈하나님의 크신 사랑〉, 〈다 찬양하여라〉, 〈만 입이 내게 있으면〉, 〈주 은혜를 받으려〉 등을 수록하고 있는 책이다.
+출판사: 중앙아트
+ISBN: 9788960577091
+출간일시: 2021-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5609597&q=%EC%B0%AC%EC%86%A1+%EC%84%A0%EC%9C%A8%EC%97%90+%EC%9D%98%ED%95%9C+%EC%98%88%EB%B0%B0%EC%9A%A9+%EC%98%A4%EB%A5%B4%EA%B0%84+%EA%B3%A1%EC%A7%91+8%3A+%EC%82%AC%EC%88%9C%2C+%EB%B6%80%ED%99%9C%2C+%EC%84%B1%EB%A0%B9%EA%B0%95%EB%A6%BC%2C+%EC%9D%BC%EB%B0%98%EC%A3%BC%EC%9D%BC%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 22000, 10.00, 19800, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5609597%3Ftimestamp%3D20220903161232', 39, 66, 'ACTIVATE', NULL),
+    (814, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Realpiano No.10 CCM(스프링)', '진실로', '9791186753033', '대중음악사에 남을 명곡들을 피아노로 편곡한 악보집 『Realpiano No.10 CCM: 낮사람 진실로』. 이번 편은 한국 교회에서 수십년간 꾸준히 사랑받아왔고 여전히 애창되고 있는 찬송가, 복음성가 15곡이 엄선되어 세련된 피아노 연주가 담겨있다. 곡 하나하나가 하나의 연주곡 형태로 이루어진 2단 악보라서 일반 연주곡의 형태로도, 교회에서 기도시간 등에 활용하기가 용이하며 화성진행이 많이 포함되어 있어서 기존의 코드 패턴에서 벗어나 다양한 표현
+출판사: 리얼피아노
+ISBN: 9791186753033
+출간일시: 2016-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1637765&q=Realpiano+No.10+CCM%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1637765%3Ftimestamp%3D20221025141134', 42, 68, 'ACTIVATE', NULL),
+    (815, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'RealPiano No.3 Popular(스프링)', '진실로', '9791186753019', '''낮사람'' 진실로의 RealPiano(리얼피아노) 악보 시리즈는 대중음악사에 남을 명곡들을 피아노로 편곡한 악보집이다. 리얼피아노 3권에서는 국민가요 [김범수 - 보고싶다]를 비롯하여 [장혜진 - 1994년 어느 늦은 밤], [변진섭 - 그대 내게 다시], [성시경 - 내게 오는 길], [정엽 - Nothing Better] 등의 주옥같은 발라드 명곡이 수록되어 있다.
+출판사: 리얼피아노
+ISBN: 9791186753019
+출간일시: 2015-10-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633862&q=RealPiano+No.3+Popular%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633862%3Ftimestamp%3D20221025123926', 45, 70, 'ACTIVATE', NULL),
+    (816, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '프리파라 따라그림책(스프링)', '종이비행기 편집부', '9788967191665', '캐릭터를 즐겁게 따라 그리며 자연스럽게 그림공부를 하도록 꾸민 『프리파라 따라그림책』. 그림 솜씨가 없어도 단계별로 하나씩 따라 그리다 보면 멋진 그림을 완성할 수 있어요. 개성 넘치는 옷 무늬와 장신구까지 빠뜨리지 않고 꼼꼼히 그려 한 폭의 아름다운 그림을 완성해 보세요.
+출판사: 종이비행기
+ISBN: 9788967191665
+출간일시: 2016-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=933840&q=%ED%94%84%EB%A6%AC%ED%8C%8C%EB%9D%BC+%EB%94%B0%EB%9D%BC%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8000, 10.00, 7200, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F933840%3Ftimestamp%3D20200107122406', 48, 72, 'ACTIVATE', NULL),
+    (817, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내가 꾸미는 번개맨(스프링)', '블루래빗 편집부', '9788965045069', '『내가 꾸미는 번개맨』으로 나만의 번개맨과 친구들을 만들 수 있어요. 직접 번개맨과 친구들의 옷에 색과 무늬를 바꾸고 꾸미면서 창의력과 디자인 감각을 길러 보세요. 또한 휴대하기 알맞은 사이즈라 외출할 때도 가방에 쏙 넣고 다닐 수 있어요.
+출판사: 블루래빗
+ISBN: 9788965045069
+출간일시: 2015-07-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=908685&q=%EB%82%B4%EA%B0%80+%EA%BE%B8%EB%AF%B8%EB%8A%94+%EB%B2%88%EA%B0%9C%EB%A7%A8%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 7500, 10.00, 6750, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F908685%3Ftimestamp%3D20220410082403', 51, 74, 'ACTIVATE', NULL),
+    (818, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '숫자가 뱅글뱅글(뱅글뱅글 두뇌 트레이닝 7)(스프링)', '브레인 스쿨', '9788945219954', '뱅글뱅글 두뇌 트레이닝 7『숫자가 뱅글뱅글』. 숫자와 함께 떠나는 신나는 두뇌 게임! 뚝딱! 계산 방망이, 줄줄이 숫자 사탕, ABC 도깨비 감투 등 잠자던 두뇌가 들썩이는 재미난 숫자 퍼즐이 가득!
+출판사: 문공사
+ISBN: 9788945219954
+출간일시: 2011-08-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=597269&q=%EC%88%AB%EC%9E%90%EA%B0%80+%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80%28%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+7%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 10.00, 8550, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597269%3Ftimestamp%3D20190123233707', 54, 76, 'ACTIVATE', NULL),
+    (819, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '호랑이와 곶감(우리 나라 전통 전래 미리내 9)(스프링)', '김학훈 (엮음)', '9788956941011', '『우리 나라 전통 전래 미리내』는 우리나라 가장 대표적인 고전동화를 아이들 눈높이에 맞춰 흥미롭게 구성한 책입니다. 각 권의 소재에 맞는 자료들을 수록하고, 문장은 상황 전개에 맞게 대화나 구연 등 방법을 사용했습니다. 충, 효, 예, 권성징악 등 바른 인성 형성에 도움이 될 주제들을 엄선했으며, 책을 읽은 뒤에는 비교해보거나 뒤집어 생각해보도록 함으로써 생각 주머니를 크게 넓혀 줍니다.
+출판사: 키즈덤하우스
+ISBN: 9788956941011
+출간일시: 2016-06-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=746543&q=%ED%98%B8%EB%9E%91%EC%9D%B4%EC%99%80+%EA%B3%B6%EA%B0%90%28%EC%9A%B0%EB%A6%AC+%EB%82%98%EB%9D%BC+%EC%A0%84%ED%86%B5+%EC%A0%84%EB%9E%98+%EB%AF%B8%EB%A6%AC%EB%82%B4+9%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F746543%3Ftimestamp%3D20221025150415', 57, 78, 'ACTIVATE', NULL),
+    (820, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Little Hands: Student Book Nursery(스프링)', '편집부', '9791189906191', '처음 영어를 배우는 EFL 환경의 유치 아동들을 위한 쉽고 재미있는 영어 코스북 시리즈!  Little Hands는 만 3세에서 만 6세의 유치 아동들을 대상으로 한 4단계 영어 코스북입니다. Little Hands는 아이들의 연령별 특성을 고려하여 처음 시작하는 영어를 쉽고 재미있게 익힐 수 있도록 신나는 노래와 챈트, 스토리와 다양한 활동 등을 포함하고 있습니다. 의사소통과 소근육 기술을 발달시키면서 미술, 음악, 놀이를 통해 창의성을 길러
+출판사: 이퓨쳐
+ISBN: 9791189906191
+출간일시: 2019-11-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5115608&q=Little+Hands%3A+Student+Book+Nursery%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115608%3Ftimestamp%3D20221025142517', 60, 80, 'ACTIVATE', NULL),
+    (821, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '아이 좋아 종이접기(상)(스프링)', '오규석', '9788994291406', '『아이좋아 종이접기. 상』는 아이들에게 인기가 많은 종이접기를 12가지 카테고리로 나눠 각각 10개씩 추려 담았습니다. 상권에는 비교적 접기 쉽고, 아이들에게 친숙한 자연 속 동물과 꽃 그리고 과일과 채소를 접는 법이 담겨 있습니다. 아이들이 좋아하는 강아지나 고양이, 호랑이 등의 육지 동물과 물고기, 조개, 게 등 바다 속 생물 외에도 종달새, 올빼미, 닭, 병아리 등 날개가 있는 새 친구들 그리고 개나리, 장미, 수국 등의 아름다운 꽃과 포도
+출판사: 북웨이
+ISBN: 9788994291406
+출간일시: 2014-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1413449&q=%EC%95%84%EC%9D%B4+%EC%A2%8B%EC%95%84+%EC%A2%85%EC%9D%B4%EC%A0%91%EA%B8%B0%28%EC%83%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1413449%3Ftimestamp%3D20221011190418', 63, 82, 'ACTIVATE', NULL),
+    (822, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 한글 2007(2016)(이공자)(스프링)', 'ASO R&D Ins.', '9788984558564', '- 독자대상 : 정보기술자격 ITQ 시험 준비생 - 구성 : 이론 + 문제 - 특징 : ① 실제 출제 문제를 이용해 단계별로 유형을 체크하고 풀이하는 과정을 상세히 설명 ② 유형정복 모의고사 20회 수록 ③ 최신 기출유형 문제 5회 수록
+출판사: 아카데미소프트
+ISBN: 9788984558564
+출간일시: 2015-07-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1190919&q=ITQ+%ED%95%9C%EA%B8%80+2007%282016%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1190919%3Ftimestamp%3D20190127061926', 66, 84, 'ACTIVATE', NULL),
+    (823, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내손에 헌법(6판)(스프링)', '윤우혁', '9791130339474', '이 책은 공무원헌법에 대해 다룬 도서입니다. 공무원헌법에 대한 기초적이고 전반적인 내용을 확인할 수 있도록 구성했습니다.
+출판사: 박영사
+ISBN: 9791130339474
+출간일시: 2021-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5745844&q=%EB%82%B4%EC%86%90%EC%97%90+%ED%97%8C%EB%B2%95%286%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 15.00, 10000, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5745844%3Ftimestamp%3D20220701055324', 69, 86, 'ACTIVATE', NULL),
+    (824, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '파워레인저 닌자포스 물놀이 색칠북(스프링)', '서울문화사 편집부', '9788926386217', '『파워레인저 닌자포스 물놀이 색칠북』은 물펜으로 쓱쓱 그리면 생동감 넘치는 그림으로 변하는 신기한 색칠놀이 책이다. ''라스트 닌자''의 칭호를 얻기 위해 수련 중인 여섯 명의 닌자가 악귀 군단에 맞서 지구의 평화를 지키는 ''파워레인저 닌자포스''를 만나볼 수 있다. 물이 마르면 몇 번이든 반복해서 그릴 수 있고, 물감, 색연필이 필요 없어서 휴대가 간편한다.
+출판사: 서울문화사
+ISBN: 9788926386217
+출간일시: 2016-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=437780&q=%ED%8C%8C%EC%9B%8C%EB%A0%88%EC%9D%B8%EC%A0%80+%EB%8B%8C%EC%9E%90%ED%8F%AC%EC%8A%A4+%EB%AC%BC%EB%86%80%EC%9D%B4+%EC%83%89%EC%B9%A0%EB%B6%81%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9000, 10.00, 8100, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F437780%3Ftimestamp%3D20221025145148', 72, 88, 'ACTIVATE', NULL),
+    (825, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '에그엔젤 코코밍 따라그림책(스프링)', '종이비행기 편집부', '9788967191962', '〈에그엔젤 코코밍 따라그림책〉은 사랑스러운 코코밍 캐릭터를 밑그림으로 만들어, 그림 그리기를 시작하는 아이들의 호기심을 자극해 자연스럽게 그림을 그릴 수 있게 만든 책이에요. 점선과 실선으로 단계별 구성된 코코밍 캐릭터 밑그림을 따라 그려 보세요. 아이들은 선을 따라 그리며 눈과 손의 협응력 발달은 물론, 그림을 그리는 재미도 알게 됩니다.
+출판사: 종이비행기
+ISBN: 9788967191962
+출간일시: 2017-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=933872&q=%EC%97%90%EA%B7%B8%EC%97%94%EC%A0%A4+%EC%BD%94%EC%BD%94%EB%B0%8D+%EB%94%B0%EB%9D%BC%EA%B7%B8%EB%A6%BC%EC%B1%85%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8000, 10.00, 7200, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F933872%3Ftimestamp%3D20211212165734', 75, 90, 'ACTIVATE', NULL),
+    (826, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '반주용 새찬송가(대)(버건디)(스프링)', '한국찬송가공회', '9788904503865', '▶ 시원한 큰 글자, 큰 악보 ▶ 잘 펴지는 스프링 제본 ▶ 통일찬송가 장수 표시 ▶ 전주 부분 컬러 인쇄 ▶ 100장 단위 컬러 색인 ▶ 한눈에 보는 기타 · 피아노 코드 수록 ▶ 각 찬송별 연관 찬송 수록
+출판사: 생명의말씀사
+ISBN: 9788904503865
+출간일시: 2019-05-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4925734&q=%EB%B0%98%EC%A3%BC%EC%9A%A9+%EC%83%88%EC%B0%AC%EC%86%A1%EA%B0%80%28%EB%8C%80%29%28%EB%B2%84%EA%B1%B4%EB%94%94%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 38000, 10.00, 34200, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4925734%3Ftimestamp%3D20220504162250', 78, 92, 'ACTIVATE', NULL),
+    (827, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '기도훈련집. 1(스프링)', '권영구', '9788991822122', '출판사: 중원CMC
+ISBN: 9788991822122
+출간일시: 2007-04-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1362317&q=%EA%B8%B0%EB%8F%84%ED%9B%88%EB%A0%A8%EC%A7%91.+1%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6000, 10.00, 5400, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1362317%3Ftimestamp%3D20210220153750', 81, 94, 'ACTIVATE', NULL),
+    (828, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '바이올린 연습 비결(PRACTICE)(스프링)', 'SIMON FISCHER', '9788903415053', '출판사: 세광음악출판사
+ISBN: 9788903415053
+출간일시: 2007-06-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=353265&q=%EB%B0%94%EC%9D%B4%EC%98%AC%EB%A6%B0+%EC%97%B0%EC%8A%B5+%EB%B9%84%EA%B2%B0%28PRACTICE%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 30000, 10.00, 27000, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F353265%3Ftimestamp%3D20220925182608', 84, 96, 'ACTIVATE', NULL),
+    (829, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내 손에 헌법(2판)(스프링)', '윤우혁', '9791130330594', '- 독자대상 : 공무원 시험 준비생 - 구성 : 헌법조문+헌정사+헌법소송+핵심이론
+출판사: 박영사
+ISBN: 9791130330594
+출간일시: 2017-07-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1533817&q=%EB%82%B4+%EC%86%90%EC%97%90+%ED%97%8C%EB%B2%95%282%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 5.00, -1, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1533817%3Ftimestamp%3D20211107145230', 87, 98, 'ACTIVATE', NULL),
+    (830, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '뱅글뱅글 관찰력 50(온 가족이 함께)(언제 어디서나 두뇌 트레이닝 10)(스프링)', '브레인 스쿨', '9788945219572', '「언제 어디서나 두뇌 트레이닝」시리즈 제10권 『뱅글뱅글 관찰력 50』. 이 책은 사고력과 두뇌 회전이 필요한 재미있는 관찰력 퍼즐 50가지를 소개한다. 숨어 있는 정사각형, 알쏭달쏭 그림 문자, 미로 찾기 등 눈과 머리가 맑아지는 관찰력 두뇌 퍼즐이 가득 들어있다. 펜으로 책에 직접 쓰고 지울 수 있도록 코팅지로 제작하였으며, 마카펜이 포함되어 있다. [스프링]
+출판사: 문공사
+ISBN: 9788945219572
+출간일시: 2010-03-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=597185&q=%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EA%B4%80%EC%B0%B0%EB%A0%A5+50%28%EC%98%A8+%EA%B0%80%EC%A1%B1%EC%9D%B4+%ED%95%A8%EA%BB%98%29%28%EC%96%B8%EC%A0%9C+%EC%96%B4%EB%94%94%EC%84%9C%EB%82%98+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+10%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 10.00, 8550, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597185%3Ftimestamp%3D20200110140853', 90, 100, 'ACTIVATE', NULL),
+    (831, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '버들글씨 연습노트(너그럽고 속이깊은)(스프링)', '류미옥', '8809482280380', '캘리그라피, 붓펜 한 자루로 시작하세요! 버들글씨와 함께 기초부터 탄탄하게 시작하는 캘리그라피 클래스 ＜버들글씨＞ 책과 함께 준비한 연습노트로 마음껏 자유롭게 연습해 보세요.  ＜버들글씨＞ 책 속에도 연습 공간들을 수록하였지만, 보다 편하게 따라 쓰며 연습할 수 있는 노트가 함께 한다면 좋겠다는 생각을 했습니다. 구체적인 설명들은 모두 책에 담았기에 가급적 설명은 생략하고, 연습 공간을 충분하게 마련하였습니다. 가볍게 연습 노트만 휴대하면서 연습
+출판사: 42미디어콘텐츠
+ISBN: 8809482280380
+출간일시: 2018-06-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3755610&q=%EB%B2%84%EB%93%A4%EA%B8%80%EC%94%A8+%EC%97%B0%EC%8A%B5%EB%85%B8%ED%8A%B8%28%EB%84%88%EA%B7%B8%EB%9F%BD%EA%B3%A0+%EC%86%8D%EC%9D%B4%EA%B9%8A%EC%9D%80%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9600, 30.00, 6720, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3755610%3Ftimestamp%3D20221025143105', 93, 102, 'ACTIVATE', NULL),
+    (832, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 한글 2007(2015)(이공자)(스프링)', 'ASO R&D Ins.', '9788984558267', '- 독자대상 :ITQ 한글2007 준비생 - 구성 : 이론 + 문제 - 특징 : ① 실제 출제 문제를 이용해 단계별로 유형을 체크하고 풀이하는 과정을 상세히 설명 ② 시험에 반드시 나오는 유형을 다양한 형태의 모의고사로 풀이
+출판사: 아카데미소프트
+ISBN: 9788984558267
+출간일시: 2014-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1189977&q=ITQ+%ED%95%9C%EA%B8%80+2007%282015%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1189977%3Ftimestamp%3D20221025134856', 96, 104, 'ACTIVATE', NULL),
+    (833, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Line Friends Study Planner(라인 프렌즈 스터디 플래너)(스프링)', '로고폴리스 편집부, 정인철', '9791186499443', '《라인프렌즈 스터디 플래너》는 성적 향상에 가장 도움이 되는 공부 계획 방법과 시간 관리 방법을 리서치 해 이를 내지 구성에 반영하여, 학생들이 이 플래너를 쓰면 실제로 성적이 올라갈 수 있도록 만들어졌다. 가장 큰 특징은 연세대 의대생 공부 멘토 정인철의 공부 칼럼이 23편 수록된 것이다. 정인철은 고 3때 서울 소재 대학 커트라인의 수능 성적에서 재수 1년 만에 수능 원점수 80점을 올려 연세대 의예과 정시 모집에 합격했다. 1년 만에 기적
+출판사: 로고폴리스
+ISBN: 9791186499443
+출간일시: 2017-02-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1631470&q=Line+Friends+Study+Planner%28%EB%9D%BC%EC%9D%B8+%ED%94%84%EB%A0%8C%EC%A6%88+%EC%8A%A4%ED%84%B0%EB%94%94+%ED%94%8C%EB%9E%98%EB%84%88%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14500, 10.00, 13050, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1631470%3Ftimestamp%3D20221025125256', 99, 106, 'ACTIVATE', NULL),
+    (834, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'DIAT 스프레드시트 한셀 2010(2017)(이공자)(스프링)', 'ASO R&D Ins.', '9788984559004', '『DIAT 한셀 2010(스프레드시트)』은 시험 출제 유형에 맞게 단계별로 체크하고 작성하는 과정을 상세히 설명하고 있으며 최신 시험 유형과 동일한 형태의 모의고사를 작성해 봄으로써 목표 점수를 보다 쉽게 취득할 수 있도록 하였습니다. 또한, 최신 경향 문제의 유형을 파악하고 작성해 봄으로써 시험 유형을 좀 더 쉽게 파악할 수 있도록 하였습니다.
+출판사: 아카데미소프트
+ISBN: 9788984559004
+출간일시: 2017-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1196777&q=DIAT+%EC%8A%A4%ED%94%84%EB%A0%88%EB%93%9C%EC%8B%9C%ED%8A%B8+%ED%95%9C%EC%85%80+2010%282017%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1196777%3Ftimestamp%3D20190127070429', 102, 108, 'ACTIVATE', NULL),
+    (835, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '메이크 업 패턴북(Make up Pattern book)(스프링)', '박혜경, 이순녀', '9788971222171', '모델이 없어도 걱정마세요! 미용사(메이크업), 메이크업 실기시험 대비는 이 교재를 통해서 !  미용 관련 자격증은 많은 분들이 취득하기 위해 공부하는 분야 중 하나입니다. 그중에서도 메이크업 기능사는 가장 최근에 신설된 종목으로 젊은 층의 엄청난 주목을 받고 있습니다.  2019년부터 메이크업 기능사는 상시시험으로 전환되어 시험 횟수가 보다 많아져서 여러분이 시험을 보실 수 있는 기회가 더욱 많아졌습니다.  시험 규정에 맞추어 저희 중원사에서는
+출판사: 중원사
+ISBN: 9788971222171
+출간일시: 2017-03-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5398962&q=%EB%A9%94%EC%9D%B4%ED%81%AC+%EC%97%85+%ED%8C%A8%ED%84%B4%EB%B6%81%28Make+up+Pattern+book%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 28000, 15.00, 28000, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398962%3Ftimestamp%3D20221003225919', 105, 110, 'ACTIVATE', NULL),
+    (836, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '한눈에 가계부(2021)(스프링)', '솜씨연구소', '8809464091362', '- 달마다 내 소중한 돈의 흐름을 한눈에 파악하는 캘린더형 가계부 - 하루 1분이면 땡! 세상 빠르고 간단하게 작성하는 쉬운 형식 - 실제 사용자들의 많은 사랑을 받은 항목 유지  한 달 돈의 흐름이 한눈에 보이는 캘린더형 가계부로 살림 분야 1위를 달성한 《한눈에 가계부》가 완벽주의자들이 사랑하는 바이올렛 컬러의 옷을 입고 돌아왔다. 2019년 파격적으로 업그레이드된 후 지속적으로 시장 조사를 하여 다시 한 번 더 리뉴얼된 2020년 버전에 이어
+출판사: 솜씨컴퍼니
+ISBN: 8809464091362
+출간일시: 2020-09-28T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5478382&q=%ED%95%9C%EB%88%88%EC%97%90+%EA%B0%80%EA%B3%84%EB%B6%80%282021%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9800, 10.00, 8820, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5478382%3Ftimestamp%3D20211017164109', 108, 112, 'ACTIVATE', NULL),
+    (837, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '꿈의왕국 소피루비 내 맘대로 디자이너(스프링)', '편집부', '8809574290686', '꿈의 왕국 소피 루비 캐릭터의 옷을 내 맘대로 디자인한다면 어떨까?  반짝반짝 트윙클 사랑스럽게~ 다섯 명의 캐릭터를 꾸며 주세요!
+출판사: 아이키움북
+ISBN: 8809574290686
+출간일시: 2018-08-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3752604&q=%EA%BF%88%EC%9D%98%EC%99%95%EA%B5%AD+%EC%86%8C%ED%94%BC%EB%A3%A8%EB%B9%84+%EB%82%B4+%EB%A7%98%EB%8C%80%EB%A1%9C+%EB%94%94%EC%9E%90%EC%9D%B4%EB%84%88%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 50.00, 7000, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3752604%3Ftimestamp%3D20221025124105', 111, 114, 'ACTIVATE', NULL),
+    (838, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '고등 영어 기출문제 모음(비상 홍민표)(2019)(스프링)', '투씨 편집부', '9791163341949', '- 독자대상 : 고등학교 전학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 투씨
+ISBN: 9791163341949
+출간일시: 2019-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4895512&q=%EA%B3%A0%EB%93%B1+%EC%98%81%EC%96%B4+%EA%B8%B0%EC%B6%9C%EB%AC%B8%EC%A0%9C+%EB%AA%A8%EC%9D%8C%28%EB%B9%84%EC%83%81+%ED%99%8D%EB%AF%BC%ED%91%9C%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4895512%3Ftimestamp%3D20221025130331', 114, 116, 'ACTIVATE', NULL),
+    (839, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '고등 영어 기출문제 모음(동아 이병민)(2019)(스프링)', '투씨 편집부', '9791163341932', '- 독자대상 : 고등학생 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 투씨
+ISBN: 9791163341932
+출간일시: 2019-03-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4915798&q=%EA%B3%A0%EB%93%B1+%EC%98%81%EC%96%B4+%EA%B8%B0%EC%B6%9C%EB%AC%B8%EC%A0%9C+%EB%AA%A8%EC%9D%8C%28%EB%8F%99%EC%95%84+%EC%9D%B4%EB%B3%91%EB%AF%BC%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4915798%3Ftimestamp%3D20221025130312', 117, 118, 'ACTIVATE', NULL),
+    (840, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '어드밴스드 CCM 피아노 고급편(CD1장포함)(스프링)', '김정인', '9788998820022', '『어드밴스드 CCM 피아노 고급편』은 예배에서 실제 사용할 수 있는 고급적인 피아노 편곡 기법들을 알려주고 있다. 보다 세련된 피아노 반주 기법들 뿐만 아니라, 찬송가와 오래된 복음성가 등을 새롭게 바꾸는 편곡 기법을 배울 수 있다. 예배 안에서 세대간의 음악 스타일 차이로 어려움을 겪고 있는 인도자와 반주자들에게 큰 도움이 될 것이다.
+출판사: TONIC
+ISBN: 9788998820022
+출간일시: 2014-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1507157&q=%EC%96%B4%EB%93%9C%EB%B0%B4%EC%8A%A4%EB%93%9C+CCM+%ED%94%BC%EC%95%84%EB%85%B8+%EA%B3%A0%EA%B8%89%ED%8E%B8%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1507157%3Ftimestamp%3D20221025161005', 120, 0, 'ACTIVATE', NULL),
+    (841, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '감정표현 지도 프로그램(언어장애 아동을 위한)(스프링)', '신후남, 황하정, 배현주', '9788968660450', '『감정표현 지도 프로그램』는 언어장애 아동을 위한 감정표현 프로그램은 감정동사의 의미 이해와 사용 기술이 부족하여 친사회적 행동을 형성하는 데 어려움이 있는 발달장애 아동들을 위해 개발 된 책이다. ''감정동사 어휘 이해 단계'', ''감정동사 어휘 산출 단계'', ''다양한 감정표현 산출 단계''로 구성되어 있다.
+출판사: 시그마프레스
+ISBN: 9788968660450
+출간일시: 2013-08-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=945502&q=%EA%B0%90%EC%A0%95%ED%91%9C%ED%98%84+%EC%A7%80%EB%8F%84+%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8%28%EC%96%B8%EC%96%B4%EC%9E%A5%EC%95%A0+%EC%95%84%EB%8F%99%EC%9D%84+%EC%9C%84%ED%95%9C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 22000, 5.00, 22000, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F945502%3Ftimestamp%3D20190126042336', 123, 2, 'ACTIVATE', NULL),
+    (842, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '반주용 새찬송가(중)(단본)(고급)(색인)(검정)(스프링)', '한국찬송가공회', '9788904005314', '☞ 한글 / 검은색 / 가죽 / 수첩식 / 무장 / 색인 / 가로 19.5cm × 세로 24.5cm × 두께 3cm  반주용 새찬송가. 피아노와 기타 코드를 수록하여 연주에 도움을 준다. 글씨가 커서 보는 데 부담이 없다. 스프링본이라 쉽게 펼칠 수 있다.
+출판사: 생명의말씀사
+ISBN: 9788904005314
+출간일시: 2017-02-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=353373&q=%EB%B0%98%EC%A3%BC%EC%9A%A9+%EC%83%88%EC%B0%AC%EC%86%A1%EA%B0%80%28%EC%A4%91%29%28%EB%8B%A8%EB%B3%B8%29%28%EA%B3%A0%EA%B8%89%29%28%EC%83%89%EC%9D%B8%29%28%EA%B2%80%EC%A0%95%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 33000, 10.00, 29700, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F353373%3Ftimestamp%3D20200322133119', 126, 4, 'ACTIVATE', NULL),
+    (843, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '썼다 지웠다: 모양(EQ 토피 유아 지능 계발 15)(스프링)', '편집부', '8809439920000', '[썼다 지웠다: 모양]은 아이의 EQ를 향상시켜주는 지능 개발 교재이다. 귀여운 캐릭터와 함께 다양한 모양을 그려본다. 배운다기보다는 ''놀이''로 접근하여 모양에 대한 인지력을 자연스럽게 키울 수 있다.
+출판사: 토피
+ISBN: 8809439920000
+출간일시: 2015-05-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3751739&q=%EC%8D%BC%EB%8B%A4+%EC%A7%80%EC%9B%A0%EB%8B%A4%3A+%EB%AA%A8%EC%96%91%28EQ+%ED%86%A0%ED%94%BC+%EC%9C%A0%EC%95%84+%EC%A7%80%EB%8A%A5+%EA%B3%84%EB%B0%9C+15%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 40.00, 7200, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3751739%3Ftimestamp%3D20200503120607', 129, 6, 'ACTIVATE', NULL),
+    (844, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2 교과서 영문법(비상 김진완)(2019)(Grammar)(스프링)', '편집부', '9791163341222', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341222
+출간일시: 2018-12-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844755&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EB%B9%84%EC%83%81+%EA%B9%80%EC%A7%84%EC%99%84%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844755%3Ftimestamp%3D20221025114848', 132, 8, 'ACTIVATE', NULL),
+    (845, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3 교과서 영문법(동아 김성곤)(2019)(Grammar)(스프링)', '편집부', '9791163341772', '- 독자대상 : 중학교 3학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341772
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4867683&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EB%8F%99%EC%95%84+%EA%B9%80%EC%84%B1%EA%B3%A4%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867683%3Ftimestamp%3D20221025130251', 135, 10, 'ACTIVATE', NULL),
+    (846, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3 교과서 영문법(천재 김진완)(2019)(Grammar)(스프링)', '편집부', '9791163341741', '- 독자대상 : 중학교 3학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341741
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4867668&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EC%B2%9C%EC%9E%AC+%EA%B9%80%EC%A7%84%EC%99%84%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867668%3Ftimestamp%3D20221025130259', 138, 12, 'ACTIVATE', NULL),
+    (847, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2 교과서 영문법(동아 이병민)(2019)(Grammar)(스프링)', '이병민', '9791163341208', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341208
+출간일시: 2018-12-19T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4844708&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912+%EA%B5%90%EA%B3%BC%EC%84%9C+%EC%98%81%EB%AC%B8%EB%B2%95%28%EB%8F%99%EC%95%84+%EC%9D%B4%EB%B3%91%EB%AF%BC%29%282019%29%28Grammar%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844708%3Ftimestamp%3D20200621125712', 141, 14, 'ACTIVATE', NULL),
+    (848, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '공인노무사 노동법 판례 암기노트(2019)(두문자 정리!)(스프링)', '김영호', '9788966386383', '2019 공인노무사 2차 노동법 판례의 이해 및 암기를 돕기 위한 교재  1) "노동법의 정석“과 ”노동법 판례핸드북“으로 학습하고 있는 수험생을 위한 판례 요지 정리 2) 공인노무사 2차와 변호사 시험을 대비한 판례의 사실관계와 법리 이해, 암기를 위한 학습서 3) 오른편에 판례원문, 왼편에 중요 키워드를 쓸 수 있도록 2단 편집하여, 자연스럽게 판례의 강약을 조절할 수 있도록 함 4) 두문자 편집을 통한 암기 편리성 도모
+출판사: 이패스코리아
+ISBN: 9788966386383
+출간일시: 2019-02-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4888891&q=%EA%B3%B5%EC%9D%B8%EB%85%B8%EB%AC%B4%EC%82%AC+%EB%85%B8%EB%8F%99%EB%B2%95+%ED%8C%90%EB%A1%80+%EC%95%94%EA%B8%B0%EB%85%B8%ED%8A%B8%282019%29%28%EB%91%90%EB%AC%B8%EC%9E%90+%EC%A0%95%EB%A6%AC%21%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 10.00, 12600, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4888891%3Ftimestamp%3D20221025120347', 144, 16, 'ACTIVATE', NULL),
+    (849, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'DIAT 워드프로세서: 한글 2010(스탠드형)(클래스업)(스프링)', '해람북스 기획팀', '9791158920012', '- 독자대상 : DIAT 자격 시험 준비생 - 구성 : 문제+이론 - 특징 : ① 시험에 출제되는 주요 핵심만을 유형별로 정리 ② 시험에 자주 출제되는 유형을 분석 ③ 출제 가능성이 높은 기능 예제를 난이도별로 수록 ④ 실제 시험과 동일한 유형의 실전모의고사를 수록 ⑤ 최신기출문제를 수록하여 시험에 충실히 대비할 수 있도록 구성
+출판사: 해람북스(구 북스홀릭)
+ISBN: 9791158920012
+출간일시: 2015-09-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1588403&q=DIAT+%EC%9B%8C%EB%93%9C%ED%94%84%EB%A1%9C%EC%84%B8%EC%84%9C%3A+%ED%95%9C%EA%B8%80+2010%28%EC%8A%A4%ED%83%A0%EB%93%9C%ED%98%95%29%28%ED%81%B4%EB%9E%98%EC%8A%A4%EC%97%85%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1588403%3Ftimestamp%3D20190131031446', 147, 18, 'ACTIVATE', NULL),
+    (850, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '바흐 평균율클라비어 1(해설이 있는)(해설이 있는 피아노전집 시리즈)(스프링)', '삼호뮤직 편집부', '9788932626000', '위대한 작곡가들의 음악을 소개하는『해설이 있는 피아노전집』시리즈. 작곡가의 원전 악보에 근거하여 곡 전체를 수록하고, 악보에 숨어 있는 음악적 표현법, 페달링, 운지법 등을 자세히 해설함으로써 보다 정확하고 깊이 있게 작품을 익히고 연주할 수 있도록 도와준다. 이 책에는 바흐의 평균율 클라비어를 수록하였다. 평균율이란 잘 조율된 클라비어를 위한 곡집이라는 뜻이고, 클라비어는 건반학기의 총칭이다. (스프링 제본)
+출판사: 삼호뮤직
+ISBN: 9788932626000
+출간일시: 2017-05-31T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=502629&q=%EB%B0%94%ED%9D%90+%ED%8F%89%EA%B7%A0%EC%9C%A8%ED%81%B4%EB%9D%BC%EB%B9%84%EC%96%B4+1%28%ED%95%B4%EC%84%A4%EC%9D%B4+%EC%9E%88%EB%8A%94%29%28%ED%95%B4%EC%84%A4%EC%9D%B4+%EC%9E%88%EB%8A%94+%ED%94%BC%EC%95%84%EB%85%B8%EC%A0%84%EC%A7%91+%EC%8B%9C%EB%A6%AC%EC%A6%88%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 11000, 10.00, 9900, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F502629%3Ftimestamp%3D20221011170835', 150, 20, 'ACTIVATE', NULL),
+    (851, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '부동산공법 체계도(공인중개사)(2021)(에듀윌)(스프링)', '김희상', '9791136008343', '2016, 2017, 2019 공인중개사 한 회차 최다 합격자 배출 공식 인증(공식인증기관 ‘한국기록원’) 국내 최대 규모의 합격자 모임 매년 개최 공인중개사 전문 교육기관 선호도, 인지도 1위(한국리서치 ‘교육기관 브랜드 인지도조사’ / 2015년 8월)  방대한 부동산공법 이론을 체계도로 압축 정리! 체계를 알아야 합격이 보인다! 공법은 내용이 복잡하고 숫자가 많아서 접근하기 어려운 법률입니다. 하지만 공법의 원리와 체계를 통하여 접근하면 공법
+출판사: 에듀윌
+ISBN: 9791136008343
+출간일시: 2021-01-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5541991&q=%EB%B6%80%EB%8F%99%EC%82%B0%EA%B3%B5%EB%B2%95+%EC%B2%B4%EA%B3%84%EB%8F%84%28%EA%B3%B5%EC%9D%B8%EC%A4%91%EA%B0%9C%EC%82%AC%29%282021%29%28%EC%97%90%EB%93%80%EC%9C%8C%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5541991%3Ftimestamp%3D20220705162008', 153, 22, 'ACTIVATE', NULL),
+    (852, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 정보기술자격 파워포인트 2016(2020)(이공자)(스프링)', 'KIE기획팀', '9788984550049', '- 2020년 7월 정기시험부터 새롭게 변경된 시험유형을 모두 반영한 최신교재!! - 기출 예상문제 완벽대비!! - 최신 자동채점프로그램 무료 제공!!
+출판사: 아카데미소프트
+ISBN: 9788984550049
+출간일시: 2020-02-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5265282&q=ITQ+%EC%A0%95%EB%B3%B4%EA%B8%B0%EC%88%A0%EC%9E%90%EA%B2%A9+%ED%8C%8C%EC%9B%8C%ED%8F%AC%EC%9D%B8%ED%8A%B8+2016%282020%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 16000, 10.00, 14400, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5265282%3Ftimestamp%3D20220410173817', 156, 24, 'ACTIVATE', NULL),
+    (853, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '부자레시피 캘린더 가계부(2020)(스프링)', '달곰미디어 콘텐츠 연구소', '8809416540979', '&lt;2020 캘린더 가계부&gt;는 실용성을 높인 소비자 중심의 가계부입니다. 하루하루의 결정뿐만 아니라 한 달, 일 년간의 빅픽처를 그릴 수 있도록 도와주는 &lt;홈 재정 관리사&gt;를 만나 보세요.
+출판사: 달곰미디어
+ISBN: 8809416540979
+출간일시: 2019-09-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5078769&q=%EB%B6%80%EC%9E%90%EB%A0%88%EC%8B%9C%ED%94%BC+%EC%BA%98%EB%A6%B0%EB%8D%94+%EA%B0%80%EA%B3%84%EB%B6%80%282020%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9800, 10.00, 8820, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5078769%3Ftimestamp%3D20221025140157', 159, 26, 'ACTIVATE', NULL),
+    (854, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '골프코스가이드북(스카이72 클래식코스)(스프링)', '한국지오매틱스 편집부', '9788961510745', '출판사: 한국지오매틱스
+ISBN: 9788961510745
+출간일시: 2009-06-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=852429&q=%EA%B3%A8%ED%94%84%EC%BD%94%EC%8A%A4%EA%B0%80%EC%9D%B4%EB%93%9C%EB%B6%81%28%EC%8A%A4%EC%B9%B4%EC%9D%B472+%ED%81%B4%EB%9E%98%EC%8B%9D%EC%BD%94%EC%8A%A4%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F852429%3Ftimestamp%3D20191227123855', 162, 28, 'ACTIVATE', NULL),
+    (855, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 한셀2010(스텐드형)(이공자)(스프링)', 'ASO R&D Center', '9788984559097', '- 독자대상 : ITQ 시험 준비생 - 구성 및 특징 : ① 새롭게 변경된 2018년 1월 시험유형을 모두 반영! ② 고득점 취득을 위한 출제유형 그대로 따라하기 제공! ③ 자동채점프로그램 무료 제공!
+출판사: 아카데미소프트
+ISBN: 9788984559097
+출간일시: 2017-08-11T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1194139&q=ITQ+%ED%95%9C%EC%85%802010%28%EC%8A%A4%ED%85%90%EB%93%9C%ED%98%95%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1194139%3Ftimestamp%3D20211125144732', 165, 30, 'ACTIVATE', NULL),
+    (856, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '오카리나 트로트를 만나다. 2: 아모르파티(CD1장포함)(스프링)', '편금하 (편저)', '9791188410293', '오카리나 연주를 위한 악보로, 트로트 곡을 중심으로 묶었다.
+출판사: 이타미디어
+ISBN: 9791188410293
+출간일시: 2019-05-02T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4954476&q=%EC%98%A4%EC%B9%B4%EB%A6%AC%EB%82%98+%ED%8A%B8%EB%A1%9C%ED%8A%B8%EB%A5%BC+%EB%A7%8C%EB%82%98%EB%8B%A4.+2%3A+%EC%95%84%EB%AA%A8%EB%A5%B4%ED%8C%8C%ED%8B%B0%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 20000, 10.00, 18000, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4954476%3Ftimestamp%3D20201104143113', 168, 32, 'ACTIVATE', NULL),
+    (857, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중3-2 교과서본문암기 달달달 워크북(천재 정사열)(2019)(스프링)', '씽크플러스 편집부', '9791160631142', '- 독자대상 : 중학교 3학년 - 구성 : 이론 - 특징 : ① 워크시트(Worksheet) 자료집 ② 중학교 내신과 수행평가 대비 ③ 암기와 평가를 할 수 있도록 4~6단계의 워크시트로 구성 ④ 교과서 본문을 쉽게 암기할 수 있도록 구성
+출판사: 씽크플러스
+ISBN: 9791160631142
+출간일시: 2017-07-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1593904&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%913-2+%EA%B5%90%EA%B3%BC%EC%84%9C%EB%B3%B8%EB%AC%B8%EC%95%94%EA%B8%B0+%EB%8B%AC%EB%8B%AC%EB%8B%AC+%EC%9B%8C%ED%81%AC%EB%B6%81%28%EC%B2%9C%EC%9E%AC+%EC%A0%95%EC%82%AC%EC%97%B4%29%282019%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1593904%3Ftimestamp%3D20211114180158', 171, 34, 'ACTIVATE', NULL),
+    (858, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'ITQ 한글 Office 2010(2017)(이기적 in)(스프링)', '영진정보연구소', '9788931453263', '『ITQ 한글 Office 2010(2017)』은 2015년 7월부터 시행되는 출제기준을 적용한 도서로, ITQ 한글 2010 시험 경향을 분석하여 수험생들이 혼자서도 학습할 수 있도록 한 대비서이다. 한글 2010을 기준으로 작성되었으며, 꼼꼼한 이론과 함께 유형을 확인하는 기출문제를 통해 시험 유형을 익힐 수 있고, 모의고사 10회와 기출문제 10회를 풀고 나면 시험에 능수능란하게 대비할 수 있도록 했다.
+출판사: 영진닷컴
+ISBN: 9788931453263
+출간일시: 2016-07-26T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=483882&q=ITQ+%ED%95%9C%EA%B8%80+Office+2010%282017%29%28%EC%9D%B4%EA%B8%B0%EC%A0%81+in%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F483882%3Ftimestamp%3D20200107121953', 174, 36, 'ACTIVATE', NULL),
+    (859, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '쓰기성경(스프링)', '생활성서사 편집부', '2003237000735', '이 책은 일반인들이 가톨릭에 대해 이해할 수 있는 교양서이다.
+출판사: 생활성서사
+ISBN: 2003237000735
+출간일시: 1996-10-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=117173&q=%EC%93%B0%EA%B8%B0%EC%84%B1%EA%B2%BD%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6000, 15.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F117173%3Ftimestamp%3D20250501133628', 177, 38, 'ACTIVATE', NULL),
+    (860, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '시나리오 견적서(슈퍼 히어로편)(스프링)', '온우주 편집부', '9788998711337', '어느 날 문득, 반짝 하고 기가 막힌 아이디어가 떠오르지만, 아이디어 하나를 붙잡고 이야기로 빚으려면 대체?어디서부터 시작해야 할지 막막해집니다. 아이디어는 누구나 생각할 수 있습니다. 하지만 짧게라도 스토리를 완성하는 건 생각보다 큰 부담입니다. &lt;시나리오 견적서&gt;는 쉽게 스토리를 완성하기 위해 최초로 만들어진 도구입니다.  &lt;시나리오 견적서-히어로 편&gt;은 히어로물의 장르 특성에 따라 이야기에 꼭 필요한 요소만을 잘 담아냈습니다
+출판사: 온우주
+ISBN: 9788998711337
+출간일시: 2018-01-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1507101&q=%EC%8B%9C%EB%82%98%EB%A6%AC%EC%98%A4+%EA%B2%AC%EC%A0%81%EC%84%9C%28%EC%8A%88%ED%8D%BC+%ED%9E%88%EC%96%B4%EB%A1%9C%ED%8E%B8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1507101%3Ftimestamp%3D20220704160021', 180, 40, 'ACTIVATE', NULL),
+    (861, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '라인프렌즈 실용 영어 위클리 플래너(스프링)', '유세라', '9791162205013', '‘야식을 먹다’, ‘아침을 간단하게 먹다’, ‘퇴근하다’가 영어로는 뭘까? 귀여운 라인프렌즈와 함께 하루에 하나씩 익히는 생활 밀착 영어 표현 378 원어민 발음을 들을 수 있는 MP3 파일 제공!  외국인과 영어로 스몰 토크를 하고 싶은 사람, 유튜브나 인스타그램 등 SNS에서 영어로 의사소통을 하고 싶어 하는 사람 등, 일상 생활에서 영어를 좀 더 잘 하고 싶은 사람을 위한 생활 밀착 영어 표현집이다. 탁상용 위클리 캘린더 형식이어서 책상 등
+출판사: 위즈덤하우스
+ISBN: 9791162205013
+출간일시: 2018-05-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1604336&q=%EB%9D%BC%EC%9D%B8%ED%94%84%EB%A0%8C%EC%A6%88+%EC%8B%A4%EC%9A%A9+%EC%98%81%EC%96%B4+%EC%9C%84%ED%81%B4%EB%A6%AC+%ED%94%8C%EB%9E%98%EB%84%88%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12800, 10.00, 11520, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1604336%3Ftimestamp%3D20221025124950', 183, 42, 'ACTIVATE', NULL),
+    (862, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '마음이, 생각이, 쑥쑥 세트(스프링)(전2권)', '최상희, 박미희, 김정아, 이영명', '9788996496342', '이 워크북에서는 ‘영역의 융합’과 ‘매체 간의 융합’ 중심으로 다루고 있다. 다만, 유아의 수준을 고려해 초보적인 융합교육 방법이 적용되었다. 또한 3~5세 유아의 심신 건강과 조화로운 발달을 돕는 데 목적을 두는 ‘누리과정’의 5개 영역(신체운동·건강, 의사소통, 사회관계, 예술경험, 자연탐구)을 토대로 보다 근본적인 학습이 이루어지도록 했다.  방법 면에서는 종이신문 중심의 기존 아날로그 NIE에서 나아가 뉴스를 다루는 신문, 방송, 인터넷
+출판사: 두현출판사
+ISBN: 9788996496342
+출간일시: 2017-04-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1475175&q=%EB%A7%88%EC%9D%8C%EC%9D%B4%2C+%EC%83%9D%EA%B0%81%EC%9D%B4%2C+%EC%91%A5%EC%91%A5+%EC%84%B8%ED%8A%B8%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%A0%842%EA%B6%8C%29', 20000, 10.00, 18000, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1475175%3Ftimestamp%3D20221025125403', 186, 44, 'ACTIVATE', NULL),
+    (863, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '골프코스가이드북 (뉴서울 컨트리클럽 South)(야디지 북)(스프링)', '한국지오매틱스 편집부', '9788991648623', '출판사: 한국지오매틱스
+ISBN: 9788991648623
+출간일시: 2007-05-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1354177&q=%EA%B3%A8%ED%94%84%EC%BD%94%EC%8A%A4%EA%B0%80%EC%9D%B4%EB%93%9C%EB%B6%81+%28%EB%89%B4%EC%84%9C%EC%9A%B8+%EC%BB%A8%ED%8A%B8%EB%A6%AC%ED%81%B4%EB%9F%BD+South%29%28%EC%95%BC%EB%94%94%EC%A7%80+%EB%B6%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1354177%3Ftimestamp%3D20191227123726', 189, 46, 'ACTIVATE', NULL),
+    (864, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내 맘대로 디자이너 패셔니스타(스프링)', '편집부', '8809574290013', '무대에서 춤추고 노래하며 빛나는 가수들! 레드카펫 위의 멋진 배우들! 최고의 패셔니스타 의상을 내가 디자인해 보면 어떨까? 귀엽게? 우아하게? 발랄하게? 내가 고른 패션이 곧 유행할 거예요! 《내 맘대로 디자이너》는, 여러 모델의 옷과 액세서리를 마음대로 꾸며 보는 패션 놀이북입니다. 책에 있는 모델들의 이름도 직접 지어 보세요. 스텐실 판, 다양한 색상의 패턴지, 스티커 등으로 예쁘게 꾸미며 나만의 개성을 마음껏 뽐낼 수 있답니다. 무대 위 반짝반짝
+출판사: 아이키움북
+ISBN: 8809574290013
+출간일시: 2017-08-21T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3760721&q=%EB%82%B4+%EB%A7%98%EB%8C%80%EB%A1%9C+%EB%94%94%EC%9E%90%EC%9D%B4%EB%84%88+%ED%8C%A8%EC%85%94%EB%8B%88%EC%8A%A4%ED%83%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 13000, 30.00, 9100, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3760721%3Ftimestamp%3D20220922040201', 192, 48, 'ACTIVATE', NULL),
+    (865, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '골프코스가이드북 (화산 컨트리클럽)(야디지 북)(스프링)', '한국지오매틱스 편집부', '9788991648807', '출판사: 한국지오매틱스
+ISBN: 9788991648807
+출간일시: 2007-05-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1358070&q=%EA%B3%A8%ED%94%84%EC%BD%94%EC%8A%A4%EA%B0%80%EC%9D%B4%EB%93%9C%EB%B6%81+%28%ED%99%94%EC%82%B0+%EC%BB%A8%ED%8A%B8%EB%A6%AC%ED%81%B4%EB%9F%BD%29%28%EC%95%BC%EB%94%94%EC%A7%80+%EB%B6%81%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1358070%3Ftimestamp%3D20221025114956', 195, 50, 'ACTIVATE', NULL),
+    (866, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '중학 영어 중2-1 내신 문제집(천재 이재영)(2019)(내신만점 플러스)(스프링)', '편집부', '9791163341086', '- 독자대상 : 중학교 2학년 - 구성 및 특징 : ① 최근 경향 반영 ② 학습 내용 체계적으로 구성
+출판사: 상상대로
+ISBN: 9791163341086
+출간일시: 2019-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4867659&q=%EC%A4%91%ED%95%99+%EC%98%81%EC%96%B4+%EC%A4%912-1+%EB%82%B4%EC%8B%A0+%EB%AC%B8%EC%A0%9C%EC%A7%91%28%EC%B2%9C%EC%9E%AC+%EC%9D%B4%EC%9E%AC%EC%98%81%29%282019%29%28%EB%82%B4%EC%8B%A0%EB%A7%8C%EC%A0%90+%ED%94%8C%EB%9F%AC%EC%8A%A4%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867659%3Ftimestamp%3D20211208151351', 198, 52, 'ACTIVATE', NULL),
+    (867, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '생활속 궁금영어 100(우리집은 영어유치원)(AudioCD1장포함)(스프링)', '홍주희', '9788973319619', '처럼 아이들이 영어를 배울 때 꼭 묻는 영어표현 100가지를 통해 아이들의 영어에 대한 호기심을 키워 주는 어린이용 영어회화교재로, 아이들이 가장 굼금해하는 영어표현 100가지를 순위별로 정리하였다.  탁상용 캘린더북 형태로 되어 있는 본 교재를 거실 탁자에 세워 놓고 하루 한 장씩 넘겨가며 아이와 재미있게 익힐 수 있다. 오디오 CD 1장 포함. (스프링 제본, 양장본)  * 이 책은 〈선생님, 코딱지가 영어로 뭐예요?〉(언어세상)의 최신개정판입니다
+출판사: 로그인
+ISBN: 9788973319619
+출간일시: 2008-02-10T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1016988&q=%EC%83%9D%ED%99%9C%EC%86%8D+%EA%B6%81%EA%B8%88%EC%98%81%EC%96%B4+100%28%EC%9A%B0%EB%A6%AC%EC%A7%91%EC%9D%80+%EC%98%81%EC%96%B4%EC%9C%A0%EC%B9%98%EC%9B%90%29%28AudioCD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1016988%3Ftimestamp%3D20220930203858', 1, 54, 'ACTIVATE', NULL),
+    (868, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스누피 캘린더 캐시북 2020(스프링)', '솜씨연구소', '8809461091235', '- 한 달 돈의 흐름이 한눈에 보이는 캘린더형 가계부 - 세울 수 있어 탁상달력으로도 OK! - 특별 선물 스누피 투명 스티커 모든 독자 증정  〈스누피 캘린더 캐시북〉은 한 달 돈의 흐름을 한눈에 파악할 수 있는 ‘캘린더형 가계부’다. 세세한 디테일의 가계부는 작심삼일이 되기 십상이지만, 캘린더형 가계부는 하루 1분이면 충분! 캘린더에 낙서하듯 쓱쓱 쓰기만 하면 되기 때문에 바쁠 때도 부담 없이 쓸 수 있다. 거기에 하나 더! 〈스누피 캘린더
+출판사: 솜씨컴퍼니
+ISBN: 8809461091235
+출간일시: 2019-10-04T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5077745&q=%EC%8A%A4%EB%88%84%ED%94%BC+%EC%BA%98%EB%A6%B0%EB%8D%94+%EC%BA%90%EC%8B%9C%EB%B6%81+2020%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12800, 10.00, 11520, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5077745%3Ftimestamp%3D20220630103323', 4, 56, 'ACTIVATE', NULL),
+    (869, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '물놀이 두들북: 공룡(스프링)', '로이비쥬얼', '8809316330991', '손이나 옷이 더러워질 걱정 끝~ 물만 있으면 언제 어디서나 즐기는 색칠 놀이!  [물놀이 두들북 - 공룡]은 물로 쓱쓱 칠하면 마법처럼 공룡 그림이 짠! 하고 나타나는 신기한 색칠북이에요. 시간이 지나 물기가 마르면 색이 사라져서, 물펜으로 무한 반복해서 칠하며 놀 수 있어 경제적이지요. 이 책에서는 초식 공룡, 육식 공룡, 특이한 공룡, 공룡 화석 등 다양한 공룡이 가득 담긴 물 색칠 그림 6개를 만나 볼 수 있어요. 물펜으로 칠하며 공룡 시대
+출판사: 로이북스
+ISBN: 8809316330991
+출간일시: 2019-04-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4936397&q=%EB%AC%BC%EB%86%80%EC%9D%B4+%EB%91%90%EB%93%A4%EB%B6%81%3A+%EA%B3%B5%EB%A3%A1%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8500, 20.00, 6800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4936397%3Ftimestamp%3D20220925185404', 7, 58, 'ACTIVATE', NULL),
+    (870, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Real Piano No.1: Popular(스프링)', '진실로', '9788996415909', '발라드가요 연주의 결정판 리얼피아노 『Real Piano No.1: Popular』. 이 책은 대중음악사에 ''명곡''으로 기록될만한 곡들을 중심으로 구성된 악보집이다. 사랑받았던 노래들을 원곡의 분위기를 최대한 사릴면서, 듣기 좋은 화음들로 구성하여 연주할 수 있도록 도왔다. ''아무리 생각해도 난 너를'' ''편지'' ''오늘같은 밤이면'' 등의 대중가요 15곡을 만날 수 있다.
+출판사: 리얼피아노
+ISBN: 9788996415909
+출간일시: 2013-05-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1468030&q=Real+Piano+No.1%3A+Popular%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 18000, 10.00, 16200, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1468030%3Ftimestamp%3D20221025134945', 10, 60, 'ACTIVATE', NULL),
+    (871, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '큰 통독 인도자 지침서(하나님 나라 관점에서 읽는)(CD1장포함)(스프링)(전3권)', '주해홍, 황사라', '9788953118041', '소그룹 인도자를 위한 『통큰 통독 인도자 지침서』 전3권. 《통큰 통독》의 틀을 유지하면서 인도자가 소그룹을 인도하는데 용이하게 구성했다. 90일간 각 해당일의 중요 포인트를 질문 형식으로 수록했으며, 지식 습득을 넘어 각각의 삶에 적용할 수 있도록 안내하고 있다.
+출판사: 두란노서원
+ISBN: 9788953118041
+출간일시: 2013-01-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=663441&q=%ED%86%B5%ED%81%B0+%ED%86%B5%EB%8F%85+%EC%9D%B8%EB%8F%84%EC%9E%90+%EC%A7%80%EC%B9%A8%EC%84%9C%28%ED%95%98%EB%82%98%EB%8B%98+%EB%82%98%EB%9D%BC+%EA%B4%80%EC%A0%90%EC%97%90%EC%84%9C+%EC%9D%BD%EB%8A%94%29%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%A0%843%EA%B6%8C%29', 60000, 15.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F663441%3Ftimestamp%3D20211209152013', 13, 62, 'ACTIVATE', NULL),
+    (872, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '문화 여행: 경상남도(엄마 아빠와 함께 떠나는)(굿모닝 사회탐구 68)(스프링)', '지민이 (기획 구성), 강은일 (기획 구성)', '9788956949680', '정치, 경제, 생활문화, 지리, 역사 등의 기본 개념과 원리를 발견하고 탐구하는 능력을 키우도록 구성한「굿모닝 사회탐구」시리즈. 사회 현상에 대한 기초적인 지식을 배우고, 나아가 현대 사회 문제를 창의적이고 합리적으로 해결하는 능력을 키우게 됩니다. 풍부한 사진자료와 일러스트레이터의 그림 등이 내용 이해를 돕습니다. 한국의 문화 여행은 우리나라 전국의 고유한 특성과 그 지역 가운데 찾아가 볼 만한 명소와 역사 문화적 체험 학습에 적합한 장소를 소개
+출판사: 한국슈바이처
+ISBN: 9788956949680
+출간일시: 2016-06-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=747492&q=%ED%95%9C%EA%B5%AD%EC%9D%98+%EB%AC%B8%ED%99%94+%EC%97%AC%ED%96%89%3A+%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%28%EC%97%84%EB%A7%88+%EC%95%84%EB%B9%A0%EC%99%80+%ED%95%A8%EA%BB%98+%EB%96%A0%EB%82%98%EB%8A%94%29%28%EA%B5%BF%EB%AA%A8%EB%8B%9D+%EC%82%AC%ED%9A%8C%ED%83%90%EA%B5%AC+68%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F747492%3Ftimestamp%3D20221025134559', 16, 64, 'ACTIVATE', NULL),
+    (873, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '부수한자(스프링)', '조규남', '9788990642493', '그림으로 배우는 한자기초 학습서 &lt;부수한자&gt;. 다년간 현장 학습지도로 경험이 많은 여러 교사들의 의견을 반영하여, 머리에 쏙 들어오는 자원풀이를 제시하고 있다. 부수한자를 배우면서 바른 글씨체도 익힐 수 있도록 쓰기장을 수록하였다. 먼저 한자의 기본획 쓰기 순서를 익히고, 부수한자를 자세히 살펴보고 있다. 또한 자원풀이를 통해 글자의 생성과정과 비슷한 한자 등을 익힐 수 있도록 구성하였다. [스프링 제본]
+출판사: 태평양저널
+ISBN: 9788990642493
+출간일시: 2007-05-25T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1327924&q=%EB%B6%80%EC%88%98%ED%95%9C%EC%9E%90%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8000, 10.00, 7200, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1327924%3Ftimestamp%3D20220410081031', 19, 66, 'ACTIVATE', NULL),
+    (874, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '우리아이 첫 영어 동화 BEST 2(CD1장포함)(스프링)', '줄리 황', '9788962245370', '『우리집은 영어유치원 - 우리아이 첫 영어 동화 BEST』는 어린이들이 일상에서 자주 접했던 동화를 통해 영어를 익힐 수 있도록 한 유아용 영어학습교재로 ''영어 동요''와 ''영어 놀이''로 재미있게 반복하면서 학습할 수 있도록 구성되어 있다.  또한 탁상용 캘린더 형식으로 제작되어 앞면에는 동화를 뒷면에는 그림 영어단어책으로 구성해 아이들의 눈에 잘 띄는 곳에 세워두면서 영어에 거부감없이 대할 수 있도록 만들었다. 책 뒤편에는 어린이 동화 전문 성우
+출판사: 로그인
+ISBN: 9788962245370
+출간일시: 2009-03-30T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=864712&q=%EC%9A%B0%EB%A6%AC%EC%95%84%EC%9D%B4+%EC%B2%AB+%EC%98%81%EC%96%B4+%EB%8F%99%ED%99%94+BEST+2%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 10.00, 10800, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F864712%3Ftimestamp%3D20220708164602', 22, 68, 'ACTIVATE', NULL),
+    (875, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'The Letter(스프링)', '안성진, 홍민정 (작시)', '9791195819508', '『The Letter』는 뉴에이지 피아노계에 새롭게 떠오르는 작곡가 안성진의 세 앨범 [N.O.T.E], [MOMENT], [THE GIFT]에 수록된 창작곡 13곡을 모두 수록한 오리지널 버전 피아노 악보집이다. 모든 곡마다 작품과 어울리는 홍민정의 시와 김은구 작가의 사진작품이 어우러져 아름다운 예술의 세계로 독자들을 안내한다.
+출판사: 아너스 미디어
+ISBN: 9791195819508
+출간일시: 2016-12-17T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1662056&q=The+Letter%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1662056%3Ftimestamp%3D20221025120131', 25, 70, 'ACTIVATE', NULL),
+    (876, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '매일 10분 기적의 엄마표 영어(스프링)', 'MrSun 어학연구소', '8809481060136', '영어가 무서워서, 어려워서 영어육아에 엄두를 내지 못하고 있던 모든 엄마들을 위한 다이어리. 『매일 10분 기적의 엄마표 영어』에는 엄마가 하고 싶은 말이 다 있다. 아침, 점심, 저녁 매일같이 반복해서 쓰는 일상 표현부터 다양한 상황별 표현까지. 엄마표 영어육아가 하고 싶은 엄마라면, 그저 이 다이어리를 잘 보이는 곳에 세워두고 그때그때 넘겨 읽기만 하면 된다. 매일 10분, 이 다이어리와 함께라면 영알못 엄마도 아이에게 영어로 대화를 건네는
+출판사: Old Stairs(올드스테어스)
+ISBN: 8809481060136
+출간일시: 2018-10-15T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3782260&q=%EB%A7%A4%EC%9D%BC+10%EB%B6%84+%EA%B8%B0%EC%A0%81%EC%9D%98+%EC%97%84%EB%A7%88%ED%91%9C+%EC%98%81%EC%96%B4%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9900, 60.00, 3960, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3782260%3Ftimestamp%3D20221025153140', 28, 72, 'ACTIVATE', NULL),
+    (877, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '혜민 스님의 따뜻한 응원(스프링)', '혜민', '9791187498063', '많은 이들에게 용기와 지혜, 고요의 시간을 선물한 혜민 스님의 잠언을 엮은 365일 달력. 300만 SNS 팔로워들의 아침을 열어주는 『혜민 스님의 따뜻한 응원』을 이제 책상이나 머리맡에 두고 한 장 한 장 넘기며 하루를 시작하는 마음을 정돈할 수 있다. 힘이 되고 온기가 되어주는 혜민 스님의 잠언 365개와 순수함과 해학이 담긴 이영철 화백의 그림이 함께 펼쳐진다. 이 달력에는 대문을 나서는 발걸음 하나하나에 깨어 있음과 온화한 미소가 함께하길
+출판사: 수오서재
+ISBN: 9791187498063
+출간일시: 2016-12-20T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1645569&q=%ED%98%9C%EB%AF%BC+%EC%8A%A4%EB%8B%98%EC%9D%98+%EB%94%B0%EB%9C%BB%ED%95%9C+%EC%9D%91%EC%9B%90%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14000, 10.00, 12600, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1645569%3Ftimestamp%3D20221025122003', 31, 74, 'ACTIVATE', NULL),
+    (878, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '마음이, 생각이, 쑥쑥. 1(스프링)', '최상희, 박미희, 김정아, 이영명', '9791188144006', '이 워크북에서는 ‘영역의 융합’과 ‘매체 간의 융합’ 중심으로 다루고 있다. 다만, 유아의 수준을 고려해 초보적인 융합교육 방법이 적용되었다. 또한 3~5세 유아의 심신 건강과 조화로운 발달을 돕는 데 목적을 두는 ‘누리과정’의 5개 영역(신체운동·건강, 의사소통, 사회관계, 예술경험, 자연탐구)을 토대로 보다 근본적인 학습이 이루어지도록 했다.  방법 면에서는 종이신문 중심의 기존 아날로그 NIE에서 나아가 뉴스를 다루는 신문, 방송, 인터넷
+출판사: 두현출판사
+ISBN: 9791188144006
+출간일시: 2017-04-01T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1652484&q=%EB%A7%88%EC%9D%8C%EC%9D%B4%2C+%EC%83%9D%EA%B0%81%EC%9D%B4%2C+%EC%91%A5%EC%91%A5.+1%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 10.00, 9000, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1652484%3Ftimestamp%3D20211014155617', 34, 76, 'ACTIVATE', NULL),
+    (879, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'Line Friends Study Planner(라인 프렌즈 스터디 플래너): 브라운(스프링)', '로고폴리스 편집부, 정인철', '9791186499467', '《라인프렌즈 스터디 플래너》는 성적 향상에 가장 도움이 되는 공부 계획 방법과 시간 관리 방법을 리서치 해 이를 내지 구성에 반영하여, 학생들이 이 플래너를 쓰면 실제로 성적이 올라갈 수 있도록 만들어졌다. 가장 큰 특징은 연세대 의대생 공부 멘토 정인철의 공부 칼럼이 23편 수록된 것이다. 정인철은 고 3때 서울 소재 대학 커트라인의 수능 성적에서 재수 1년 만에 수능 원점수 80점을 올려 연세대 의예과 정시 모집에 합격했다. 1년 만에 기적
+출판사: 로고폴리스
+ISBN: 9791186499467
+출간일시: 2017-02-27T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1629165&q=Line+Friends+Study+Planner%28%EB%9D%BC%EC%9D%B8+%ED%94%84%EB%A0%8C%EC%A6%88+%EC%8A%A4%ED%84%B0%EB%94%94+%ED%94%8C%EB%9E%98%EB%84%88%29%3A+%EB%B8%8C%EB%9D%BC%EC%9A%B4%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 14500, 10.00, 13050, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1629165%3Ftimestamp%3D20221025125433', 37, 78, 'ACTIVATE', NULL),
+    (880, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '스도쿠 다이어리(SUDOKU DIARY)(한정판)(스프링)', '손호성', '9788992437059', '출판사: 함께가는길
+ISBN: 9788992437059
+출간일시: 2007-05-03T00:00:00.000+09:00
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1372036&q=%EC%8A%A4%EB%8F%84%EC%BF%A0+%EB%8B%A4%EC%9D%B4%EC%96%B4%EB%A6%AC%28SUDOKU+DIARY%29%28%ED%95%9C%EC%A0%95%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 8000, 10.00, 7200, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1372036%3Ftimestamp%3D20220219170059', 40, 80, 'ACTIVATE', NULL);
+
+INSERT INTO product_image (id, created_at, updated_at, product_id, image_url, type, sort_order) VALUES
+    (1, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 1, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F922244%3Ftimestamp%3D20260310111009', 'MAIN', 0),
+    (2, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 2, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5851283%3Ftimestamp%3D20260310123238', 'MAIN', 0),
+    (3, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 3, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F541319%3Ftimestamp%3D20241219113511', 'MAIN', 0),
+    (4, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 4, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3777615%3Ftimestamp%3D20260326110730', 'MAIN', 0),
+    (5, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 5, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6244777%3Ftimestamp%3D20260318124247', 'MAIN', 0),
+    (6, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 6, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6069131%3Ftimestamp%3D20260305145707', 'MAIN', 0),
+    (7, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 7, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5117445%3Ftimestamp%3D20231114161047', 'MAIN', 0),
+    (8, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1360006%3Ftimestamp%3D20211208145634', 'MAIN', 0),
+    (9, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1054054%3Ftimestamp%3D20221025130248', 'MAIN', 0),
+    (10, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6069528%3Ftimestamp%3D20260306123116', 'MAIN', 0),
+    (11, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533880%3Ftimestamp%3D20221025135822', 'MAIN', 0),
+    (12, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534187%3Ftimestamp%3D20221025135805', 'MAIN', 0),
+    (13, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6596349%3Ftimestamp%3D20250918142344', 'MAIN', 0),
+    (14, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6322053%3Ftimestamp%3D20251121151732', 'MAIN', 0),
+    (15, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6441732%3Ftimestamp%3D20251002142401', 'MAIN', 0),
+    (16, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6401999%3Ftimestamp%3D20251126161132', 'MAIN', 0),
+    (17, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6571704%3Ftimestamp%3D20251021144230', 'MAIN', 0),
+    (18, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6582392%3Ftimestamp%3D20260306123735', 'MAIN', 0),
+    (19, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6139308%3Ftimestamp%3D20251221132212', 'MAIN', 0),
+    (20, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6537413%3Ftimestamp%3D20251203152429', 'MAIN', 0),
+    (21, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6258101%3Ftimestamp%3D20250521220828', 'MAIN', 0),
+    (22, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6850702%3Ftimestamp%3D20260310125057', 'MAIN', 0),
+    (23, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6186421%3Ftimestamp%3D20251112152254', 'MAIN', 0),
+    (24, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6910622%3Ftimestamp%3D20260401124345', 'MAIN', 0),
+    (25, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6353918%3Ftimestamp%3D20250208152930', 'MAIN', 0),
+    (26, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6242402%3Ftimestamp%3D20230905201047', 'MAIN', 0),
+    (27, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F503307%3Ftimestamp%3D20260408111054', 'MAIN', 0),
+    (28, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6122402%3Ftimestamp%3D20250826141713', 'MAIN', 0),
+    (29, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7184220%3Ftimestamp%3D20260404125846', 'MAIN', 0),
+    (30, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F795903%3Ftimestamp%3D20200410181404', 'MAIN', 0),
+    (31, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5844405%3Ftimestamp%3D20230801175131', 'MAIN', 0),
+    (32, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633157%3Ftimestamp%3D20220809182421', 'MAIN', 0),
+    (33, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1641588%3Ftimestamp%3D20230707153826', 'MAIN', 0),
+    (34, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3777547%3Ftimestamp%3D20200417160919', 'MAIN', 0),
+    (35, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7175154%3Ftimestamp%3D20260408153316', 'MAIN', 0),
+    (36, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4998918%3Ftimestamp%3D20231024181709', 'MAIN', 0),
+    (37, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6525080%3Ftimestamp%3D20260310124742', 'MAIN', 0),
+    (38, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7089209%3Ftimestamp%3D20260305151550', 'MAIN', 0),
+    (39, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6339054%3Ftimestamp%3D20260108151959', 'MAIN', 0),
+    (40, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6946934%3Ftimestamp%3D20260403154117', 'MAIN', 0),
+    (41, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6793990%3Ftimestamp%3D20260325153013', 'MAIN', 0),
+    (42, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6271093%3Ftimestamp%3D20250925141601', 'MAIN', 0),
+    (43, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6342104%3Ftimestamp%3D20251126161041', 'MAIN', 0),
+    (44, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5447608%3Ftimestamp%3D20260411115846', 'MAIN', 0),
+    (45, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 45, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5736499%3Ftimestamp%3D20251112145336', 'MAIN', 0),
+    (46, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 46, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6571543%3Ftimestamp%3D20251112153237', 'MAIN', 0),
+    (47, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 47, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6272188%3Ftimestamp%3D20251127150939', 'MAIN', 0),
+    (48, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 48, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6312187%3Ftimestamp%3D20260111130001', 'MAIN', 0),
+    (49, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 49, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F872541%3Ftimestamp%3D20220630102358', 'MAIN', 0),
+    (50, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 50, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1412447%3Ftimestamp%3D20220527205248', 'MAIN', 0),
+    (51, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 51, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1644827%3Ftimestamp%3D20220706185432', 'MAIN', 0),
+    (52, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 52, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F841013%3Ftimestamp%3D20211219164139', 'MAIN', 0),
+    (53, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 53, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F841092%3Ftimestamp%3D20220820175714', 'MAIN', 0),
+    (54, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 54, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6762604%3Ftimestamp%3D20241101164524', 'MAIN', 0),
+    (55, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 55, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F840923%3Ftimestamp%3D20220604112948', 'MAIN', 0),
+    (56, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 56, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4479188%3Ftimestamp%3D20190301021602', 'MAIN', 0),
+    (57, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 57, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6331486', 'MAIN', 0),
+    (58, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 58, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4623192%3Ftimestamp%3D20190301203420', 'MAIN', 0),
+    (59, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 59, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4381173%3Ftimestamp%3D20190228130914', 'MAIN', 0),
+    (60, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 60, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6357171', 'MAIN', 0),
+    (61, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 61, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F107949%3Ftimestamp%3D20250425142252', 'MAIN', 0),
+    (62, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 62, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F278133%3Ftimestamp%3D20250425164813', 'MAIN', 0),
+    (63, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 63, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5670270%3Ftimestamp%3D20250531154352', 'MAIN', 0),
+    (64, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 64, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F285724%3Ftimestamp%3D20250425165347', 'MAIN', 0),
+    (65, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 65, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1657790%3Ftimestamp%3D20221025130757', 'MAIN', 0),
+    (66, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 66, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1417390%3Ftimestamp%3D20221011181548', 'MAIN', 0),
+    (67, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 67, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5034797%3Ftimestamp%3D20260314114433', 'MAIN', 0),
+    (68, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 68, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F8194%3Ftimestamp%3D20190122102834', 'MAIN', 0),
+    (69, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 69, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632430%3Ftimestamp%3D20221025182958', 'MAIN', 0),
+    (70, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 70, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1353264%3Ftimestamp%3D20221025125227', 'MAIN', 0),
+    (71, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 71, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F891207%3Ftimestamp%3D20230216151251', 'MAIN', 0),
+    (72, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 72, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F577780%3Ftimestamp%3D20221025120200', 'MAIN', 0),
+    (73, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 73, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1070032%3Ftimestamp%3D20250326114225', 'MAIN', 0),
+    (74, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 74, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5210337%3Ftimestamp%3D20241207134008', 'MAIN', 0),
+    (75, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 75, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F160680%3Ftimestamp%3D20251205130328', 'MAIN', 0),
+    (76, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 76, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920944%3Ftimestamp%3D20260101111128', 'MAIN', 0),
+    (77, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 77, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F811661%3Ftimestamp%3D20211030144651', 'MAIN', 0),
+    (78, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 78, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534105%3Ftimestamp%3D20231124190628', 'MAIN', 0),
+    (79, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 79, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920398%3Ftimestamp%3D20260115111124', 'MAIN', 0),
+    (80, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 80, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534170%3Ftimestamp%3D20231124183714', 'MAIN', 0),
+    (81, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 81, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534144%3Ftimestamp%3D20231124144702', 'MAIN', 0),
+    (82, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 82, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534158%3Ftimestamp%3D20231124184458', 'MAIN', 0),
+    (83, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 83, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534096%3Ftimestamp%3D20231124170150', 'MAIN', 0),
+    (84, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 84, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534140%3Ftimestamp%3D20231124154539', 'MAIN', 0),
+    (85, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 85, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534082%3Ftimestamp%3D20250628112838', 'MAIN', 0),
+    (86, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 86, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1068997%3Ftimestamp%3D20221025143502', 'MAIN', 0),
+    (87, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 87, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534135%3Ftimestamp%3D20231124175926', 'MAIN', 0),
+    (88, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 88, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533872%3Ftimestamp%3D20231124162505', 'MAIN', 0),
+    (89, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 89, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534134%3Ftimestamp%3D20231124145916', 'MAIN', 0),
+    (90, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 90, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534147%3Ftimestamp%3D20231124150740', 'MAIN', 0),
+    (91, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 91, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1130152%3Ftimestamp%3D20211204202023', 'MAIN', 0),
+    (92, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 92, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533887%3Ftimestamp%3D20231124171242', 'MAIN', 0),
+    (93, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 93, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534162%3Ftimestamp%3D20231124191258', 'MAIN', 0),
+    (94, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 94, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533850%3Ftimestamp%3D20231124144727', 'MAIN', 0),
+    (95, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 95, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533855%3Ftimestamp%3D20231124182102', 'MAIN', 0),
+    (96, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 96, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F955370%3Ftimestamp%3D20221025152635', 'MAIN', 0),
+    (97, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 97, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534154%3Ftimestamp%3D20231124174042', 'MAIN', 0),
+    (98, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 98, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533876%3Ftimestamp%3D20231124185031', 'MAIN', 0),
+    (99, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 99, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534177%3Ftimestamp%3D20231124145917', 'MAIN', 0),
+    (100, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 100, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533866%3Ftimestamp%3D20240731112901', 'MAIN', 0),
+    (101, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 101, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534084%3Ftimestamp%3D20250611113317', 'MAIN', 0),
+    (102, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 102, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533846%3Ftimestamp%3D20231124183135', 'MAIN', 0),
+    (103, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 103, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533863%3Ftimestamp%3D20231124153057', 'MAIN', 0),
+    (104, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 104, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534130%3Ftimestamp%3D20231124165828', 'MAIN', 0),
+    (105, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 105, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534126%3Ftimestamp%3D20231124165459', 'MAIN', 0),
+    (106, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 106, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534119%3Ftimestamp%3D20231124154847', 'MAIN', 0),
+    (107, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 107, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534138%3Ftimestamp%3D20240122202231', 'MAIN', 0),
+    (108, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 108, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534131%3Ftimestamp%3D20231124175152', 'MAIN', 0),
+    (109, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 109, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534181%3Ftimestamp%3D20231124154540', 'MAIN', 0),
+    (110, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 110, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533890%3Ftimestamp%3D20231124163816', 'MAIN', 0),
+    (111, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 111, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533883%3Ftimestamp%3D20231124170857', 'MAIN', 0),
+    (112, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 112, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534143%3Ftimestamp%3D20231124163355', 'MAIN', 0),
+    (113, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 113, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533868%3Ftimestamp%3D20231124173651', 'MAIN', 0),
+    (114, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 114, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534098%3Ftimestamp%3D20231124153815', 'MAIN', 0),
+    (115, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 115, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534127%3Ftimestamp%3D20231124184500', 'MAIN', 0),
+    (116, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 116, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534150%3Ftimestamp%3D20231124152316', 'MAIN', 0),
+    (117, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 117, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F459538%3Ftimestamp%3D20220902190632', 'MAIN', 0),
+    (118, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 118, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534088%3Ftimestamp%3D20231124184911', 'MAIN', 0),
+    (119, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 119, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534102%3Ftimestamp%3D20231124181727', 'MAIN', 0),
+    (120, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 120, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534109%3Ftimestamp%3D20231124165528', 'MAIN', 0),
+    (121, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 121, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534112%3Ftimestamp%3D20231124172240', 'MAIN', 0),
+    (122, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 122, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632400%3Ftimestamp%3D20220604114250', 'MAIN', 0),
+    (123, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 123, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F922252%3Ftimestamp%3D20230912213247', 'MAIN', 0),
+    (124, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 124, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534191%3Ftimestamp%3D20231124183931', 'MAIN', 0),
+    (125, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 125, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534174%3Ftimestamp%3D20231124181736', 'MAIN', 0),
+    (126, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 126, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1068756%3Ftimestamp%3D20221025123431', 'MAIN', 0),
+    (127, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 127, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1069188%3Ftimestamp%3D20200317135354', 'MAIN', 0),
+    (128, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 128, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F950751%3Ftimestamp%3D20211029184928', 'MAIN', 0),
+    (129, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 129, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F534166%3Ftimestamp%3D20231124183831', 'MAIN', 0),
+    (130, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 130, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1070256%3Ftimestamp%3D20221025121237', 'MAIN', 0),
+    (131, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 131, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F810248%3Ftimestamp%3D20221025143627', 'MAIN', 0),
+    (132, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 132, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1409014%3Ftimestamp%3D20251213110817', 'MAIN', 0),
+    (133, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 133, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1569475%3Ftimestamp%3D20251213110820', 'MAIN', 0),
+    (134, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 134, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989997%3Ftimestamp%3D20221025134320', 'MAIN', 0),
+    (135, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 135, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F992054%3Ftimestamp%3D20221025125131', 'MAIN', 0),
+    (136, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 136, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1292863%3Ftimestamp%3D20221025120350', 'MAIN', 0),
+    (137, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 137, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920729%3Ftimestamp%3D20221025125029', 'MAIN', 0),
+    (138, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 138, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F858777%3Ftimestamp%3D20220818182009', 'MAIN', 0),
+    (139, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 139, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1003032%3Ftimestamp%3D20211114181847', 'MAIN', 0),
+    (140, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 140, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1244026%3Ftimestamp%3D20221025125144', 'MAIN', 0),
+    (141, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 141, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1245158%3Ftimestamp%3D20221025125121', 'MAIN', 0),
+    (142, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 142, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5226712%3Ftimestamp%3D20250531140528', 'MAIN', 0),
+    (143, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 143, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1002349%3Ftimestamp%3D20221025125113', 'MAIN', 0),
+    (144, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 144, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1033095%3Ftimestamp%3D20221025190040', 'MAIN', 0),
+    (145, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 145, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1628926%3Ftimestamp%3D20221025135532', 'MAIN', 0),
+    (146, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 146, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1449811%3Ftimestamp%3D20240110183456', 'MAIN', 0),
+    (147, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 147, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174945%3Ftimestamp%3D20221025125244', 'MAIN', 0),
+    (148, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 148, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174459%3Ftimestamp%3D20221025125242', 'MAIN', 0),
+    (149, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 149, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1075467%3Ftimestamp%3D20221025134342', 'MAIN', 0),
+    (150, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 150, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1315174%3Ftimestamp%3D20220721003517', 'MAIN', 0),
+    (151, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 151, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1248774%3Ftimestamp%3D20211014160020', 'MAIN', 0),
+    (152, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 152, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6957%3Ftimestamp%3D20190122101828', 'MAIN', 0),
+    (153, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 153, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1141620%3Ftimestamp%3D20221025134510', 'MAIN', 0),
+    (154, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 154, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1069496%3Ftimestamp%3D20221025142856', 'MAIN', 0),
+    (155, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 155, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1335277%3Ftimestamp%3D20190127221239', 'MAIN', 0),
+    (156, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 156, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6703315%3Ftimestamp%3D20250611152837', 'MAIN', 0),
+    (157, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 157, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1445459%3Ftimestamp%3D20221025130246', 'MAIN', 0),
+    (158, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 158, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F728600%3Ftimestamp%3D20250611113323', 'MAIN', 0),
+    (159, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 159, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1376303%3Ftimestamp%3D20220520232011', 'MAIN', 0),
+    (160, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 160, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1374613%3Ftimestamp%3D20211107145613', 'MAIN', 0),
+    (161, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 161, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1372124%3Ftimestamp%3D20220818180843', 'MAIN', 0),
+    (162, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 162, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1374017%3Ftimestamp%3D20220818185046', 'MAIN', 0),
+    (163, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 163, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5892762%3Ftimestamp%3D20230711185436', 'MAIN', 0),
+    (164, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 164, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1070266%3Ftimestamp%3D20221025115326', 'MAIN', 0),
+    (165, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 165, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1316965%3Ftimestamp%3D20221025125138', 'MAIN', 0),
+    (166, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 166, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1307128%3Ftimestamp%3D20221025125134', 'MAIN', 0),
+    (167, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 167, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7884%3Ftimestamp%3D20190122102609', 'MAIN', 0),
+    (168, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 168, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1332450%3Ftimestamp%3D20221025135353', 'MAIN', 0),
+    (169, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 169, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F940267%3Ftimestamp%3D20220410075728', 'MAIN', 0),
+    (170, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 170, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6342202%3Ftimestamp%3D20260305151342', 'MAIN', 0),
+    (171, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 171, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F938751%3Ftimestamp%3D20220410075519', 'MAIN', 0),
+    (172, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 172, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7194043%3Ftimestamp%3D20260411121731', 'MAIN', 0),
+    (173, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 173, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F922914%3Ftimestamp%3D20221025125023', 'MAIN', 0),
+    (174, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 174, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F940263%3Ftimestamp%3D20220410085001', 'MAIN', 0),
+    (175, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 175, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5150547%3Ftimestamp%3D20260227114304', 'MAIN', 0),
+    (176, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 176, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7154470%3Ftimestamp%3D20260214121240', 'MAIN', 0),
+    (177, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 177, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1530509%3Ftimestamp%3D20221025120424', 'MAIN', 0),
+    (178, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 178, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1623338%3Ftimestamp%3D20220830221854', 'MAIN', 0),
+    (179, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 179, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F920977%3Ftimestamp%3D20250401113647', 'MAIN', 0),
+    (180, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 180, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F695195%3Ftimestamp%3D20221025125148', 'MAIN', 0),
+    (181, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 181, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1558973%3Ftimestamp%3D20241022114556', 'MAIN', 0),
+    (182, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 182, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5615786%3Ftimestamp%3D20260228120711', 'MAIN', 0),
+    (183, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 183, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1586748%3Ftimestamp%3D20250201113516', 'MAIN', 0),
+    (184, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 184, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6260659%3Ftimestamp%3D20250510152808', 'MAIN', 0),
+    (185, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 185, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6443867%3Ftimestamp%3D20260317123343', 'MAIN', 0),
+    (186, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 186, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F950119%3Ftimestamp%3D20240725113158', 'MAIN', 0),
+    (187, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 187, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1661499%3Ftimestamp%3D20251003110438', 'MAIN', 0),
+    (188, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 188, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1066143%3Ftimestamp%3D20260319110840', 'MAIN', 0),
+    (189, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 189, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F813322%3Ftimestamp%3D20230330140258', 'MAIN', 0),
+    (190, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 190, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7157638%3Ftimestamp%3D20260215121833', 'MAIN', 0),
+    (191, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 191, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6249038%3Ftimestamp%3D20260115151219', 'MAIN', 0),
+    (192, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 192, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4856198%3Ftimestamp%3D20220709154738', 'MAIN', 0),
+    (193, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 193, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4454345%3Ftimestamp%3D20190228225004', 'MAIN', 0),
+    (194, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 194, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F773062%3Ftimestamp%3D20221025125134', 'MAIN', 0),
+    (195, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 195, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772342%3Ftimestamp%3D20221025133222', 'MAIN', 0),
+    (196, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 196, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772442%3Ftimestamp%3D20221025125129', 'MAIN', 0),
+    (197, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 197, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7117345%3Ftimestamp%3D20260327125939', 'MAIN', 0),
+    (198, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 198, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7105831%3Ftimestamp%3D20251227150543', 'MAIN', 0),
+    (199, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 199, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1537251%3Ftimestamp%3D20220813164400', 'MAIN', 0),
+    (200, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 200, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1110666%3Ftimestamp%3D20240423113412', 'MAIN', 0),
+    (201, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 201, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7065420%3Ftimestamp%3D20251104103612', 'MAIN', 0),
+    (202, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 202, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1438580%3Ftimestamp%3D20221025143053', 'MAIN', 0),
+    (203, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 203, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1488654%3Ftimestamp%3D20190130084743', 'MAIN', 0),
+    (204, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 204, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F495290%3Ftimestamp%3D20221011172701', 'MAIN', 0),
+    (205, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 205, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1237393%3Ftimestamp%3D20241228114141', 'MAIN', 0),
+    (206, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 206, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F821748%3Ftimestamp%3D20251129110939', 'MAIN', 0),
+    (207, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 207, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1413635%3Ftimestamp%3D20220721001612', 'MAIN', 0),
+    (208, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 208, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7187522%3Ftimestamp%3D20260328103653', 'MAIN', 0),
+    (209, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 209, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F540522%3Ftimestamp%3D20250610112832', 'MAIN', 0),
+    (210, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 210, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F691335%3Ftimestamp%3D20211023205936', 'MAIN', 0),
+    (211, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 211, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1564686%3Ftimestamp%3D20251118110958', 'MAIN', 0),
+    (212, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 212, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1107813%3Ftimestamp%3D20200110135558', 'MAIN', 0),
+    (213, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 213, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1421949%3Ftimestamp%3D20221025142645', 'MAIN', 0),
+    (214, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 214, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4964328%3Ftimestamp%3D20250404131657', 'MAIN', 0),
+    (215, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 215, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F891208%3Ftimestamp%3D20260403110914', 'MAIN', 0),
+    (216, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 216, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6985904%3Ftimestamp%3D20260201122037', 'MAIN', 0),
+    (217, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 217, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1671883%3Ftimestamp%3D20250501154724', 'MAIN', 0),
+    (218, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 218, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6260504%3Ftimestamp%3D20260401124234', 'MAIN', 0),
+    (219, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 219, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6891735%3Ftimestamp%3D20250417191410', 'MAIN', 0),
+    (220, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 220, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6899889%3Ftimestamp%3D20250425204928', 'MAIN', 0),
+    (221, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 221, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4883522%3Ftimestamp%3D20221025144644', 'MAIN', 0),
+    (222, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 222, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1600809%3Ftimestamp%3D20210815031142', 'MAIN', 0),
+    (223, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 223, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1415768%3Ftimestamp%3D20221025114036', 'MAIN', 0),
+    (224, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 224, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1443326%3Ftimestamp%3D20220929020825', 'MAIN', 0),
+    (225, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 225, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1409865%3Ftimestamp%3D20221025114233', 'MAIN', 0),
+    (226, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 226, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1373833%3Ftimestamp%3D20230809142635', 'MAIN', 0),
+    (227, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 227, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F893127%3Ftimestamp%3D20211106145428', 'MAIN', 0),
+    (228, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 228, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5253201%3Ftimestamp%3D20230809170627', 'MAIN', 0),
+    (229, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 229, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F891612%3Ftimestamp%3D20220701034932', 'MAIN', 0),
+    (230, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 230, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5908839%3Ftimestamp%3D20250214150748', 'MAIN', 0),
+    (231, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 231, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F573413%3Ftimestamp%3D20200813143119', 'MAIN', 0),
+    (232, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 232, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7002375%3Ftimestamp%3D20250828142617', 'MAIN', 0),
+    (233, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 233, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2245378%3Ftimestamp%3D20260318110906', 'MAIN', 0),
+    (234, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 234, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5338441%3Ftimestamp%3D20260120135952', 'MAIN', 0),
+    (235, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 235, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5847970%3Ftimestamp%3D20260310123214', 'MAIN', 0),
+    (236, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 236, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5415816%3Ftimestamp%3D20260206140558', 'MAIN', 0),
+    (237, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 237, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6062310%3Ftimestamp%3D20250829141111', 'MAIN', 0),
+    (238, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 238, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5166576%3Ftimestamp%3D20260310115934', 'MAIN', 0),
+    (239, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 239, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5551044%3Ftimestamp%3D20220915010849', 'MAIN', 0),
+    (240, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 240, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4885524%3Ftimestamp%3D20231208173132', 'MAIN', 0),
+    (241, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 241, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7991%3Ftimestamp%3D20190122102653', 'MAIN', 0),
+    (242, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 242, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5166631%3Ftimestamp%3D20260307115553', 'MAIN', 0),
+    (243, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 243, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1400590%3Ftimestamp%3D20230227050654', 'MAIN', 0),
+    (244, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 244, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5166435%3Ftimestamp%3D20260307115552', 'MAIN', 0),
+    (245, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 245, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1053599%3Ftimestamp%3D20221108012744', 'MAIN', 0),
+    (246, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 246, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3308821%3Ftimestamp%3D20230207181540', 'MAIN', 0),
+    (247, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 247, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2448310%3Ftimestamp%3D20230918154729', 'MAIN', 0),
+    (248, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 248, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2921725%3Ftimestamp%3D20260310111734', 'MAIN', 0),
+    (249, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 249, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2359923%3Ftimestamp%3D20230918151726', 'MAIN', 0),
+    (250, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 250, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2897238%3Ftimestamp%3D20230919010244', 'MAIN', 0),
+    (251, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 251, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5254258%3Ftimestamp%3D20250924124913', 'MAIN', 0),
+    (252, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 252, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2322701%3Ftimestamp%3D20230918151722', 'MAIN', 0),
+    (253, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 253, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2446536%3Ftimestamp%3D20230918225737', 'MAIN', 0),
+    (254, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 254, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F913902%3Ftimestamp%3D20221025145055', 'MAIN', 0),
+    (255, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 255, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702976%3Ftimestamp%3D20221025145636', 'MAIN', 0),
+    (256, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 256, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3163930%3Ftimestamp%3D20190218045332', 'MAIN', 0),
+    (257, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 257, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5558360%3Ftimestamp%3D20260120142131', 'MAIN', 0),
+    (258, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 258, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7120183%3Ftimestamp%3D20260212121721', 'MAIN', 0),
+    (259, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 259, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1020218%3Ftimestamp%3D20260116110734', 'MAIN', 0),
+    (260, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 260, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5420298%3Ftimestamp%3D20260123140833', 'MAIN', 0),
+    (261, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 261, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6136610%3Ftimestamp%3D20250906141158', 'MAIN', 0),
+    (262, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 262, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6306430%3Ftimestamp%3D20240614152535', 'MAIN', 0),
+    (263, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 263, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3450314%3Ftimestamp%3D20230719165517', 'MAIN', 0),
+    (264, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 264, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2806760%3Ftimestamp%3D20260131110849', 'MAIN', 0),
+    (265, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 265, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3219412%3Ftimestamp%3D20260131110925', 'MAIN', 0),
+    (266, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 266, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2436354%3Ftimestamp%3D20230918205749', 'MAIN', 0),
+    (267, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 267, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5079116%3Ftimestamp%3D20230918200052', 'MAIN', 0),
+    (268, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 268, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F946471%3Ftimestamp%3D20220818181626', 'MAIN', 0),
+    (269, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 269, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5552406%3Ftimestamp%3D20230719171320', 'MAIN', 0),
+    (270, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 270, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3482797%3Ftimestamp%3D20230616152803', 'MAIN', 0),
+    (271, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 271, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5960383%3Ftimestamp%3D20250531160417', 'MAIN', 0),
+    (272, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 272, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5481133%3Ftimestamp%3D20250531153001', 'MAIN', 0),
+    (273, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 273, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F550579%3Ftimestamp%3D20250712110444', 'MAIN', 0),
+    (274, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 274, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3752093%3Ftimestamp%3D20221214155647', 'MAIN', 0),
+    (275, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 275, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F986410%3Ftimestamp%3D20220410080224', 'MAIN', 0),
+    (276, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 276, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2850348', 'MAIN', 0),
+    (277, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 277, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2567501%3Ftimestamp%3D20190214213247', 'MAIN', 0),
+    (278, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 278, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3578304%3Ftimestamp%3D20241217113952', 'MAIN', 0),
+    (279, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 279, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2468640%3Ftimestamp%3D20240224113135', 'MAIN', 0),
+    (280, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 280, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2552503%3Ftimestamp%3D20230715222346', 'MAIN', 0),
+    (281, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 281, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6852891%3Ftimestamp%3D20250301145447', 'MAIN', 0),
+    (282, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 282, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1594814%3Ftimestamp%3D20250829110253', 'MAIN', 0),
+    (283, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 283, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6967962%3Ftimestamp%3D20260326131944', 'MAIN', 0),
+    (284, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 284, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6982249%3Ftimestamp%3D20250726143809', 'MAIN', 0),
+    (285, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 285, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6612179%3Ftimestamp%3D20250508163845', 'MAIN', 0),
+    (286, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 286, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7010806%3Ftimestamp%3D20250830103724', 'MAIN', 0),
+    (287, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 287, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172764%3Ftimestamp%3D20220613180407', 'MAIN', 0),
+    (288, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 288, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1227739%3Ftimestamp%3D20231103170644', 'MAIN', 0),
+    (289, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 289, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F821312%3Ftimestamp%3D20230907133345', 'MAIN', 0),
+    (290, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 290, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6203667%3Ftimestamp%3D20250301145022', 'MAIN', 0),
+    (291, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 291, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4372436%3Ftimestamp%3D20190228115831', 'MAIN', 0),
+    (292, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 292, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1438392%3Ftimestamp%3D20190130014214', 'MAIN', 0),
+    (293, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 293, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1191964%3Ftimestamp%3D20221025115050', 'MAIN', 0),
+    (294, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 294, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F147314%3Ftimestamp%3D20251205125541', 'MAIN', 0),
+    (295, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 295, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1459265%3Ftimestamp%3D20190130043038', 'MAIN', 0),
+    (296, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 296, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571891%3Ftimestamp%3D20190123204758', 'MAIN', 0),
+    (297, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 297, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3753269%3Ftimestamp%3D20250119113942', 'MAIN', 0),
+    (298, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 298, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702759%3Ftimestamp%3D20230906151600', 'MAIN', 0),
+    (299, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 299, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1287284%3Ftimestamp%3D20250617113304', 'MAIN', 0),
+    (300, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 300, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1639111%3Ftimestamp%3D20230210142657', 'MAIN', 0),
+    (301, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 301, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5412563%3Ftimestamp%3D20220705155410', 'MAIN', 0),
+    (302, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 302, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4490738%3Ftimestamp%3D20251114103740', 'MAIN', 0),
+    (303, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 303, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4608391%3Ftimestamp%3D20190301183146', 'MAIN', 0),
+    (304, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 304, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F573150%3Ftimestamp%3D20190123205953', 'MAIN', 0),
+    (305, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 305, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6835498%3Ftimestamp%3D20250205154354', 'MAIN', 0),
+    (306, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 306, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6472115%3Ftimestamp%3D20231115145738', 'MAIN', 0),
+    (307, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 307, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6859594%3Ftimestamp%3D20250313155347', 'MAIN', 0),
+    (308, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 308, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632214%3Ftimestamp%3D20190124030645', 'MAIN', 0),
+    (309, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 309, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1176008%3Ftimestamp%3D20220929051040', 'MAIN', 0),
+    (310, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 310, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571106%3Ftimestamp%3D20190123204154', 'MAIN', 0),
+    (311, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 311, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1082033%3Ftimestamp%3D20221025115105', 'MAIN', 0),
+    (312, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 312, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177834%3Ftimestamp%3D20220917080016', 'MAIN', 0),
+    (313, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 313, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1459760%3Ftimestamp%3D20251107110827', 'MAIN', 0),
+    (314, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 314, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6709022%3Ftimestamp%3D20260326131840', 'MAIN', 0),
+    (315, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 315, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571913%3Ftimestamp%3D20190123204813', 'MAIN', 0),
+    (316, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 316, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702988%3Ftimestamp%3D20230905161727', 'MAIN', 0),
+    (317, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 317, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703192%3Ftimestamp%3D20211229101723', 'MAIN', 0),
+    (318, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 318, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175235%3Ftimestamp%3D20220708161051', 'MAIN', 0),
+    (319, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 319, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1015361%3Ftimestamp%3D20220825195325', 'MAIN', 0),
+    (320, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 320, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6119668%3Ftimestamp%3D20250709143101', 'MAIN', 0),
+    (321, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 321, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5226781%3Ftimestamp%3D20221001182730', 'MAIN', 0),
+    (322, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 322, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1179086%3Ftimestamp%3D20220823194648', 'MAIN', 0),
+    (323, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 323, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F702940%3Ftimestamp%3D20221025123445', 'MAIN', 0),
+    (324, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 324, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1486005%3Ftimestamp%3D20221107220815', 'MAIN', 0),
+    (325, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 325, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481547%3Ftimestamp%3D20190130074444', 'MAIN', 0),
+    (326, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 326, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1587275%3Ftimestamp%3D20220410083131', 'MAIN', 0),
+    (327, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 327, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1013031%3Ftimestamp%3D20220922040240', 'MAIN', 0),
+    (328, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 328, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5883196%3Ftimestamp%3D20240103184053', 'MAIN', 0),
+    (329, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 329, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1585493%3Ftimestamp%3D20220410075949', 'MAIN', 0),
+    (330, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 330, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4865054%3Ftimestamp%3D20220922035901', 'MAIN', 0),
+    (331, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 331, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6858082%3Ftimestamp%3D20250521223246', 'MAIN', 0),
+    (332, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 332, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703422%3Ftimestamp%3D20221025123426', 'MAIN', 0),
+    (333, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 333, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1369490%3Ftimestamp%3D20190128041003', 'MAIN', 0),
+    (334, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 334, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1627759%3Ftimestamp%3D20220410084555', 'MAIN', 0),
+    (335, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 335, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703486%3Ftimestamp%3D20220810174224', 'MAIN', 0),
+    (336, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 336, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703053%3Ftimestamp%3D20220524161647', 'MAIN', 0),
+    (337, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 337, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2428639%3Ftimestamp%3D20190214035908', 'MAIN', 0),
+    (338, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 338, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1015269%3Ftimestamp%3D20220823185911', 'MAIN', 0),
+    (339, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 339, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4515448%3Ftimestamp%3D20190301061022', 'MAIN', 0),
+    (340, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 340, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6015044%3Ftimestamp%3D20240103232208', 'MAIN', 0),
+    (341, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 341, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6690856%3Ftimestamp%3D20240831160536', 'MAIN', 0),
+    (342, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 342, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1397620%3Ftimestamp%3D20220511170057', 'MAIN', 0),
+    (343, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 343, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F610344%3Ftimestamp%3D20190124004959', 'MAIN', 0),
+    (344, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 344, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6099448%3Ftimestamp%3D20240103223940', 'MAIN', 0),
+    (345, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 345, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4396813%3Ftimestamp%3D20190228151912', 'MAIN', 0),
+    (346, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 346, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F610349%3Ftimestamp%3D20190124005000', 'MAIN', 0),
+    (347, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 347, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1417446%3Ftimestamp%3D20220907185009', 'MAIN', 0),
+    (348, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 348, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F85324%3Ftimestamp%3D20251205121553', 'MAIN', 0),
+    (349, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 349, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1187722%3Ftimestamp%3D20190127055524', 'MAIN', 0),
+    (350, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 350, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F260532%3Ftimestamp%3D20251205140744', 'MAIN', 0),
+    (351, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 351, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F983697%3Ftimestamp%3D20220825211057', 'MAIN', 0),
+    (352, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 352, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1063387%3Ftimestamp%3D20220930205300', 'MAIN', 0),
+    (353, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 353, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1336591%3Ftimestamp%3D20220929035157', 'MAIN', 0),
+    (354, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 354, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1015271%3Ftimestamp%3D20240122195223', 'MAIN', 0),
+    (355, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 355, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6829254%3Ftimestamp%3D20251029152046', 'MAIN', 0),
+    (356, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 356, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5881819', 'MAIN', 0),
+    (357, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 357, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5159390', 'MAIN', 0),
+    (358, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 358, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F147012%3Ftimestamp%3D20251205125530', 'MAIN', 0),
+    (359, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 359, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1330984%3Ftimestamp%3D20221025133820', 'MAIN', 0),
+    (360, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 360, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5165791', 'MAIN', 0),
+    (361, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 361, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5456619%3Ftimestamp%3D20260116141009', 'MAIN', 0),
+    (362, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 362, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4905967%3Ftimestamp%3D20231027182550', 'MAIN', 0),
+    (363, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 363, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F941209%3Ftimestamp%3D20231027165146', 'MAIN', 0),
+    (364, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 364, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1720650%3Ftimestamp%3D20190131220140', 'MAIN', 0),
+    (365, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 365, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172757%3Ftimestamp%3D20220706184305', 'MAIN', 0),
+    (366, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 366, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172766%3Ftimestamp%3D20220809182754', 'MAIN', 0),
+    (367, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 367, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175939%3Ftimestamp%3D20251217110917', 'MAIN', 0),
+    (368, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 368, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174495%3Ftimestamp%3D20220818011204', 'MAIN', 0),
+    (369, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 369, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1173170%3Ftimestamp%3D20230201143108', 'MAIN', 0),
+    (370, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 370, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175198%3Ftimestamp%3D20230809181220', 'MAIN', 0),
+    (371, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 371, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175396%3Ftimestamp%3D20230417133822', 'MAIN', 0),
+    (372, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 372, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1183900%3Ftimestamp%3D20231108165102', 'MAIN', 0),
+    (373, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 373, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F538101%3Ftimestamp%3D20190123171734', 'MAIN', 0),
+    (374, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 374, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174772%3Ftimestamp%3D20220831024328', 'MAIN', 0),
+    (375, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 375, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1179118%3Ftimestamp%3D20220514170203', 'MAIN', 0),
+    (376, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 376, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6671798%3Ftimestamp%3D20260326131927', 'MAIN', 0),
+    (377, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 377, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4869368%3Ftimestamp%3D20230425175244', 'MAIN', 0),
+    (378, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 378, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1179013%3Ftimestamp%3D20220410082723', 'MAIN', 0),
+    (379, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 379, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6999433%3Ftimestamp%3D20250815103754', 'MAIN', 0),
+    (380, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 380, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6964001%3Ftimestamp%3D20250814143825', 'MAIN', 0),
+    (381, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 381, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6485857%3Ftimestamp%3D20240514153407', 'MAIN', 0),
+    (382, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 382, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1174008%3Ftimestamp%3D20230905201442', 'MAIN', 0),
+    (383, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 383, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177442%3Ftimestamp%3D20230809171904', 'MAIN', 0),
+    (384, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 384, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175177%3Ftimestamp%3D20190127041437', 'MAIN', 0),
+    (385, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 385, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177711%3Ftimestamp%3D20190127043445', 'MAIN', 0),
+    (386, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 386, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6884937%3Ftimestamp%3D20250404165655', 'MAIN', 0),
+    (387, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 387, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F110128%3Ftimestamp%3D20251205123203', 'MAIN', 0),
+    (388, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 388, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F786106%3Ftimestamp%3D20220617023123', 'MAIN', 0),
+    (389, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 389, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F785802%3Ftimestamp%3D20221011174646', 'MAIN', 0),
+    (390, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 390, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7193855%3Ftimestamp%3D20260408153358', 'MAIN', 0),
+    (391, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 391, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F901267%3Ftimestamp%3D20230519203300', 'MAIN', 0),
+    (392, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 392, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1255124%3Ftimestamp%3D20190127120214', 'MAIN', 0),
+    (393, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 393, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6601799%3Ftimestamp%3D20260307123912', 'MAIN', 0),
+    (394, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 394, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6434603%3Ftimestamp%3D20240403170740', 'MAIN', 0),
+    (395, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 395, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1300512%3Ftimestamp%3D20220524161727', 'MAIN', 0),
+    (396, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 396, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5064696%3Ftimestamp%3D20211124151231', 'MAIN', 0),
+    (397, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 397, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F8778%3Ftimestamp%3D20190122103302', 'MAIN', 0),
+    (398, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 398, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F9033%3Ftimestamp%3D20190122103501', 'MAIN', 0),
+    (399, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 399, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F9000%3Ftimestamp%3D20190122103446', 'MAIN', 0),
+    (400, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 400, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F8949%3Ftimestamp%3D20190122103427', 'MAIN', 0),
+    (401, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 401, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1548606%3Ftimestamp%3D20221025143128', 'MAIN', 0),
+    (402, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 402, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F939587%3Ftimestamp%3D20230608154405', 'MAIN', 0),
+    (403, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 403, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6460077', 'MAIN', 0),
+    (404, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 404, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3740647', 'MAIN', 0),
+    (405, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 405, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4964517%3Ftimestamp%3D20250404131736', 'MAIN', 0),
+    (406, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 406, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5804270', 'MAIN', 0),
+    (407, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 407, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6131411', 'MAIN', 0),
+    (408, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 408, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4964894%3Ftimestamp%3D20250404131804', 'MAIN', 0),
+    (409, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 409, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252587', 'MAIN', 0),
+    (410, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 410, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052044', 'MAIN', 0),
+    (411, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 411, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5885004', 'MAIN', 0),
+    (412, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 412, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964331', 'MAIN', 0),
+    (413, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 413, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964227', 'MAIN', 0),
+    (414, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 414, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252737', 'MAIN', 0),
+    (415, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 415, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5592459', 'MAIN', 0),
+    (416, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 416, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052054', 'MAIN', 0),
+    (417, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 417, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6065965%3Ftimestamp%3D20240731160917', 'MAIN', 0),
+    (418, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 418, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873867', 'MAIN', 0),
+    (419, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 419, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5884961', 'MAIN', 0),
+    (420, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 420, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873857', 'MAIN', 0),
+    (421, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 421, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5512282', 'MAIN', 0),
+    (422, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 422, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327571%3Ftimestamp%3D20250404145305', 'MAIN', 0),
+    (423, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 423, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327575%3Ftimestamp%3D20251021133035', 'MAIN', 0),
+    (424, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 424, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327744%3Ftimestamp%3D20250404145323', 'MAIN', 0),
+    (425, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 425, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327735%3Ftimestamp%3D20250404145333', 'MAIN', 0),
+    (426, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 426, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327721%3Ftimestamp%3D20251021133102', 'MAIN', 0),
+    (427, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 427, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5875067%3Ftimestamp%3D20251021141918', 'MAIN', 0),
+    (428, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 428, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570990%3Ftimestamp%3D20251021144157', 'MAIN', 0),
+    (429, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 429, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398952%3Ftimestamp%3D20251021133850', 'MAIN', 0),
+    (430, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 430, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327616%3Ftimestamp%3D20251021133039', 'MAIN', 0),
+    (431, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 431, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327741%3Ftimestamp%3D20251021133059', 'MAIN', 0),
+    (432, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 432, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5327662%3Ftimestamp%3D20251021133057', 'MAIN', 0),
+    (433, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 433, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398823%3Ftimestamp%3D20251021133843', 'MAIN', 0),
+    (434, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 434, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570900%3Ftimestamp%3D20251021144218', 'MAIN', 0),
+    (435, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 435, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570451%3Ftimestamp%3D20251021144204', 'MAIN', 0),
+    (436, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 436, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6570247%3Ftimestamp%3D20251021144152', 'MAIN', 0),
+    (437, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 437, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6571551%3Ftimestamp%3D20251021144146', 'MAIN', 0),
+    (438, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 438, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6572368%3Ftimestamp%3D20251021144230', 'MAIN', 0),
+    (439, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 439, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5935071%3Ftimestamp%3D20251021142345', 'MAIN', 0),
+    (440, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 440, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5566292%3Ftimestamp%3D20251021135617', 'MAIN', 0),
+    (441, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 441, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6591248%3Ftimestamp%3D20241217154354', 'MAIN', 0),
+    (442, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 442, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6261134%3Ftimestamp%3D20260306123652', 'MAIN', 0),
+    (443, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 443, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6598214%3Ftimestamp%3D20251112153228', 'MAIN', 0),
+    (444, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 444, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F533265%3Ftimestamp%3D20260210110736', 'MAIN', 0),
+    (445, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 445, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6878100%3Ftimestamp%3D20251016143710', 'MAIN', 0),
+    (446, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 446, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5368933%3Ftimestamp%3D20260320121435', 'MAIN', 0),
+    (447, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 447, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6591149%3Ftimestamp%3D20260212121605', 'MAIN', 0),
+    (448, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 448, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6246370%3Ftimestamp%3D20251001141005', 'MAIN', 0),
+    (449, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 449, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5385027%3Ftimestamp%3D20260401121702', 'MAIN', 0),
+    (450, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 450, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6373701%3Ftimestamp%3D20260205150849', 'MAIN', 0),
+    (451, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 451, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6346493%3Ftimestamp%3D20260404125711', 'MAIN', 0),
+    (452, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 452, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6995205%3Ftimestamp%3D20260212121643', 'MAIN', 0),
+    (453, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 453, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354104%3Ftimestamp%3D20251112153227', 'MAIN', 0),
+    (454, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 454, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6353935%3Ftimestamp%3D20260319124449', 'MAIN', 0),
+    (455, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 455, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354127%3Ftimestamp%3D20251108151532', 'MAIN', 0),
+    (456, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 456, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1041645%3Ftimestamp%3D20250925110356', 'MAIN', 0),
+    (457, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 457, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928473%3Ftimestamp%3D20260101145356', 'MAIN', 0),
+    (458, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 458, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5005964%3Ftimestamp%3D20260401114714', 'MAIN', 0),
+    (459, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 459, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354303%3Ftimestamp%3D20251108151533', 'MAIN', 0),
+    (460, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 460, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928231%3Ftimestamp%3D20260408150513', 'MAIN', 0),
+    (461, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 461, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6354228%3Ftimestamp%3D20260410121708', 'MAIN', 0),
+    (462, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 462, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928485%3Ftimestamp%3D20260404124643', 'MAIN', 0),
+    (463, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 463, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5928453%3Ftimestamp%3D20260110145418', 'MAIN', 0),
+    (464, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 464, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5429885%3Ftimestamp%3D20240727150025', 'MAIN', 0),
+    (465, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 465, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5589770%3Ftimestamp%3D20260313123852', 'MAIN', 0),
+    (466, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 466, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7132168%3Ftimestamp%3D20260213121941', 'MAIN', 0),
+    (467, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 467, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6532138%3Ftimestamp%3D20251112153210', 'MAIN', 0),
+    (468, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 468, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1425086%3Ftimestamp%3D20190129235653', 'MAIN', 0),
+    (469, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 469, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F409441%3Ftimestamp%3D20240227113717', 'MAIN', 0),
+    (470, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 470, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5671563%3Ftimestamp%3D20250531154525', 'MAIN', 0),
+    (471, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 471, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989977%3Ftimestamp%3D20230616150233', 'MAIN', 0),
+    (472, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 472, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F298669%3Ftimestamp%3D20250425170037', 'MAIN', 0),
+    (473, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 473, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F987863%3Ftimestamp%3D20221025135328', 'MAIN', 0),
+    (474, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 474, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1623824%3Ftimestamp%3D20221025122853', 'MAIN', 0),
+    (475, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 475, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989531%3Ftimestamp%3D20220904153435', 'MAIN', 0),
+    (476, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 476, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1620747%3Ftimestamp%3D20220820174547', 'MAIN', 0),
+    (477, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 477, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F694322%3Ftimestamp%3D20260319110838', 'MAIN', 0),
+    (478, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 478, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5965502%3Ftimestamp%3D20260314122355', 'MAIN', 0),
+    (479, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 479, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688362%3Ftimestamp%3D20220527210114', 'MAIN', 0),
+    (480, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 480, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688484%3Ftimestamp%3D20221001185959', 'MAIN', 0),
+    (481, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 481, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5221580%3Ftimestamp%3D20260318115858', 'MAIN', 0),
+    (482, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 482, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688814%3Ftimestamp%3D20220425160303', 'MAIN', 0),
+    (483, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 483, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688912%3Ftimestamp%3D20220527191101', 'MAIN', 0),
+    (484, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 484, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1379678%3Ftimestamp%3D20220411161937', 'MAIN', 0),
+    (485, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 485, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4368562%3Ftimestamp%3D20220723202430', 'MAIN', 0),
+    (486, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 486, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1385209%3Ftimestamp%3D20221025152136', 'MAIN', 0),
+    (487, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 487, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F688783%3Ftimestamp%3D20220915010906', 'MAIN', 0),
+    (488, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 488, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F857020%3Ftimestamp%3D20220904163429', 'MAIN', 0),
+    (489, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 489, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5332991%3Ftimestamp%3D20230302210638', 'MAIN', 0),
+    (490, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 490, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1672044%3Ftimestamp%3D20221025152421', 'MAIN', 0),
+    (491, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 491, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772633%3Ftimestamp%3D20250628112849', 'MAIN', 0),
+    (492, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 492, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1509209%3Ftimestamp%3D20220114174544', 'MAIN', 0),
+    (493, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 493, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F580957%3Ftimestamp%3D20240316112740', 'MAIN', 0),
+    (494, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 494, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1603659%3Ftimestamp%3D20211212164836', 'MAIN', 0),
+    (495, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 495, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3759733%3Ftimestamp%3D20240301113927', 'MAIN', 0),
+    (496, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 496, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1510523%3Ftimestamp%3D20220826210936', 'MAIN', 0),
+    (497, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 497, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1509470%3Ftimestamp%3D20220819175920', 'MAIN', 0),
+    (498, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 498, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772861%3Ftimestamp%3D20240122201101', 'MAIN', 0),
+    (499, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 499, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F409917%3Ftimestamp%3D20240122200250', 'MAIN', 0),
+    (500, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 500, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5460299%3Ftimestamp%3D20250628140234', 'MAIN', 0),
+    (501, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 501, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5893008%3Ftimestamp%3D20251126151150', 'MAIN', 0),
+    (502, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 502, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6091006%3Ftimestamp%3D20251016142351', 'MAIN', 0),
+    (503, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 503, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4883352%3Ftimestamp%3D20240423132140', 'MAIN', 0),
+    (504, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 504, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F727787%3Ftimestamp%3D20250905110402', 'MAIN', 0),
+    (505, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 505, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6141967%3Ftimestamp%3D20260326130542', 'MAIN', 0),
+    (506, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 506, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6561787%3Ftimestamp%3D20251017143317', 'MAIN', 0),
+    (507, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 507, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1420579%3Ftimestamp%3D20230414150235', 'MAIN', 0),
+    (508, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 508, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6602704%3Ftimestamp%3D20260108152031', 'MAIN', 0),
+    (509, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 509, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6429040%3Ftimestamp%3D20260113152239', 'MAIN', 0),
+    (510, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 510, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F616593%3Ftimestamp%3D20221025142638', 'MAIN', 0),
+    (511, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 511, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483305%3Ftimestamp%3D20220925172952', 'MAIN', 0),
+    (512, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 512, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F904770%3Ftimestamp%3D20220821201035', 'MAIN', 0),
+    (513, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 513, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6088342%3Ftimestamp%3D20250625145556', 'MAIN', 0),
+    (514, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 514, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6042807%3Ftimestamp%3D20221107235604', 'MAIN', 0),
+    (515, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 515, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5798763%3Ftimestamp%3D20260405121304', 'MAIN', 0),
+    (516, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 516, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F997000%3Ftimestamp%3D20231227182717', 'MAIN', 0),
+    (517, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 517, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476949%3Ftimestamp%3D20220325200512', 'MAIN', 0),
+    (518, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 518, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F614132%3Ftimestamp%3D20220514163225', 'MAIN', 0),
+    (519, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 519, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398972%3Ftimestamp%3D20260205140440', 'MAIN', 0),
+    (520, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 520, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F645192%3Ftimestamp%3D20220730180544', 'MAIN', 0),
+    (521, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 521, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1460167%3Ftimestamp%3D20220630124032', 'MAIN', 0),
+    (522, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 522, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4808143%3Ftimestamp%3D20221025141807', 'MAIN', 0),
+    (523, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 523, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1480371%3Ftimestamp%3D20220929013911', 'MAIN', 0),
+    (524, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 524, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F816022%3Ftimestamp%3D20220907202028', 'MAIN', 0),
+    (525, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 525, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F876866%3Ftimestamp%3D20221025165938', 'MAIN', 0),
+    (526, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 526, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7062516%3Ftimestamp%3D20260408153242', 'MAIN', 0),
+    (527, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 527, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6953024%3Ftimestamp%3D20250703143158', 'MAIN', 0),
+    (528, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 528, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6299212%3Ftimestamp%3D20260403154057', 'MAIN', 0),
+    (529, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 529, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F380709%3Ftimestamp%3D20220902171038', 'MAIN', 0),
+    (530, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 530, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F645618%3Ftimestamp%3D20220520234321', 'MAIN', 0),
+    (531, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 531, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1371858%3Ftimestamp%3D20220109161537', 'MAIN', 0),
+    (532, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 532, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1666363%3Ftimestamp%3D20220907181203', 'MAIN', 0),
+    (533, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 533, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F635289%3Ftimestamp%3D20221004002848', 'MAIN', 0),
+    (534, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 534, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6652685%3Ftimestamp%3D20241227152745', 'MAIN', 0),
+    (535, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 535, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5269201%3Ftimestamp%3D20260122132859', 'MAIN', 0),
+    (536, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 536, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6552613%3Ftimestamp%3D20250521221416', 'MAIN', 0),
+    (537, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 537, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F771851%3Ftimestamp%3D20221003232338', 'MAIN', 0),
+    (538, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 538, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1392150%3Ftimestamp%3D20260403110926', 'MAIN', 0),
+    (539, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 539, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1463434%3Ftimestamp%3D20220713194920', 'MAIN', 0),
+    (540, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 540, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F772339%3Ftimestamp%3D20220925184315', 'MAIN', 0),
+    (541, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 541, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1478158%3Ftimestamp%3D20221011180323', 'MAIN', 0),
+    (542, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 542, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F350065%3Ftimestamp%3D20220922040004', 'MAIN', 0),
+    (543, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 543, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F977039%3Ftimestamp%3D20220721040711', 'MAIN', 0),
+    (544, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 544, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1482061%3Ftimestamp%3D20220922040708', 'MAIN', 0),
+    (545, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 545, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487529%3Ftimestamp%3D20221025145708', 'MAIN', 0),
+    (546, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 546, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1366700%3Ftimestamp%3D20220325194226', 'MAIN', 0),
+    (547, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 547, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1426412%3Ftimestamp%3D20221025124040', 'MAIN', 0),
+    (548, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 548, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F672930%3Ftimestamp%3D20220701051539', 'MAIN', 0),
+    (549, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 549, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1475229%3Ftimestamp%3D20220716185831', 'MAIN', 0),
+    (550, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 550, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1479803%3Ftimestamp%3D20220922040309', 'MAIN', 0),
+    (551, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 551, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F644679%3Ftimestamp%3D20220904153757', 'MAIN', 0),
+    (552, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 552, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F718352%3Ftimestamp%3D20211206155541', 'MAIN', 0),
+    (553, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 553, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1173218%3Ftimestamp%3D20210904210550', 'MAIN', 0),
+    (554, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 554, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F544171%3Ftimestamp%3D20221107220713', 'MAIN', 0),
+    (555, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 555, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6696234%3Ftimestamp%3D20250403153912', 'MAIN', 0),
+    (556, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 556, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1426255%3Ftimestamp%3D20220527201453', 'MAIN', 0),
+    (557, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 557, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F739247%3Ftimestamp%3D20190124174329', 'MAIN', 0),
+    (558, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 558, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1485174%3Ftimestamp%3D20220907174310', 'MAIN', 0),
+    (559, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 559, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F550164%3Ftimestamp%3D20220903164802', 'MAIN', 0),
+    (560, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 560, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F643165%3Ftimestamp%3D20190124042053', 'MAIN', 0),
+    (561, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 561, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F990115%3Ftimestamp%3D20221003231638', 'MAIN', 0),
+    (562, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 562, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F546301%3Ftimestamp%3D20220630125114', 'MAIN', 0),
+    (563, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 563, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476631%3Ftimestamp%3D20221003232218', 'MAIN', 0),
+    (564, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 564, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476441%3Ftimestamp%3D20220410091447', 'MAIN', 0),
+    (565, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 565, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F739144%3Ftimestamp%3D20221025151615', 'MAIN', 0),
+    (566, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 566, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1585188%3Ftimestamp%3D20221025120916', 'MAIN', 0),
+    (567, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 567, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6338426%3Ftimestamp%3D20250916143431', 'MAIN', 0),
+    (568, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 568, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4858171%3Ftimestamp%3D20221025135634', 'MAIN', 0),
+    (569, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 569, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483656%3Ftimestamp%3D20220922040111', 'MAIN', 0),
+    (570, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 570, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F488185%3Ftimestamp%3D20221025145559', 'MAIN', 0),
+    (571, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 571, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1245942%3Ftimestamp%3D20190127110924', 'MAIN', 0),
+    (572, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 572, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590103%3Ftimestamp%3D20221025131747', 'MAIN', 0),
+    (573, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 573, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1363836%3Ftimestamp%3D20220730201516', 'MAIN', 0),
+    (574, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 574, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F856159%3Ftimestamp%3D20220203175548', 'MAIN', 0),
+    (575, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 575, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F647054%3Ftimestamp%3D20220512170437', 'MAIN', 0),
+    (576, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 576, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F771864%3Ftimestamp%3D20220203153756', 'MAIN', 0),
+    (577, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 577, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F718394%3Ftimestamp%3D20220721001841', 'MAIN', 0),
+    (578, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 578, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1432298%3Ftimestamp%3D20220829103756', 'MAIN', 0),
+    (579, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 579, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975539%3Ftimestamp%3D20221011174450', 'MAIN', 0),
+    (580, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 580, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F646269%3Ftimestamp%3D20220512165822', 'MAIN', 0),
+    (581, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 581, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989637%3Ftimestamp%3D20211117155811', 'MAIN', 0),
+    (582, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 582, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F976005%3Ftimestamp%3D20220829105419', 'MAIN', 0),
+    (583, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 583, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1570423%3Ftimestamp%3D20221025152231', 'MAIN', 0),
+    (584, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 584, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1671575%3Ftimestamp%3D20190131163954', 'MAIN', 0),
+    (585, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 585, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975582%3Ftimestamp%3D20220730175540', 'MAIN', 0),
+    (586, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 586, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975641%3Ftimestamp%3D20220630115022', 'MAIN', 0),
+    (587, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 587, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1479484%3Ftimestamp%3D20220922040309', 'MAIN', 0),
+    (588, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 588, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483629%3Ftimestamp%3D20220922040511', 'MAIN', 0),
+    (589, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 589, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487003%3Ftimestamp%3D20221025145611', 'MAIN', 0),
+    (590, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 590, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F923213%3Ftimestamp%3D20211114183851', 'MAIN', 0),
+    (591, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 591, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975463%3Ftimestamp%3D20220716190727', 'MAIN', 0),
+    (592, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 592, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F975133%3Ftimestamp%3D20220528152451', 'MAIN', 0),
+    (593, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 593, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1047327%3Ftimestamp%3D20260331110841', 'MAIN', 0),
+    (594, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 594, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6778602%3Ftimestamp%3D20250208153049', 'MAIN', 0),
+    (595, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 595, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F387915%3Ftimestamp%3D20220217162412', 'MAIN', 0),
+    (596, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 596, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1574743%3Ftimestamp%3D20220922035753', 'MAIN', 0),
+    (597, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 597, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1334158%3Ftimestamp%3D20211014160116', 'MAIN', 0),
+    (598, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 598, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5477425%3Ftimestamp%3D20220925174620', 'MAIN', 0),
+    (599, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 599, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F387394%3Ftimestamp%3D20220318173049', 'MAIN', 0),
+    (600, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 600, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F776766%3Ftimestamp%3D20220524160013', 'MAIN', 0),
+    (601, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 601, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1394573%3Ftimestamp%3D20220902175326', 'MAIN', 0),
+    (602, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 602, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F909296%3Ftimestamp%3D20221025130550', 'MAIN', 0),
+    (603, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 603, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F857039%3Ftimestamp%3D20221025124033', 'MAIN', 0),
+    (604, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 604, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1435241%3Ftimestamp%3D20220823190953', 'MAIN', 0),
+    (605, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 605, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F776380%3Ftimestamp%3D20200429125450', 'MAIN', 0),
+    (606, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 606, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1641956%3Ftimestamp%3D20211023202504', 'MAIN', 0),
+    (607, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 607, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F876961%3Ftimestamp%3D20220922040126', 'MAIN', 0),
+    (608, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 608, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F432336%3Ftimestamp%3D20240629112912', 'MAIN', 0),
+    (609, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 609, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F951304%3Ftimestamp%3D20221025125305', 'MAIN', 0),
+    (610, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 610, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F623213%3Ftimestamp%3D20220829110016', 'MAIN', 0),
+    (611, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 611, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4977943%3Ftimestamp%3D20260108124703', 'MAIN', 0),
+    (612, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 612, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F415373%3Ftimestamp%3D20220925173649', 'MAIN', 0),
+    (613, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 613, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175141%3Ftimestamp%3D20220527191555', 'MAIN', 0),
+    (614, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 614, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5842002', 'MAIN', 0),
+    (615, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 615, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1640315%3Ftimestamp%3D20221025151358', 'MAIN', 0),
+    (616, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 616, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1638450%3Ftimestamp%3D20200104142436', 'MAIN', 0),
+    (617, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 617, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F719382%3Ftimestamp%3D20211017165012', 'MAIN', 0),
+    (618, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 618, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483119%3Ftimestamp%3D20220922035811', 'MAIN', 0),
+    (619, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 619, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177965%3Ftimestamp%3D20200625131833', 'MAIN', 0),
+    (620, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 620, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F776623%3Ftimestamp%3D20220524163050', 'MAIN', 0),
+    (621, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 621, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590000%3Ftimestamp%3D20220903161302', 'MAIN', 0),
+    (622, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 622, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F870877%3Ftimestamp%3D20220630125631', 'MAIN', 0),
+    (623, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 623, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F414823%3Ftimestamp%3D20220922041624', 'MAIN', 0),
+    (624, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 624, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6014876%3Ftimestamp%3D20260410121000', 'MAIN', 0),
+    (625, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 625, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1004098%3Ftimestamp%3D20221025151657', 'MAIN', 0),
+    (626, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 626, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590276%3Ftimestamp%3D20220630125906', 'MAIN', 0),
+    (627, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 627, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F872640%3Ftimestamp%3D20220830195315', 'MAIN', 0),
+    (628, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 628, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F719246%3Ftimestamp%3D20221025115248', 'MAIN', 0),
+    (629, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 629, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1632132%3Ftimestamp%3D20220423152838', 'MAIN', 0),
+    (630, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 630, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F644771%3Ftimestamp%3D20221025135544', 'MAIN', 0),
+    (631, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 631, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F589769%3Ftimestamp%3D20220826232916', 'MAIN', 0),
+    (632, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 632, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1384302%3Ftimestamp%3D20190128064841', 'MAIN', 0),
+    (633, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 633, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F641912%3Ftimestamp%3D20221025182524', 'MAIN', 0),
+    (634, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 634, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3750351%3Ftimestamp%3D20221025145631', 'MAIN', 0),
+    (635, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 635, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6285550%3Ftimestamp%3D20250123151207', 'MAIN', 0),
+    (636, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 636, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1413452%3Ftimestamp%3D20220820173628', 'MAIN', 0),
+    (637, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 637, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487241%3Ftimestamp%3D20221025145423', 'MAIN', 0),
+    (638, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 638, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F635929%3Ftimestamp%3D20221025122331', 'MAIN', 0),
+    (639, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 639, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1387354%3Ftimestamp%3D20240122194629', 'MAIN', 0),
+    (640, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 640, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F380641%3Ftimestamp%3D20221003232649', 'MAIN', 0),
+    (641, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 641, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1483906%3Ftimestamp%3D20220922040016', 'MAIN', 0),
+    (642, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 642, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476579%3Ftimestamp%3D20220105181001', 'MAIN', 0),
+    (643, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 643, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1418308%3Ftimestamp%3D20220410083025', 'MAIN', 0),
+    (644, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 644, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F641583%3Ftimestamp%3D20200203125832', 'MAIN', 0),
+    (645, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 645, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1499094%3Ftimestamp%3D20220925172622', 'MAIN', 0),
+    (646, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 646, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F739235%3Ftimestamp%3D20221025152032', 'MAIN', 0),
+    (647, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 647, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F590241%3Ftimestamp%3D20230613165206', 'MAIN', 0),
+    (648, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 648, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1431293%3Ftimestamp%3D20211219164310', 'MAIN', 0),
+    (649, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 649, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F993429%3Ftimestamp%3D20220604114606', 'MAIN', 0),
+    (650, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 650, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1428958%3Ftimestamp%3D20220101150348', 'MAIN', 0),
+    (651, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 651, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1375431%3Ftimestamp%3D20220410081052', 'MAIN', 0),
+    (652, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 652, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F856038%3Ftimestamp%3D20220122170207', 'MAIN', 0),
+    (653, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 653, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4986176%3Ftimestamp%3D20250116131141', 'MAIN', 0),
+    (654, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 654, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1476575%3Ftimestamp%3D20220823183300', 'MAIN', 0),
+    (655, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 655, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1662051%3Ftimestamp%3D20221011170953', 'MAIN', 0),
+    (656, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 656, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1577351%3Ftimestamp%3D20220922040639', 'MAIN', 0),
+    (657, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 657, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1407112%3Ftimestamp%3D20220410085145', 'MAIN', 0),
+    (658, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 658, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F558125%3Ftimestamp%3D20220114170832', 'MAIN', 0),
+    (659, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 659, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F878771%3Ftimestamp%3D20221025151855', 'MAIN', 0),
+    (660, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 660, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6044702%3Ftimestamp%3D20221011170719', 'MAIN', 0),
+    (661, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 661, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6819289%3Ftimestamp%3D20260314123205', 'MAIN', 0),
+    (662, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 662, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3783355%3Ftimestamp%3D20240807112751', 'MAIN', 0),
+    (663, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 663, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F984602%3Ftimestamp%3D20250219113912', 'MAIN', 0),
+    (664, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 664, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7040717%3Ftimestamp%3D20260325153118', 'MAIN', 0),
+    (665, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 665, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4970326%3Ftimestamp%3D20220716193526', 'MAIN', 0),
+    (666, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 666, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5218982%3Ftimestamp%3D20221005053846', 'MAIN', 0),
+    (667, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 667, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F341478%3Ftimestamp%3D20221025115824', 'MAIN', 0),
+    (668, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 668, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F876960%3Ftimestamp%3D20220731153842', 'MAIN', 0),
+    (669, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 669, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F566529%3Ftimestamp%3D20190123201030', 'MAIN', 0),
+    (670, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 670, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597235%3Ftimestamp%3D20211214135512', 'MAIN', 0),
+    (671, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 671, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5631806%3Ftimestamp%3D20220410075906', 'MAIN', 0),
+    (672, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 672, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F910106%3Ftimestamp%3D20220706183749', 'MAIN', 0),
+    (673, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 673, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3928106%3Ftimestamp%3D20260412112608', 'MAIN', 0),
+    (674, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 674, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633078%3Ftimestamp%3D20230315180249', 'MAIN', 0),
+    (675, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 675, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3607816', 'MAIN', 0),
+    (676, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 676, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5817267%3Ftimestamp%3D20230719162657', 'MAIN', 0),
+    (677, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 677, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5215301%3Ftimestamp%3D20230201171251', 'MAIN', 0),
+    (678, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 678, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7137072%3Ftimestamp%3D20260310125422', 'MAIN', 0),
+    (679, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 679, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4790976%3Ftimestamp%3D20230103145236', 'MAIN', 0),
+    (680, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 680, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6638190%3Ftimestamp%3D20241008160022', 'MAIN', 0),
+    (681, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 681, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6808174%3Ftimestamp%3D20251029152020', 'MAIN', 0),
+    (682, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 682, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6408666%3Ftimestamp%3D20250709143859', 'MAIN', 0),
+    (683, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 683, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1651447%3Ftimestamp%3D20250709110623', 'MAIN', 0),
+    (684, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 684, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7039367%3Ftimestamp%3D20251014142032', 'MAIN', 0),
+    (685, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 685, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7094156%3Ftimestamp%3D20260403154212', 'MAIN', 0),
+    (686, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 686, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6808882%3Ftimestamp%3D20260327125521', 'MAIN', 0),
+    (687, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 687, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6529738%3Ftimestamp%3D20250107153611', 'MAIN', 0),
+    (688, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 688, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6258120%3Ftimestamp%3D20250629130058', 'MAIN', 0),
+    (689, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 689, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5965058%3Ftimestamp%3D20241109152610', 'MAIN', 0),
+    (690, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 690, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5932805%3Ftimestamp%3D20230707135629', 'MAIN', 0),
+    (691, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 691, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6983437%3Ftimestamp%3D20260411121645', 'MAIN', 0),
+    (692, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 692, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6693891%3Ftimestamp%3D20260122151953', 'MAIN', 0),
+    (693, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 693, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7106763%3Ftimestamp%3D20260110152040', 'MAIN', 0),
+    (694, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 694, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6523034%3Ftimestamp%3D20250225152818', 'MAIN', 0),
+    (695, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 695, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6146019%3Ftimestamp%3D20251016142653', 'MAIN', 0),
+    (696, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 696, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6260045%3Ftimestamp%3D20250201153228', 'MAIN', 0),
+    (697, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 697, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6743936%3Ftimestamp%3D20250627150344', 'MAIN', 0),
+    (698, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 698, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6781568%3Ftimestamp%3D20260410121713', 'MAIN', 0),
+    (699, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 699, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5798747%3Ftimestamp%3D20251218145743', 'MAIN', 0),
+    (700, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 700, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6374163%3Ftimestamp%3D20251125151715', 'MAIN', 0),
+    (701, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 701, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1359187%3Ftimestamp%3D20220825221414', 'MAIN', 0),
+    (702, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 702, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F980038%3Ftimestamp%3D20221011185816', 'MAIN', 0),
+    (703, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 703, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5083776%3Ftimestamp%3D20220714034655', 'MAIN', 0),
+    (704, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 704, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6923189%3Ftimestamp%3D20250813151833', 'MAIN', 0),
+    (705, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 705, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1637943%3Ftimestamp%3D20221025115908', 'MAIN', 0),
+    (706, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 706, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5172394%3Ftimestamp%3D20240828141039', 'MAIN', 0),
+    (707, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 707, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6689966%3Ftimestamp%3D20260225150914', 'MAIN', 0),
+    (708, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 708, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F893103%3Ftimestamp%3D20220507170343', 'MAIN', 0),
+    (709, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 709, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6361131%3Ftimestamp%3D20250709143830', 'MAIN', 0),
+    (710, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 710, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6080832%3Ftimestamp%3D20251102123026', 'MAIN', 0),
+    (711, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 711, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6282674%3Ftimestamp%3D20260113152242', 'MAIN', 0),
+    (712, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 712, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6480329%3Ftimestamp%3D20260327125447', 'MAIN', 0),
+    (713, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 713, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4977247%3Ftimestamp%3D20260123124205', 'MAIN', 0),
+    (714, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 714, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F397140%3Ftimestamp%3D20230513135958', 'MAIN', 0),
+    (715, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 715, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481287%3Ftimestamp%3D20220531214654', 'MAIN', 0),
+    (716, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 716, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1297411%3Ftimestamp%3D20221025165925', 'MAIN', 0),
+    (717, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 717, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4966863%3Ftimestamp%3D20251101123437', 'MAIN', 0),
+    (718, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 718, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4888715%3Ftimestamp%3D20240330130853', 'MAIN', 0),
+    (719, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 719, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5460069%3Ftimestamp%3D20250809134413', 'MAIN', 0),
+    (720, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 720, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F944468%3Ftimestamp%3D20251101110751', 'MAIN', 0),
+    (721, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 721, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1189984%3Ftimestamp%3D20221025124237', 'MAIN', 0),
+    (722, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 722, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597209%3Ftimestamp%3D20200110141557', 'MAIN', 0),
+    (723, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 723, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1219334%3Ftimestamp%3D20190127090905', 'MAIN', 0),
+    (724, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 724, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597215%3Ftimestamp%3D20200110141645', 'MAIN', 0),
+    (725, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 725, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F341686%3Ftimestamp%3D20200123123916', 'MAIN', 0),
+    (726, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 726, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5582073%3Ftimestamp%3D20220803203637', 'MAIN', 0),
+    (727, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 727, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F825643%3Ftimestamp%3D20220930230111', 'MAIN', 0),
+    (728, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 728, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906860%3Ftimestamp%3D20200415131442', 'MAIN', 0),
+    (729, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 729, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1628827%3Ftimestamp%3D20221025122740', 'MAIN', 0),
+    (730, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 730, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4833029%3Ftimestamp%3D20221025142433', 'MAIN', 0),
+    (731, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 731, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1390945%3Ftimestamp%3D20221025143533', 'MAIN', 0),
+    (732, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 732, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4913778%3Ftimestamp%3D20221025154301', 'MAIN', 0),
+    (733, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 733, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633621%3Ftimestamp%3D20190131101442', 'MAIN', 0),
+    (734, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 734, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F502825%3Ftimestamp%3D20260331110801', 'MAIN', 0),
+    (735, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 735, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5470545%3Ftimestamp%3D20220410090104', 'MAIN', 0),
+    (736, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 736, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844523%3Ftimestamp%3D20220909233318', 'MAIN', 0),
+    (737, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 737, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1387143%3Ftimestamp%3D20221025152318', 'MAIN', 0),
+    (738, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 738, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1362736%3Ftimestamp%3D20211219162208', 'MAIN', 0),
+    (739, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 739, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3755764%3Ftimestamp%3D20221025123238', 'MAIN', 0),
+    (740, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 740, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906575%3Ftimestamp%3D20220325211556', 'MAIN', 0),
+    (741, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 741, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844760%3Ftimestamp%3D20220325184600', 'MAIN', 0),
+    (742, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 742, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F986040%3Ftimestamp%3D20251223110830', 'MAIN', 0),
+    (743, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 743, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3778964%3Ftimestamp%3D20220216180026', 'MAIN', 0),
+    (744, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 744, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844750%3Ftimestamp%3D20220807191353', 'MAIN', 0),
+    (745, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 745, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1596163%3Ftimestamp%3D20190323101434', 'MAIN', 0),
+    (746, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 746, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1382124%3Ftimestamp%3D20220224222323', 'MAIN', 0),
+    (747, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 747, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F547675%3Ftimestamp%3D20220410082614', 'MAIN', 0),
+    (748, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 748, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F863856%3Ftimestamp%3D20190125134912', 'MAIN', 0),
+    (749, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 749, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1632415%3Ftimestamp%3D20190131100155', 'MAIN', 0),
+    (750, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 750, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5511568%3Ftimestamp%3D20220507163849', 'MAIN', 0),
+    (751, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 751, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115480%3Ftimestamp%3D20211023204325', 'MAIN', 0),
+    (752, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 752, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115244%3Ftimestamp%3D20221025142208', 'MAIN', 0),
+    (753, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 753, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4966844%3Ftimestamp%3D20200619133242', 'MAIN', 0),
+    (754, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 754, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5752506%3Ftimestamp%3D20220728203142', 'MAIN', 0),
+    (755, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 755, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3760968%3Ftimestamp%3D20220106172431', 'MAIN', 0),
+    (756, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 756, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906151%3Ftimestamp%3D20221025135545', 'MAIN', 0),
+    (757, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 757, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481609%3Ftimestamp%3D20200418134027', 'MAIN', 0),
+    (758, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 758, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4868509%3Ftimestamp%3D20221025130248', 'MAIN', 0),
+    (759, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 759, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1190761%3Ftimestamp%3D20220831172228', 'MAIN', 0),
+    (760, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 760, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4918692%3Ftimestamp%3D20221025144720', 'MAIN', 0),
+    (761, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 761, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844707%3Ftimestamp%3D20221025114355', 'MAIN', 0),
+    (762, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 762, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F794625%3Ftimestamp%3D20221025123550', 'MAIN', 0),
+    (763, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 763, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5375179%3Ftimestamp%3D20211219161410', 'MAIN', 0),
+    (764, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 764, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5826609%3Ftimestamp%3D20220917062953', 'MAIN', 0),
+    (765, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 765, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4872862%3Ftimestamp%3D20211126151026', 'MAIN', 0),
+    (766, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 766, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F930698%3Ftimestamp%3D20221025115728', 'MAIN', 0),
+    (767, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 767, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1188808%3Ftimestamp%3D20211125144846', 'MAIN', 0),
+    (768, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 768, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F504101%3Ftimestamp%3D20221025123005', 'MAIN', 0),
+    (769, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 769, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5665683%3Ftimestamp%3D20220829103028', 'MAIN', 0),
+    (770, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 770, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F535183%3Ftimestamp%3D20211114174131', 'MAIN', 0),
+    (771, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 771, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F932646%3Ftimestamp%3D20220514173422', 'MAIN', 0),
+    (772, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 772, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F494792%3Ftimestamp%3D20221025152028', 'MAIN', 0),
+    (773, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 773, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3752846%3Ftimestamp%3D20220527191017', 'MAIN', 0),
+    (774, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 774, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906819%3Ftimestamp%3D20190125214001', 'MAIN', 0),
+    (775, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 775, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4900156%3Ftimestamp%3D20221025130326', 'MAIN', 0),
+    (776, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 776, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1602203%3Ftimestamp%3D20190323101416', 'MAIN', 0),
+    (777, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 777, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1486058%3Ftimestamp%3D20221025124359', 'MAIN', 0),
+    (778, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 778, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3753964%3Ftimestamp%3D20220129190907', 'MAIN', 0),
+    (779, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 779, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F484657%3Ftimestamp%3D20220630132304', 'MAIN', 0),
+    (780, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 780, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1146727%3Ftimestamp%3D20211228193414', 'MAIN', 0),
+    (781, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 781, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1631245%3Ftimestamp%3D20200107122349', 'MAIN', 0),
+    (782, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 782, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1463679%3Ftimestamp%3D20221025120211', 'MAIN', 0),
+    (783, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 783, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1598716%3Ftimestamp%3D20190323101444', 'MAIN', 0),
+    (784, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 784, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F743523%3Ftimestamp%3D20221025135807', 'MAIN', 0),
+    (785, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 785, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F930256%3Ftimestamp%3D20200724134854', 'MAIN', 0),
+    (786, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 786, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1464413%3Ftimestamp%3D20190130051656', 'MAIN', 0),
+    (787, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 787, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3756328%3Ftimestamp%3D20221025115258', 'MAIN', 0),
+    (788, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 788, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1632109%3Ftimestamp%3D20190131095848', 'MAIN', 0),
+    (789, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 789, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1168762%3Ftimestamp%3D20190127032439', 'MAIN', 0),
+    (790, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 790, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6381817%3Ftimestamp%3D20250926141143', 'MAIN', 0),
+    (791, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 791, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867660%3Ftimestamp%3D20220807194134', 'MAIN', 0),
+    (792, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 792, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1602198%3Ftimestamp%3D20211114180217', 'MAIN', 0),
+    (793, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 793, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4895583%3Ftimestamp%3D20221025130332', 'MAIN', 0),
+    (794, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 794, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1670111%3Ftimestamp%3D20221025141429', 'MAIN', 0),
+    (795, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 795, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844719%3Ftimestamp%3D20221025114848', 'MAIN', 0),
+    (796, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 796, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844780%3Ftimestamp%3D20220705161851', 'MAIN', 0),
+    (797, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 797, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115249%3Ftimestamp%3D20221025141649', 'MAIN', 0),
+    (798, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 798, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115302%3Ftimestamp%3D20221025141658', 'MAIN', 0),
+    (799, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 799, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1503906%3Ftimestamp%3D20220803212058', 'MAIN', 0),
+    (800, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 800, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1429221%3Ftimestamp%3D20211128153009', 'MAIN', 0),
+    (801, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 801, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867652%3Ftimestamp%3D20221025130319', 'MAIN', 0),
+    (802, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 802, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844721%3Ftimestamp%3D20220807193044', 'MAIN', 0),
+    (803, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 803, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844677%3Ftimestamp%3D20221025122659', 'MAIN', 0),
+    (804, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 804, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1600194%3Ftimestamp%3D20211114180212', 'MAIN', 0),
+    (805, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 805, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F820336%3Ftimestamp%3D20220203161324', 'MAIN', 0),
+    (806, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 806, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4895335%3Ftimestamp%3D20221025130325', 'MAIN', 0),
+    (807, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 807, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1400733%3Ftimestamp%3D20220504023310', 'MAIN', 0),
+    (808, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 808, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3781679%3Ftimestamp%3D20200204124753', 'MAIN', 0),
+    (809, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 809, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4834510%3Ftimestamp%3D20221025121634', 'MAIN', 0),
+    (810, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 810, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867676%3Ftimestamp%3D20221025130309', 'MAIN', 0),
+    (811, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 811, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5384393%3Ftimestamp%3D20220423141058', 'MAIN', 0),
+    (812, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 812, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4925767%3Ftimestamp%3D20211204203708', 'MAIN', 0),
+    (813, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 813, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5609597%3Ftimestamp%3D20220903161232', 'MAIN', 0),
+    (814, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 814, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1637765%3Ftimestamp%3D20221025141134', 'MAIN', 0),
+    (815, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 815, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633862%3Ftimestamp%3D20221025123926', 'MAIN', 0),
+    (816, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 816, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F933840%3Ftimestamp%3D20200107122406', 'MAIN', 0),
+    (817, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 817, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F908685%3Ftimestamp%3D20220410082403', 'MAIN', 0),
+    (818, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 818, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597269%3Ftimestamp%3D20190123233707', 'MAIN', 0),
+    (819, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 819, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F746543%3Ftimestamp%3D20221025150415', 'MAIN', 0),
+    (820, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 820, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5115608%3Ftimestamp%3D20221025142517', 'MAIN', 0),
+    (821, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 821, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1413449%3Ftimestamp%3D20221011190418', 'MAIN', 0),
+    (822, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 822, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1190919%3Ftimestamp%3D20190127061926', 'MAIN', 0),
+    (823, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 823, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5745844%3Ftimestamp%3D20220701055324', 'MAIN', 0),
+    (824, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 824, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F437780%3Ftimestamp%3D20221025145148', 'MAIN', 0),
+    (825, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 825, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F933872%3Ftimestamp%3D20211212165734', 'MAIN', 0),
+    (826, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 826, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4925734%3Ftimestamp%3D20220504162250', 'MAIN', 0),
+    (827, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 827, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1362317%3Ftimestamp%3D20210220153750', 'MAIN', 0),
+    (828, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 828, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F353265%3Ftimestamp%3D20220925182608', 'MAIN', 0),
+    (829, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 829, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1533817%3Ftimestamp%3D20211107145230', 'MAIN', 0),
+    (830, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 830, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597185%3Ftimestamp%3D20200110140853', 'MAIN', 0),
+    (831, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 831, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3755610%3Ftimestamp%3D20221025143105', 'MAIN', 0),
+    (832, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 832, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1189977%3Ftimestamp%3D20221025134856', 'MAIN', 0),
+    (833, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 833, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1631470%3Ftimestamp%3D20221025125256', 'MAIN', 0),
+    (834, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 834, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1196777%3Ftimestamp%3D20190127070429', 'MAIN', 0),
+    (835, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 835, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5398962%3Ftimestamp%3D20221003225919', 'MAIN', 0),
+    (836, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 836, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5478382%3Ftimestamp%3D20211017164109', 'MAIN', 0),
+    (837, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 837, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3752604%3Ftimestamp%3D20221025124105', 'MAIN', 0),
+    (838, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 838, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4895512%3Ftimestamp%3D20221025130331', 'MAIN', 0),
+    (839, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 839, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4915798%3Ftimestamp%3D20221025130312', 'MAIN', 0),
+    (840, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 840, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1507157%3Ftimestamp%3D20221025161005', 'MAIN', 0),
+    (841, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 841, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F945502%3Ftimestamp%3D20190126042336', 'MAIN', 0),
+    (842, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 842, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F353373%3Ftimestamp%3D20200322133119', 'MAIN', 0),
+    (843, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 843, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3751739%3Ftimestamp%3D20200503120607', 'MAIN', 0),
+    (844, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 844, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844755%3Ftimestamp%3D20221025114848', 'MAIN', 0),
+    (845, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 845, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867683%3Ftimestamp%3D20221025130251', 'MAIN', 0),
+    (846, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 846, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867668%3Ftimestamp%3D20221025130259', 'MAIN', 0),
+    (847, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 847, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4844708%3Ftimestamp%3D20200621125712', 'MAIN', 0),
+    (848, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 848, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4888891%3Ftimestamp%3D20221025120347', 'MAIN', 0),
+    (849, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 849, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1588403%3Ftimestamp%3D20190131031446', 'MAIN', 0),
+    (850, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 850, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F502629%3Ftimestamp%3D20221011170835', 'MAIN', 0),
+    (851, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 851, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5541991%3Ftimestamp%3D20220705162008', 'MAIN', 0),
+    (852, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 852, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5265282%3Ftimestamp%3D20220410173817', 'MAIN', 0),
+    (853, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 853, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5078769%3Ftimestamp%3D20221025140157', 'MAIN', 0),
+    (854, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 854, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F852429%3Ftimestamp%3D20191227123855', 'MAIN', 0),
+    (855, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 855, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1194139%3Ftimestamp%3D20211125144732', 'MAIN', 0),
+    (856, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 856, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4954476%3Ftimestamp%3D20201104143113', 'MAIN', 0),
+    (857, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 857, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1593904%3Ftimestamp%3D20211114180158', 'MAIN', 0),
+    (858, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 858, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F483882%3Ftimestamp%3D20200107121953', 'MAIN', 0),
+    (859, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 859, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F117173%3Ftimestamp%3D20250501133628', 'MAIN', 0),
+    (860, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 860, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1507101%3Ftimestamp%3D20220704160021', 'MAIN', 0),
+    (861, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 861, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1604336%3Ftimestamp%3D20221025124950', 'MAIN', 0),
+    (862, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 862, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1475175%3Ftimestamp%3D20221025125403', 'MAIN', 0),
+    (863, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 863, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1354177%3Ftimestamp%3D20191227123726', 'MAIN', 0),
+    (864, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 864, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3760721%3Ftimestamp%3D20220922040201', 'MAIN', 0),
+    (865, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 865, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1358070%3Ftimestamp%3D20221025114956', 'MAIN', 0),
+    (866, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 866, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4867659%3Ftimestamp%3D20211208151351', 'MAIN', 0),
+    (867, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 867, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1016988%3Ftimestamp%3D20220930203858', 'MAIN', 0),
+    (868, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 868, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5077745%3Ftimestamp%3D20220630103323', 'MAIN', 0),
+    (869, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 869, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4936397%3Ftimestamp%3D20220925185404', 'MAIN', 0),
+    (870, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 870, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1468030%3Ftimestamp%3D20221025134945', 'MAIN', 0),
+    (871, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 871, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F663441%3Ftimestamp%3D20211209152013', 'MAIN', 0),
+    (872, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 872, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F747492%3Ftimestamp%3D20221025134559', 'MAIN', 0),
+    (873, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 873, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1327924%3Ftimestamp%3D20220410081031', 'MAIN', 0),
+    (874, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 874, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F864712%3Ftimestamp%3D20220708164602', 'MAIN', 0),
+    (875, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 875, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1662056%3Ftimestamp%3D20221025120131', 'MAIN', 0),
+    (876, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 876, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3782260%3Ftimestamp%3D20221025153140', 'MAIN', 0),
+    (877, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 877, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1645569%3Ftimestamp%3D20221025122003', 'MAIN', 0),
+    (878, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 878, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1652484%3Ftimestamp%3D20211014155617', 'MAIN', 0),
+    (879, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 879, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1629165%3Ftimestamp%3D20221025125433', 'MAIN', 0),
+    (880, '2026-04-13 09:02:30', '2026-04-13 09:02:30', 880, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1372036%3Ftimestamp%3D20220219170059', 'MAIN', 0);
+
+INSERT INTO cart (id, created_at, updated_at, member_id) VALUES
+    (1, '2026-04-13 09:03:00', '2026-04-13 09:03:00', 3),
+    (2, '2026-04-13 09:03:00', '2026-04-13 09:03:00', 4),
+    (3, '2026-04-13 09:03:00', '2026-04-13 09:03:00', 5),
+    (4, '2026-04-13 09:03:00', '2026-04-13 09:03:00', 6);
+
+INSERT INTO cart_item (id, created_at, updated_at, cart_id, product_id, quantity, is_checked) VALUES
+    (1, '2026-04-13 09:03:30', '2026-04-13 09:03:30', 1, 13, 1, TRUE),
+    (2, '2026-04-13 09:03:30', '2026-04-13 09:03:30', 1, 673, 2, TRUE),
+    (3, '2026-04-13 09:03:30', '2026-04-13 09:03:30', 2, 233, 1, TRUE),
+    (4, '2026-04-13 09:03:30', '2026-04-13 09:03:30', 3, 697, 1, FALSE);
+
+INSERT INTO notice (id, created_at, updated_at, member_id, title, content, is_fixed, view_count, deleted_at) VALUES
+    (1, '2026-04-13 09:04:00', '2026-04-13 09:04:00', 1, '4월 배송 일정 안내', '주말과 공휴일에는 택배사 집하 일정에 따라 출고가 지연될 수 있습니다.', TRUE, 42, NULL),
+    (2, '2026-04-13 09:04:00', '2026-04-13 09:04:00', 1, '계좌이체 주문 확인 안내', '계좌이체 주문은 입금 확인 후 순차적으로 승인 처리됩니다.', TRUE, 27, NULL),
+    (3, '2026-04-13 09:04:00', '2026-04-13 09:04:00', 1, '리뷰 작성 안내', '배송 완료 주문에 한해 리뷰를 작성하실 수 있습니다.', FALSE, 15, NULL);
+
+INSERT INTO qna (id, created_at, updated_at, parent_id, depth, member_id, category, title, content, qna_status, is_secret, view_count, answered_at, deleted_at) VALUES
+    (1, '2026-04-10 10:00:00', '2026-04-10 10:00:00', NULL, 0, 3, '배송', '배송 일정이 궁금합니다', '주문한 도서가 언제 출고되는지 확인하고 싶습니다.', 'COMPLETE', FALSE, 8, '2026-04-10 14:00:00', NULL),
+    (2, '2026-04-10 14:00:00', '2026-04-10 14:00:00', 1, 1, 1, '배송', '[답변] 배송 일정이 궁금합니다', '현재 주문은 승인 완료 상태이며 택배사 접수 후 운송장이 등록될 예정입니다.', 'COMPLETE', FALSE, 0, NULL, NULL),
+    (3, '2026-04-11 11:00:00', '2026-04-11 11:00:00', NULL, 0, 4, '결제', '계좌이체 주문은 어떻게 확인되나요?', '입금 후 승인 대기까지 얼마나 걸리는지 궁금합니다.', 'WAITING', TRUE, 3, NULL, NULL),
+    (4, '2026-04-12 13:20:00', '2026-04-12 13:20:00', NULL, 0, 5, '상품', '재고가 부족한 상품은 다시 입고되나요?', '재고 부족으로 보이는 상품도 재입고 예정인지 문의드립니다.', 'PROCESSING', FALSE, 5, NULL, NULL);
+
+INSERT INTO "order" (id, created_at, updated_at, member_id, number, order_status, total_price, discount_amount, final_price, receiver_name, receiver_phone, delivery_address, delivery_address_detail, delivery_zip_code, delivery_memo, ordered_at, cancelled_at) VALUES
+    (1, '2026-04-10 09:30:00', '2026-04-10 09:30:00', 3, 'RM20260413001', 'PAYMENT_PENDING', 15120, 0, 15120, '김독자', '010-7000-1001', '서울시 마포구 독서로 11', '101동 1201호', '04111', '빠른 출고 부탁드립니다.', '2026-04-10 09:30:00', NULL),
+    (2, '2026-04-10 12:00:00', '2026-04-10 12:00:00', 4, 'RM20260413002', 'PENDING', 17100, 0, 17100, '이리더', '010-7000-1002', '서울시 강서구 서점로 22', '202동 804호', '07522', '재고 확인 부탁드립니다.', '2026-04-10 12:00:00', NULL),
+    (3, '2026-04-11 10:00:00', '2026-04-11 10:00:00', 5, 'RM20260413003', 'APPROVAL', 15120, 0, 15120, '박페이지', '010-7000-1003', '경기도 성남시 책길 33', '301동 901호', '13533', '문 앞에 놓아 주세요.', '2026-04-11 10:00:00', NULL),
+    (4, '2026-04-11 15:00:00', '2026-04-11 15:00:00', 3, 'RM20260413004', 'DELIVERING', 21600, 0, 21600, '김독자', '010-7000-1001', '서울시 마포구 독서로 11', '101동 1201호', '04111', '부재 시 경비실 맡겨 주세요.', '2026-04-11 15:00:00', NULL),
+    (5, '2026-04-09 14:20:00', '2026-04-09 14:20:00', 4, 'RM20260413005', 'DELIVERED', 9000, 0, 9000, '이리더', '010-7000-1002', '서울시 강서구 서점로 22', '202동 804호', '07522', '배송 완료 확인용 주문', '2026-04-09 14:20:00', NULL),
+    (6, '2026-04-08 10:10:00', '2026-04-12 08:30:00', 5, 'RM20260413006', 'CANCELED', 35640, 0, 35640, '박페이지', '010-7000-1003', '경기도 성남시 책길 33', '301동 901호', '13533', '취소/환불 확인용 주문', '2026-04-08 10:10:00', '2026-04-12 08:30:00');
+
+INSERT INTO order_item (id, created_at, updated_at, order_id, product_id, product_title, product_author, sale_price, quantity, item_total, is_reviewed) VALUES
+    (1, '2026-04-10 09:30:00', '2026-04-10 09:30:00', 1, 1, '한국단편소설 40', '김동인', 15120, 1, 15120, FALSE),
+    (2, '2026-04-10 12:00:00', '2026-04-10 12:00:00', 2, 233, 'Charlie and the Chocolate Factory', '로알드 달, 퀸틴 블레이크', 5700, 3, 17100, FALSE),
+    (3, '2026-04-11 10:00:00', '2026-04-11 10:00:00', 3, 13, '이 지랄맞음이 쌓여 축제가 되겠지(리커버:K)', '조승리', 15120, 1, 15120, FALSE),
+    (4, '2026-04-11 15:00:00', '2026-04-11 15:00:00', 4, 453, '빠작 초등 5~6학년 국어 어휘X독해 5단계', '구주영, 김보라, 문동열, 박유진, 변진한, 정주연', 10800, 2, 21600, FALSE),
+    (5, '2026-04-09 14:20:00', '2026-04-09 14:20:00', 5, 441, '알사탕 제조법', '백희나', 9000, 1, 9000, TRUE),
+    (6, '2026-04-08 10:10:00', '2026-04-08 10:10:00', 6, 661, '스프링', '온다 리쿠', 17820, 2, 35640, FALSE);
+
+INSERT INTO payment (id, created_at, updated_at, order_id, payment_provider, method, payment_status, amount, refunded_amount, return_fee, pg_tid, payment_key, installment_months, paid_at, cancel_reason, failure_reason, cancelled_at) VALUES
+    (1, '2026-04-10 12:01:00', '2026-04-10 12:01:00', 2, 'BANK_TRANSFER', '계좌이체', 'PAID', 17100, NULL, NULL, 'BANK-TID-0002', NULL, NULL, '2026-04-10 12:01:00', NULL, NULL, NULL),
+    (2, '2026-04-11 10:01:00', '2026-04-11 10:01:00', 3, 'TOSS', 'CARD', 'PAID', 15120, NULL, NULL, 'TOSS-TID-0003', 'toss-key-0003', 0, '2026-04-11 10:01:00', NULL, NULL, NULL),
+    (3, '2026-04-11 15:01:00', '2026-04-11 15:01:00', 4, 'KAKAO', 'EASY_PAY', 'PAID', 21600, NULL, NULL, 'KAKAO-TID-0004', 'kakao-key-0004', NULL, '2026-04-11 15:01:00', NULL, NULL, NULL),
+    (4, '2026-04-09 14:21:00', '2026-04-09 14:21:00', 5, 'NAVER', 'EASY_PAY', 'PAID', 9000, NULL, NULL, 'NAVER-TID-0005', 'naver-key-0005', NULL, '2026-04-09 14:21:00', NULL, NULL, NULL),
+    (5, '2026-04-08 10:11:00', '2026-04-12 08:30:00', 6, 'TOSS', 'CARD', 'CANCELLED', 35640, 20280, 6000, 'TOSS-TID-0006', 'toss-key-0006', 0, '2026-04-08 10:11:00', '배송 출발 후 주문 취소', NULL, '2026-04-12 08:30:00');
+
+INSERT INTO delivery (id, created_at, updated_at, order_id, courier, tracking_number, delivery_status, shipped_at, delivered_at) VALUES
+    (1, '2026-04-11 10:30:00', '2026-04-11 10:30:00', 3, NULL, NULL, 'READY', NULL, NULL),
+    (2, '2026-04-12 09:00:00', '2026-04-12 09:00:00', 4, 'CJ대한통운', 'CJ-20260413-04', 'SHIPPED', '2026-04-12 09:00:00', NULL),
+    (3, '2026-04-10 09:00:00', '2026-04-12 18:00:00', 5, '롯데택배', 'LT-20260413-05', 'DELIVERED', '2026-04-10 09:00:00', '2026-04-12 18:00:00');
+
+INSERT INTO review (id, created_at, updated_at, member_id, product_id, rating, content, hits, deleted_at) VALUES
+    (1, '2026-04-12 19:00:00', '2026-04-12 19:00:00', 4, 441, 5, '배송이 빠르고 책 상태도 좋아서 만족합니다. 재구매 의사 있습니다.', 12, NULL),
+    (2, '2026-04-12 20:15:00', '2026-04-12 20:15:00', 3, 697, 4, '상품 설명과 실제 내용이 잘 맞았습니다. 입문용으로 읽기 좋았습니다.', 7, NULL);
+
+INSERT INTO review_image (id, created_at, updated_at, review_id, image_url) VALUES
+    (1, '2026-04-12 19:05:00', '2026-04-12 19:05:00', 1, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6591248%3Ftimestamp%3D20241217154354');
+
+SELECT setval(pg_get_serial_sequence('member', 'id'), COALESCE(MAX(id), 1), true) FROM member;
+SELECT setval(pg_get_serial_sequence('category_top', 'id'), COALESCE(MAX(id), 1), true) FROM category_top;
+SELECT setval(pg_get_serial_sequence('category_sub', 'id'), COALESCE(MAX(id), 1), true) FROM category_sub;
+SELECT setval(pg_get_serial_sequence('product', 'id'), COALESCE(MAX(id), 1), true) FROM product;
+SELECT setval(pg_get_serial_sequence('product_image', 'id'), COALESCE(MAX(id), 1), true) FROM product_image;
+SELECT setval(pg_get_serial_sequence('cart', 'id'), COALESCE(MAX(id), 1), true) FROM cart;
+SELECT setval(pg_get_serial_sequence('cart_item', 'id'), COALESCE(MAX(id), 1), true) FROM cart_item;
+SELECT setval(pg_get_serial_sequence('"order"', 'id'), COALESCE(MAX(id), 1), true) FROM "order";
+SELECT setval(pg_get_serial_sequence('order_item', 'id'), COALESCE(MAX(id), 1), true) FROM order_item;
+SELECT setval(pg_get_serial_sequence('payment', 'id'), COALESCE(MAX(id), 1), true) FROM payment;
+SELECT setval(pg_get_serial_sequence('delivery', 'id'), COALESCE(MAX(id), 1), true) FROM delivery;
+SELECT setval(pg_get_serial_sequence('notice', 'id'), COALESCE(MAX(id), 1), true) FROM notice;
+SELECT setval(pg_get_serial_sequence('qna', 'id'), COALESCE(MAX(id), 1), true) FROM qna;
+SELECT setval(pg_get_serial_sequence('review', 'id'), COALESCE(MAX(id), 1), true) FROM review;
+SELECT setval(pg_get_serial_sequence('review_image', 'id'), COALESCE(MAX(id), 1), true) FROM review_image;

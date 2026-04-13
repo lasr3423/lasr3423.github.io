@@ -4,9 +4,9 @@
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="point-chip">주문 / 배송 조회</p>
-          <h1 class="section-title mt-3">최근 주문 상태를 빠르게 확인해 보세요</h1>
+          <h1 class="section-title mt-3">주문 및 배송 내역</h1>
           <p class="mt-2 text-sm text-slate-500">
-            주문 진행 상태, 결제 금액, 배송 단계까지 한 번에 볼 수 있습니다.
+            주문 상태와 결제 금액, 배송 단계를 확인하실 수 있습니다.
           </p>
         </div>
 
@@ -112,7 +112,7 @@
     <div v-else class="surface-panel rounded-[2rem] p-12 text-center">
       <h2 class="text-xl font-semibold text-slate-900">주문 내역이 없습니다</h2>
       <p class="mt-2 text-sm text-slate-500">
-        첫 주문을 완료하면 이곳에서 배송 상태를 확인할 수 있습니다.
+        주문하신 내역이 이곳에 표시됩니다.
       </p>
     </div>
   </div>

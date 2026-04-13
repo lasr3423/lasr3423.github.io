@@ -67,6 +67,34 @@ public class PaymentService {
         return response;
     }
 
+    @Transactional
+    public void completeBankTransfer(BankTransferRequest request, Long memberId) {
+        if (request == null || request.orderId() == null) {
+            throw new RuntimeException("주문 정보가 올바르지 않습니다.");
+        }
+
+        Order order = orderRepository.findByIdAndMemberId(request.orderId(), memberId)
+                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+
+        Payment payment = paymentRepository.findByOrderId(request.orderId())
+                .orElse(Payment.builder()
+                        .order(order)
+                        .paymentProvider(PaymentProvider.BANK_TRANSFER)
+                        .amount(order.getFinalPrice())
+                        .build());
+
+        payment.setPaymentProvider(PaymentProvider.BANK_TRANSFER);
+        payment.setMethod("계좌이체");
+        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaidAt(LocalDateTime.now());
+        paymentRepository.save(payment);
+
+        order.setOrderStatus(OrderStatus.PENDING);
+        orderRepository.save(order);
+
+        clearOrderedCartItems(order.getId(), memberId);
+    }
+
     // ─── 토스 결제 최종 승인 (/confirm) ──────────────────────────────────
 
     @Transactional
@@ -94,6 +122,7 @@ public class PaymentService {
 
         // 5. 결제 완료 상태로 업데이트
         payment.setPaymentKey(request.getPaymentKey()); // 취소 시 필요
+        payment.setMethod(resolveTossMethod(request.getMethod()));
         payment.setPaymentStatus(PaymentStatus.PAID);   // READY → PAID
         payment.setPaidAt(LocalDateTime.now());          // 결제 완료 시각 기록
         paymentRepository.save(payment);
@@ -195,6 +224,16 @@ public class PaymentService {
         }
         int returnFee = Math.max(payment.getAmount() - requestedCancelAmount, 0);
 
+        if (payment.getPaymentProvider() == PaymentProvider.BANK_TRANSFER) {
+            payment.setPaymentStatus(PaymentStatus.CANCELLED);
+            payment.setCancelReason(cancelReason);
+            payment.setRefundedAmount(requestedCancelAmount);
+            payment.setReturnFee(returnFee);
+            payment.setCancelledAt(LocalDateTime.now());
+            paymentRepository.save(payment);
+            return;
+        }
+
         // 2. PG사별 취소 파라미터 빌드 (모든 PG사 정보를 하나의 DTO에 담음)
         PaymentCancelRequest cancelRequest = PaymentCancelRequest.builder()
                 .paymentKey(payment.getPaymentKey()) // 토스 취소 API URL path variable
@@ -261,6 +300,16 @@ public class PaymentService {
         }
     }
 
+    private String resolveTossMethod(String method) {
+        if ("TRANSFER".equalsIgnoreCase(method)) {
+            return "계좌이체";
+        }
+        if ("TOSSPAY".equalsIgnoreCase(method)) {
+            return "토스페이";
+        }
+        return "카드";
+    }
+
     // provider 문자열로 Gateway 구현체 선택
     // Java 14+ switch expression 사용
     private PaymentGateway resolveGateway(String provider) {
@@ -268,6 +317,7 @@ public class PaymentService {
             case "TOSS"  -> tossPaymentGateway;   // 토스 구현체 반환
             case "KAKAO" -> kakaoPaymentGateway;  // 카카오 구현체 반환
             case "NAVER" -> naverPaymentGateway;  // 네이버 구현체 반환
+            case "BANK_TRANSFER" -> throw new RuntimeException("계좌이체는 별도 PG 연동 대상이 아닙니다.");
             default -> throw new RuntimeException("지원하지 않는 결제 수단입니다: " + provider);
         };
     }
@@ -289,7 +339,7 @@ public class PaymentService {
         // 2. 해당 회원의 장바구니 조회 (없으면 아무것도 안 함)
         cartRepository.findByMemberId(memberId).ifPresent(cart -> {
             // 3. 주문된 상품에 해당하는 아이템만 필터링해서 삭제
-            List<CartItem> toRemove = cartItemRepository.findByCartId(cart.getId())
+            List<CartItem> toRemove = cartItemRepository.findByCartIdOrderByCreatedAtAsc(cart.getId())
                     .stream()
                     .filter(ci -> orderedProductIds.contains(ci.getProduct().getId()))
                     .collect(Collectors.toList());

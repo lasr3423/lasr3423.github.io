@@ -3,9 +3,9 @@
     <div class="mx-auto max-w-5xl">
       <div class="mb-8">
         <p class="point-chip">결제 수단 선택</p>
-        <h1 class="section-title mt-3">원하는 방식으로 결제를 진행해 주세요</h1>
+        <h1 class="section-title mt-3">결제 수단을 선택해 주세요</h1>
         <p class="mt-2 text-sm text-slate-500">
-          카카오페이, 네이버페이, 토스 결제 흐름을 한 화면에서 이어서 진행할 수 있습니다.
+          계좌이체, 토스페이, 카카오페이, 네이버페이 중에서 선택하실 수 있습니다.
         </p>
       </div>
 
@@ -59,58 +59,76 @@
               <p class="mt-1 text-sm text-slate-500">결제할 수단을 선택한 뒤 결제창으로 이동합니다.</p>
             </div>
 
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <button
                 class="rounded-[1.5rem] border p-5 text-left transition"
-                :class="selectedProvider === 'TOSS'
+                :class="selectedPaymentMethod === 'BANK_TRANSFER'
                   ? 'border-brand-700 bg-brand-50 shadow-sm'
                   : 'border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50'"
-                @click="selectedProvider = 'TOSS'"
+                @click="selectedPaymentMethod = 'BANK_TRANSFER'"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-base font-semibold text-slate-900">토스페이먼츠</span>
-                  <span class="rounded-full bg-[#e8f1ff] px-3 py-1 text-xs font-semibold text-[#2169f3]">
-                    즉시 결제
+                  <span class="text-base font-semibold text-slate-900">계좌이체</span>
+                  <span class="rounded-full bg-[#eef6ff] px-3 py-1 text-xs font-semibold text-[#2169f3]">
+                    입금 확인
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  카드 결제를 빠르게 진행할 수 있습니다. 현재 SDK 기반으로 연결되어 있습니다.
+                  계좌이체 주문을 접수한 뒤 입금 확인 절차를 진행합니다.
                 </p>
               </button>
 
               <button
                 class="rounded-[1.5rem] border p-5 text-left transition"
-                :class="selectedProvider === 'KAKAO'
+                :class="selectedPaymentMethod === 'TOSSPAY'
                   ? 'border-brand-700 bg-brand-50 shadow-sm'
                   : 'border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50'"
-                @click="selectedProvider = 'KAKAO'"
+                @click="selectedPaymentMethod = 'TOSSPAY'"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-base font-semibold text-slate-900">토스페이</span>
+                  <span class="rounded-full bg-[#e8f1ff] px-3 py-1 text-xs font-semibold text-[#2169f3]">
+                    간편결제
+                  </span>
+                </div>
+                <p class="mt-3 text-sm leading-6 text-slate-500">
+                  토스페이 결제창으로 이동합니다.
+                </p>
+              </button>
+
+              <button
+                class="rounded-[1.5rem] border p-5 text-left transition"
+                :class="selectedPaymentMethod === 'KAKAO'
+                  ? 'border-brand-700 bg-brand-50 shadow-sm'
+                  : 'border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50'"
+                @click="selectedPaymentMethod = 'KAKAO'"
               >
                 <div class="flex items-center justify-between">
                   <span class="text-base font-semibold text-slate-900">카카오페이</span>
                   <span class="rounded-full bg-[#fff4bf] px-3 py-1 text-xs font-semibold text-[#765400]">
-                    백엔드 연동
+                    결제창 이동
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  백엔드 결제 준비 API를 호출한 뒤 카카오 결제창으로 이동합니다.
+                  카카오페이 결제창으로 이동합니다.
                 </p>
               </button>
 
               <button
                 class="rounded-[1.5rem] border p-5 text-left transition"
-                :class="selectedProvider === 'NAVER'
+                :class="selectedPaymentMethod === 'NAVER'
                   ? 'border-brand-700 bg-brand-50 shadow-sm'
                   : 'border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50'"
-                @click="selectedProvider = 'NAVER'"
+                @click="selectedPaymentMethod = 'NAVER'"
               >
                 <div class="flex items-center justify-between">
                   <span class="text-base font-semibold text-slate-900">네이버페이</span>
                   <span class="rounded-full bg-[#dcfce7] px-3 py-1 text-xs font-semibold text-[#127a37]">
-                    UX 시작
+                    서비스 준비 중
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  네이버페이 SDK를 불러와 팝업 결제 UX를 시작합니다. 현재는 샌드박스 흐름 기준입니다.
+                  네이버페이 결제창으로 이동합니다. 현재는 테스트 환경입니다.
                 </p>
               </button>
             </div>
@@ -129,6 +147,7 @@
                 <p class="mt-1 font-medium text-slate-800">마이페이지 내역 확인</p>
               </div>
             </div>
+
           </section>
         </div>
 
@@ -139,27 +158,29 @@
               {{ formatPrice(orderStore.finalPrice) }}원
             </p>
             <p class="mt-2 text-sm text-slate-500">
-              선택한 결제 수단으로 안전하게 결제를 진행합니다.
+              선택한 결제 수단으로 결제를 진행합니다.
             </p>
 
             <div class="mt-5 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-600">
               <p class="font-semibold text-slate-800">{{ selectedProviderLabel }}</p>
               <p class="mt-2 leading-6">
                 {{
-                  selectedProvider === 'KAKAO'
-                    ? '결제 준비 API 호출 후 카카오 결제창으로 이동합니다.'
-                    : selectedProvider === 'NAVER'
-                      ? '네이버페이 SDK를 불러와 팝업 결제창을 띄웁니다.'
-                      : '토스 결제 SDK를 통해 카드 결제를 진행합니다.'
+                  selectedPaymentMethod === 'KAKAO'
+                    ? '카카오페이 결제창으로 이동합니다.'
+                    : selectedPaymentMethod === 'NAVER'
+                      ? '네이버페이 결제창으로 이동합니다.'
+                      : selectedPaymentMethod === 'BANK_TRANSFER'
+                        ? '계좌이체 주문을 접수합니다.'
+                        : '토스페이 결제를 진행합니다.'
                 }}
               </p>
             </div>
 
             <div
-              v-if="selectedProvider === 'NAVER'"
+              v-if="selectedPaymentMethod === 'NAVER'"
               class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm text-emerald-700"
             >
-              샌드박스 기준으로 네이버페이 팝업을 띄웁니다. 팝업 차단이 켜져 있으면 결제가 시작되지 않을 수 있습니다.
+              네이버페이는 현재 테스트 환경으로 연결됩니다.
             </div>
 
             <button
@@ -167,7 +188,7 @@
               :disabled="loading"
               @click="startPayment"
             >
-              {{ loading ? '결제창 준비 중...' : `${selectedProviderLabel}로 결제하기` }}
+              {{ loading ? '처리 중...' : `${selectedProviderLabel} 결제` }}
             </button>
 
             <button
@@ -197,12 +218,14 @@ const orderStore = useOrderStore()
 const customerName = ref('주문자')
 const customerId = ref(null)
 const loading = ref(false)
-const selectedProvider = ref('KAKAO')
+const selectedPaymentMethod = ref('KAKAO')
 
 const selectedProviderLabel = computed(() => (
-  selectedProvider.value === 'TOSS'
-    ? '토스페이먼츠'
-    : selectedProvider.value === 'NAVER'
+  selectedPaymentMethod.value === 'BANK_TRANSFER'
+    ? '계좌이체'
+    : selectedPaymentMethod.value === 'TOSSPAY'
+      ? '토스페이'
+      : selectedPaymentMethod.value === 'NAVER'
       ? '네이버페이'
       : '카카오페이'
 ))
@@ -258,12 +281,17 @@ async function startPayment() {
     return
   }
 
-  if (selectedProvider.value === 'TOSS') {
-    requestTossPayment()
+  if (selectedPaymentMethod.value === 'BANK_TRANSFER') {
+    await requestBankTransfer()
     return
   }
 
-  if (selectedProvider.value === 'NAVER') {
+  if (selectedPaymentMethod.value === 'TOSSPAY') {
+    requestTossPayment(selectedPaymentMethod.value)
+    return
+  }
+
+  if (selectedPaymentMethod.value === 'NAVER') {
     await requestNaverPayment()
     return
   }
@@ -367,32 +395,68 @@ async function requestNaverPayment() {
   }
 }
 
-async function requestTossPayment() {
+async function requestTossPayment(method) {
   const clientKey = 'test_ck_AQ92ymxN34vmXlbmObdPrajRKXvd'
   const tossPayments = window.TossPayments(clientKey)
   const tossOrderId = buildTossOrderId(orderStore.orderId)
+  const requestMethod = '카드'
 
   persistPaymentMeta(orderStore.orderId, {
     provider: 'TOSS',
+    method,
     amount: orderStore.finalPrice,
     itemName: orderStore.itemName || '도서 주문',
   })
 
   try {
-    await tossPayments.requestPayment('카드', {
+    const requestPayload = {
       amount: orderStore.finalPrice,
       orderId: tossOrderId,
       orderName: orderStore.itemName || '도서 주문',
       customerName: customerName.value,
       successUrl: `${window.location.origin}/payment/success?provider=TOSS`,
       failUrl: `${window.location.origin}/payment/fail?provider=TOSS&orderId=${orderStore.orderId}`,
-    })
+    }
+
+    requestPayload.flowMode = 'DIRECT'
+    requestPayload.easyPay = 'TOSSPAY'
+
+    await tossPayments.requestPayment(requestMethod, requestPayload)
   } catch (error) {
     // 사용자가 결제창을 닫거나 뒤로가기 한 경우 → 장바구니로 이동
     if (error?.code === 'PAY_PROCESS_CANCELED' || error?.code === 'USER_CANCEL') {
       router.push('/cart')
     }
     // 그 외 오류는 무시 (failUrl로 이미 리다이렉트되므로)
+  }
+}
+
+async function requestBankTransfer() {
+  loading.value = true
+
+  try {
+    const orderId = orderStore.orderId
+    const amount = orderStore.finalPrice
+    const itemName = orderStore.itemName || '도서 주문'
+
+    await paymentApi.bankTransfer({ orderId })
+
+    orderStore.clearOrder()
+    router.replace({
+      path: '/payment/complete',
+      query: {
+        orderId,
+        amount,
+        itemName,
+        provider: 'BANK_TRANSFER',
+        approvedAt: new Date().toISOString(),
+      },
+    })
+  } catch (error) {
+    console.error('계좌이체 접수 실패', error)
+    alert(error?.response?.data?.message || '계좌이체 주문 접수 중 문제가 발생했습니다.')
+  } finally {
+    loading.value = false
   }
 }
 </script>

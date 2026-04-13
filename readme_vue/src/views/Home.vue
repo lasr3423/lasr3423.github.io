@@ -1,35 +1,70 @@
 <template>
-  <section class="space-y-8">
-    <section class="relative overflow-hidden rounded-[2rem] bg-brand-800 px-8 py-10 text-white shadow-2xl shadow-brand-900/20 md:px-10 md:py-12">
-      <div class="absolute right-0 top-0 h-52 w-52 rounded-full bg-white/10 blur-3xl"></div>
-      <div class="absolute bottom-0 left-16 h-28 w-28 rounded-full bg-accent-400/30 blur-2xl"></div>
+  <section class="space-y-10">
+    <div class="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]">
+      <article class="relative overflow-hidden rounded-[2rem] bg-brand-800 px-8 py-10 text-white shadow-2xl shadow-brand-900/20">
+        <div class="absolute right-0 top-0 h-52 w-52 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute bottom-0 left-16 h-28 w-28 rounded-full bg-accent-400/30 blur-2xl"></div>
 
-      <div class="relative max-w-3xl space-y-5">
-        <span class="point-chip !bg-white/10 !text-brand-100">ReadMe 큐레이션</span>
-        <h1 class="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl">
-          오늘 읽고 싶은 책을
-          <br>
-          가장 빠르게 만나는 공간
-        </h1>
-        <p class="max-w-2xl text-sm leading-7 text-brand-100 md:text-base">
-          베스트셀러, 신간 도서, 추천 상품을 한눈에 살펴보고 카테고리별 탐색과 실제 리뷰까지 자연스럽게 이어지는
-          도서 탐색 경험을 제공합니다.
-        </p>
-        <div class="flex flex-wrap gap-3 pt-2">
-          <router-link
-            class="rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-800 transition hover:bg-brand-50"
-            to="/product"
-          >
-            전체 도서 보러가기
-          </router-link>
-          <router-link
-            class="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            :to="authStore.isLoggedIn ? '/mypage' : '/signin'"
-          >
-            {{ authStore.isLoggedIn ? '마이페이지' : '로그인' }}
-          </router-link>
+        <div class="relative max-w-2xl space-y-5">
+          <span class="point-chip !bg-white/10 !text-brand-100">봄 시즌 큐레이션</span>
+          <h1 class="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl">
+            이달의 도서를
+            <br>
+            ReadMe에서 확인하세요
+          </h1>
+          <p class="max-w-xl text-sm leading-7 text-brand-100 md:text-base">
+            베스트셀러와 신간, 이벤트 도서를 둘러보고
+            주문부터 배송 조회까지 한곳에서 확인하실 수 있습니다.
+          </p>
+          <div class="flex flex-wrap gap-3 pt-2">
+            <router-link
+              class="rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-800 transition hover:bg-brand-50"
+              to="/product"
+            >
+              전체 도서 보러가기
+            </router-link>
+            <router-link
+              class="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              :to="authStore.isLoggedIn ? '/mypage' : '/signin'"
+            >
+              {{ authStore.isLoggedIn ? '마이페이지' : '로그인' }}
+            </router-link>
+          </div>
         </div>
-      </div>
+      </article>
+
+      <aside class="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
+      <article class="surface-panel card-fixed p-6">
+          <span class="point-chip">이번 주 이벤트</span>
+          <h2 class="mt-4 text-xl font-bold text-slate-900">첫 구매 회원 10% 할인</h2>
+          <p class="card-copy-2 mt-2 text-sm leading-6 text-slate-500">
+            회원가입 후 첫 주문에 사용할 수 있는 할인 혜택 안내입니다.
+          </p>
+          <router-link class="mt-5 inline-flex text-sm font-semibold text-brand-800 hover:text-accent-500" to="/signup">
+            혜택 안내
+          </router-link>
+        </article>
+
+        <article class="card-fixed overflow-hidden rounded-[2rem] border border-accent-100 bg-gradient-to-br from-accent-50 to-white p-6 shadow-sm">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">도서 안내</p>
+          <h2 class="mt-4 text-xl font-bold text-slate-900">카테고리별 도서 안내</h2>
+          <ul class="mt-4 space-y-3 text-sm text-slate-600">
+            <li>베스트셀러와 신간 도서 확인</li>
+            <li>카테고리별 도서 바로가기</li>
+            <li>주문 후 배송 상태 조회</li>
+          </ul>
+        </article>
+      </aside>
+    </div>
+
+    <section class="grid gap-4 md:grid-cols-3">
+      <article v-for="point in servicePoints" :key="point.title" class="surface-panel card-fixed p-5">
+        <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-2xl">
+          {{ point.icon }}
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">{{ point.title }}</h3>
+        <p class="card-copy-3 mt-2 text-sm leading-6 text-slate-500">{{ point.description }}</p>
+      </article>
     </section>
 
     <section class="surface-panel p-6">
@@ -55,13 +90,12 @@
         </div>
       </div>
 
-      <div v-if="featuredLoading" class="py-16 text-center text-sm text-slate-400">도서 목록을 불러오는 중입니다.</div>
-      <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <article
-          v-for="product in activeProducts"
-          :key="`${activeSectionKey}-${product.id}`"
-          class="surface-soft flex h-full cursor-pointer flex-col overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
-          @click="router.push(`/product/${product.id}`)"
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <router-link
+          v-for="cat in quickCategories"
+          :key="cat.id"
+          :to="cat.to"
+          class="surface-soft card-fixed min-h-[7.5rem] items-center gap-3 px-4 py-5 text-center transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white"
         >
           <img
             :src="resolveAssetUrl(product.thumbnail)"
@@ -110,9 +144,10 @@
       <div v-if="categoriesLoading" class="py-12 text-center text-sm text-slate-400">카테고리를 불러오는 중입니다.</div>
       <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <article
-          v-for="category in visibleCategories"
-          :key="category.id"
-          class="surface-soft p-5"
+          v-for="book in featuredBooks"
+          :key="book.id"
+          class="surface-soft card-fixed cursor-pointer overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+          @click="router.push(`/product/${book.id}`)"
         >
           <button
             type="button"
@@ -137,6 +172,10 @@
               {{ subCategory.name }}
             </button>
           </div>
+          <span class="point-chip">{{ book.badge }}</span>
+          <p class="card-title-2 mt-3 text-base font-bold text-slate-900">{{ book.title }}</p>
+          <p class="card-meta-1 mt-1 text-sm text-slate-500">{{ book.author }}</p>
+          <p class="numeric-stable mt-auto pt-4 text-lg font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
         </article>
       </div>
     </section>
@@ -155,10 +194,9 @@
       <div v-if="recentReviewsLoading" class="py-12 text-center text-sm text-slate-400">리뷰를 불러오는 중입니다.</div>
       <div v-else class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <article
-          v-for="review in recentReviews"
-          :key="review.reviewId"
-          class="surface-soft flex h-full cursor-pointer flex-col p-4 transition hover:-translate-y-0.5 hover:shadow-md"
-          @click="router.push(`/review/${review.reviewId}`)"
+          v-for="book in bestSellers"
+          :key="book.id"
+          class="card-fixed rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-200 hover:shadow-md"
         >
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
@@ -174,6 +212,9 @@
           <div class="mt-auto pt-4 text-xs text-slate-400">
             {{ formatDate(review.createdAt) }}
           </div>
+          <p class="card-title-2 text-sm font-bold text-slate-900">{{ book.title }}</p>
+          <p class="card-meta-1 mt-2 text-xs text-slate-500">{{ book.author }}</p>
+          <p class="numeric-stable mt-auto pt-4 text-base font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
         </article>
       </div>
     </section>
@@ -192,47 +233,19 @@ import { resolveAssetUrl } from '@/utils/asset';
 const router = useRouter();
 const authStore = useAuthStore();
 
-const featuredSections = [
-  {
-    key: 'best',
-    label: '베스트셀러',
-    title: '많이 판매된 도서',
-    description: '판매 수가 가장 많은 도서를 기준으로 지금 가장 주목받는 책을 보여드립니다.',
-    badge: 'BEST',
-    sortField: 'salesCount',
-    sortDirection: 'desc',
-  },
-  {
-    key: 'new',
-    label: '신간 도서',
-    title: '가장 최근에 등록된 도서',
-    description: '최근 등록일 기준으로 가장 빠르게 업데이트된 신간 도서를 만나보세요.',
-    badge: 'NEW',
-    sortField: 'createdAt',
-    sortDirection: 'desc',
-  },
-  {
-    key: 'recommend',
-    label: '추천 상품',
-    title: '재고가 넉넉한 추천 상품',
-    description: '재고 수량이 많은 도서를 중심으로 바로 구매하기 좋은 추천 상품을 준비했습니다.',
-    badge: 'PICK',
-    sortField: 'stock',
-    sortDirection: 'desc',
-  },
+const servicePoints = [
+  { icon: '🚚', title: '배송 안내', description: '주문 후 배송 준비부터 배송 완료까지 상태를 확인하실 수 있습니다.' },
+  { icon: '🎁', title: '회원 혜택', description: '회원가입 후 첫 구매 할인과 이벤트 혜택을 안내합니다.' },
+  { icon: '💳', title: '결제 안내', description: '주문 페이지에서 결제 수단과 결제 내역을 확인하실 수 있습니다.' },
 ];
 
-const activeSectionKey = ref('best');
-const featuredProducts = ref({
-  best: [],
-  new: [],
-  recommend: [],
-});
-const categories = ref([]);
-const recentReviews = ref([]);
-const featuredLoading = ref(true);
-const categoriesLoading = ref(true);
-const recentReviewsLoading = ref(true);
+const quickCategories = [
+  { id: 1, name: '한국소설', icon: '📖', to: '/product?topId=1&subId=1' },
+  { id: 2, name: '경제/경영', icon: '📈', to: '/product?topId=1&subId=4' },
+  { id: 3, name: '외국도서', icon: '🌍', to: '/product?topId=2' },
+  { id: 4, name: '그림책', icon: '🧸', to: '/product?topId=3&subId=11' },
+  { id: 5, name: '프로그래밍', icon: '💻', to: '/product?topId=4&subId=20' },
+];
 
 const activeSection = computed(
   () => featuredSections.find((section) => section.key === activeSectionKey.value) ?? featuredSections[0],

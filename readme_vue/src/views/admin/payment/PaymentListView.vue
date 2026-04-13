@@ -46,7 +46,9 @@
               <tr v-for="p in payments" :key="p.paymentId" class="transition hover:bg-slate-50">
                 <td class="px-6 py-4 text-xs text-slate-400">{{ p.paymentId }}</td>
                 <td class="px-6 py-4 font-mono text-xs text-slate-600">{{ p.orderNumber }}</td>
-                <td class="px-6 py-4 text-center text-xs text-slate-500">{{ p.paymentProvider ?? '-' }}</td>
+                <td class="px-6 py-4 text-center text-xs text-slate-500">
+                  {{ paymentMethodLabel(p.paymentProvider, p.method) }}
+                </td>
                 <td class="px-6 py-4 text-right font-semibold text-slate-900">{{ p.amount?.toLocaleString() }}원</td>
                 <td class="px-6 py-4 text-right text-sm" :class="p.returnFee ? 'font-semibold text-rose-600' : 'text-slate-400'">
                   {{ p.returnFee != null ? `${p.returnFee.toLocaleString()}원` : '-' }}
@@ -96,6 +98,19 @@ const statusClass = (s) => ({
   FAILED:    'bg-rose-50 text-rose-700',
 }[s] ?? 'bg-slate-100 text-slate-500')
 const formatDate = (d) => d ? new Date(d).toLocaleString('ko-KR') : '-'
+const methodLabel = (m) => ({ CARD: '카드', TRANSFER: '계좌이체', EASY_PAY: '간편결제' }[m] ?? m)
+const providerLabel = (p) => ({ BANK_TRANSFER: '계좌이체', TOSS: '토스', KAKAO: '카카오페이', NAVER: '네이버페이' }[p] ?? p ?? '-')
+const paymentMethodLabel = (provider, method) => {
+  if (provider === 'BANK_TRANSFER') {
+    return '계좌이체'
+  }
+
+  if (provider === 'TOSS' && method) {
+    return methodLabel(method)
+  }
+
+  return method ? `${providerLabel(provider)} · ${methodLabel(method)}` : providerLabel(provider)
+}
 
 async function fetchPayments() {
   loading.value = true

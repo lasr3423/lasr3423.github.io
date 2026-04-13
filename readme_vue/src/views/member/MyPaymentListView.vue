@@ -4,9 +4,9 @@
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="point-chip">결제 내역</p>
-          <h1 class="section-title mt-3">최근 결제 상태를 한눈에 확인할 수 있어요</h1>
+          <h1 class="section-title mt-3">결제 내역</h1>
           <p class="mt-2 text-sm text-slate-500">
-            완료, 취소, 실패 상태와 결제 수단을 함께 확인할 수 있습니다.
+            결제 상태와 결제 수단을 확인하실 수 있습니다.
           </p>
         </div>
 
@@ -53,8 +53,11 @@
               <span class="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-600">
                 {{ providerLabel(payment.paymentProvider) }}
               </span>
-              <span v-if="payment.method" class="rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700">
-                {{ payment.method }}
+              <span
+                v-if="payment.method && payment.paymentProvider !== 'BANK_TRANSFER'"
+                class="rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700"
+              >
+                {{ methodLabel(payment.method) }}
               </span>
               <span v-if="payment.memberEmail">{{ payment.memberEmail }}</span>
             </div>
@@ -137,7 +140,7 @@
     <div v-else class="surface-panel rounded-[2rem] p-12 text-center">
       <h2 class="text-xl font-semibold text-slate-900">결제 내역이 없습니다</h2>
       <p class="mt-2 text-sm text-slate-500">
-        첫 주문을 완료하면 이곳에서 결제 상태를 확인할 수 있습니다.
+        결제하신 내역이 이곳에 표시됩니다.
       </p>
     </div>
   </div>
@@ -188,10 +191,20 @@ function statusClass(status) {
 
 function providerLabel(provider) {
   return {
-    TOSS: '토스페이먼츠',
+    BANK_TRANSFER: '계좌이체',
+    TOSS: '토스',
     KAKAO: '카카오페이',
     NAVER: '네이버페이',
   }[provider] || provider || '결제 수단 미정'
+}
+
+function methodLabel(method) {
+  return {
+    CARD: '카드',
+    TRANSFER: '계좌이체',
+    EASY_PAY: '간편결제',
+    TOSSPAY: '토스페이',
+  }[method] || method
 }
 
 function formatPrice(value) {

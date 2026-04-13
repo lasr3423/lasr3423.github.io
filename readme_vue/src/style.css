@@ -118,36 +118,32 @@
     @apply text-2xl font-bold tracking-tight text-slate-900;
   }
 
-  .guide-sidebar {
-    @apply overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm;
+  .card-fixed {
+    @apply flex h-full flex-col;
   }
 
-  .guide-sidebar-item {
-    @apply flex items-center gap-3 border-t border-slate-200 px-5 py-4 text-[15px] font-semibold text-slate-700 transition;
+  .card-title-1 {
+    @apply truncate break-all;
   }
 
-  .guide-sidebar-item:first-child {
-    border-top: 0;
+  .card-title-2 {
+    @apply line-clamp-2 min-h-12 break-words;
   }
 
-  .guide-sidebar-item:hover {
-    @apply bg-brand-50 text-brand-800;
+  .card-copy-2 {
+    @apply line-clamp-2 min-h-12 break-words;
   }
 
-  .guide-sidebar-item-active {
-    @apply bg-brand-800 text-white;
+  .card-copy-3 {
+    @apply line-clamp-3 min-h-[4.5rem] break-words;
   }
 
-  .guide-sidebar-group {
-    @apply border-t border-slate-200 bg-slate-50/70 px-5 py-4 text-[15px] font-semibold text-slate-700;
+  .card-meta-1 {
+    @apply truncate;
   }
 
-  .guide-sidebar-badge {
-    @apply ml-auto inline-flex min-w-8 items-center justify-center rounded-full bg-slate-200 px-2 py-0.5 text-xs font-bold text-brand-800;
-  }
-
-  .guide-sidebar-badge-hot {
-    @apply bg-rose-500 text-white;
+  .numeric-stable {
+    font-variant-numeric: tabular-nums;
   }
 }
 

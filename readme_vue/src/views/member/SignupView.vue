@@ -4,7 +4,7 @@
       <p class="text-sm font-semibold uppercase tracking-[0.24em] text-brand-700">Join</p>
       <h1 class="text-3xl font-bold tracking-tight text-slate-900">ReadMe 회원가입</h1>
       <p class="text-sm leading-6 text-slate-500">
-        기본 정보를 입력하고 ReadMe에서 도서 탐색과 주문 서비스를 시작해보세요.
+        기본 정보를 입력해 회원가입을 진행해 주세요.
       </p>
     </div>
 

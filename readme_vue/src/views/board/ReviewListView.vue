@@ -9,7 +9,7 @@
       <div class="border-b border-slate-100 px-6 pt-6 pb-5">
         <p class="text-xs font-semibold uppercase tracking-[0.22em] text-brand-700">Book Review</p>
         <h1 class="mt-2 text-2xl font-black tracking-tight text-slate-900">독자들의 생생한 리뷰</h1>
-        <p class="mt-1 text-sm text-slate-400">아래에서 더 많은 리뷰를 확인하고 직접 작성해보세요.</p>
+        <p class="mt-1 text-sm text-slate-400">등록된 리뷰를 확인하고 직접 작성하실 수 있습니다.</p>
       </div>
 
       <!-- 상품 필터 칩 -->
@@ -55,7 +55,7 @@
           <article
             v-for="review in featuredReviews"
             :key="`card-${review.reviewId}`"
-            class="flex flex-col rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
+            class="card-fixed rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
             @click="scrollToFeedAndSelect(review.reviewId)"
           >
             <!-- 작성자 + 별점 -->
@@ -64,7 +64,7 @@
                 {{ getInitial(review.memberName) }}
               </div>
               <div class="min-w-0 flex-1">
-                <p class="font-semibold text-slate-900 text-sm">{{ review.memberName }}</p>
+                <p class="card-title-1 font-semibold text-slate-900 text-sm">{{ review.memberName }}</p>
                 <p class="text-xs text-slate-400">{{ formatDate(review.createdAt) }}</p>
               </div>
               <span class="shrink-0 text-sm text-amber-400">{{ renderStars(review.rating) }}</span>
@@ -76,7 +76,7 @@
             </span>
 
             <!-- 내용 미리보기 -->
-            <p class="mt-3 flex-1 line-clamp-3 text-sm leading-6 text-slate-600">{{ review.content }}</p>
+            <p class="card-copy-3 mt-3 flex-1 text-sm leading-6 text-slate-600">{{ review.content }}</p>
 
             <!-- 푸터 -->
             <div class="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-400">

@@ -7,7 +7,7 @@
             <p class="text-sm font-semibold uppercase tracking-[0.18em] text-brand-700">Catalog</p>
             <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">도서 목록</h1>
             <p class="mt-2 text-sm leading-6 text-slate-500">
-              카테고리와 검색 조건을 조합해서 원하는 도서를 빠르게 찾을 수 있어요.
+              카테고리와 검색 조건으로 도서를 찾으실 수 있습니다.
             </p>
           </div>
 
@@ -93,19 +93,16 @@
           <p class="text-xs text-slate-400">{{ resultSortLabel }}</p>
         </div>
 
-        <div
-          v-if="productStore.products.length === 0"
-          class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center"
-        >
-          <p class="text-base font-semibold text-slate-700">조건에 맞는 도서가 없어요.</p>
-          <p class="mt-2 text-sm text-slate-500">다른 검색어 또는 카테고리로 다시 찾아보세요.</p>
+        <div v-if="productStore.products.length === 0" class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
+          <p class="text-base font-semibold text-slate-700">검색 결과가 없습니다.</p>
+          <p class="mt-2 text-sm text-slate-500">검색어 또는 카테고리를 다시 선택해 주세요.</p>
         </div>
 
         <div v-else class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           <article
             v-for="product in productStore.products"
             :key="product.id"
-            class="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
+            class="card-fixed group overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
           >
             <div class="relative cursor-pointer overflow-hidden bg-slate-100" @click="goToDetail(product.id)">
               <img
@@ -132,20 +129,20 @@
             <div class="flex flex-1 flex-col p-5">
               <button
                 type="button"
-                class="line-clamp-2 text-left text-base font-bold leading-6 text-slate-900 transition hover:text-brand-700"
+                class="card-title-2 text-left text-base font-bold leading-6 text-slate-900 transition hover:text-brand-700"
                 @click="goToDetail(product.id)"
               >
                 {{ product.title }}
               </button>
-              <p class="mt-2 text-sm text-slate-500">{{ product.author }}</p>
+              <p class="card-meta-1 mt-2 text-sm text-slate-500">{{ product.author }}</p>
 
-              <div class="mt-4 flex items-end gap-2">
+              <div class="mt-auto flex items-end gap-2 pt-4">
                 <span v-if="Number(product.discountRate) > 0" class="text-sm font-bold text-accent-600">
                   {{ Number(product.discountRate) }}%
                 </span>
-                <span class="text-xl font-bold text-brand-800">{{ Number(product.salePrice).toLocaleString() }}원</span>
+                <span class="numeric-stable text-xl font-bold text-brand-800">{{ Number(product.salePrice).toLocaleString() }}원</span>
               </div>
-              <p class="mt-1 text-sm text-slate-400 line-through">{{ Number(product.price).toLocaleString() }}원</p>
+              <p class="numeric-stable mt-1 text-sm text-slate-400 line-through">{{ Number(product.price).toLocaleString() }}원</p>
 
               <button
                 type="button"
@@ -221,6 +218,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { useCartStore } from '@/store/cart';
 import { useProductStore } from '@/store/product';
+import { categoryApi } from '@/api/category';
 import { resolveAssetUrl } from '@/utils/asset';
 
 const router = useRouter();
@@ -233,46 +231,28 @@ const selectedTopId = ref(null);
 const selectedSubId = ref(null);
 const searchKeyword = ref('');
 const searchType = ref('title');
-const sortField = ref('createdAt');
-const sortDirection = ref('desc');
+const categories = ref([]);
 
-const categoryTabs = [
+const categoryTabs = computed(() => [
   { label: '전체', topId: null },
-  { label: '국내도서', topId: 1 },
-  { label: '해외도서', topId: 2 },
-  { label: '일본도서', topId: 3 },
-];
-
-const subCategoryMap = {
-  1: [
-    { label: '전체', subId: null },
-    { label: '소설', subId: 1 },
-    { label: 'IT/컴퓨터', subId: 2 },
-    { label: '자기계발', subId: 3 },
-    { label: '경제/경영', subId: 4 },
-    { label: '역사/문화', subId: 5 },
-  ],
-  2: [
-    { label: '전체', subId: null },
-    { label: '소설', subId: 6 },
-    { label: '자기계발', subId: 7 },
-    { label: '비즈니스', subId: 8 },
-    { label: '과학', subId: 9 },
-    { label: '역사', subId: 10 },
-  ],
-  3: [
-    { label: '전체', subId: null },
-    { label: '소설', subId: 11 },
-    { label: '자기계발', subId: 12 },
-    { label: '비즈니스', subId: 13 },
-    { label: '과학', subId: 14 },
-    { label: '역사', subId: 15 },
-  ],
-};
+  ...categories.value.map((top) => ({
+    label: top.name,
+    topId: Number(top.id),
+  })),
+]);
 
 const subCategoryTabs = computed(() => {
   if (selectedTopId.value === null) return [];
-  return subCategoryMap[selectedTopId.value] ?? [];
+  const top = categories.value.find((item) => Number(item.id) === selectedTopId.value);
+  if (!top) return [];
+
+  return [
+    { label: '전체', subId: null },
+    ...(Array.isArray(top.subCategories) ? top.subCategories : []).map((sub) => ({
+      label: sub.name,
+      subId: Number(sub.id),
+    })),
+  ];
 });
 
 const resultSortLabel = computed(() => {
@@ -370,6 +350,16 @@ async function fetchByRoute() {
   );
 }
 
+async function fetchCategories() {
+  try {
+    const { data } = await categoryApi.getTopCategories();
+    categories.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('상품 카테고리 조회 실패', error);
+    categories.value = [];
+  }
+}
+
 watch(
   () => route.fullPath,
   () => {
@@ -378,6 +368,7 @@ watch(
 );
 
 onMounted(() => {
+  fetchCategories();
   fetchByRoute();
 });
 </script>

@@ -1,5 +1,6 @@
 package com.bookstore.shop.readme.service;
 
+import com.bookstore.shop.readme.domain.CategoryStatus;
 import com.bookstore.shop.readme.domain.CategorySub;
 import com.bookstore.shop.readme.domain.CategoryTop;
 import com.bookstore.shop.readme.dto.response.CategoryResponse;
@@ -23,10 +24,10 @@ public class CategoryService {
 
     /** 대분류 카테고리 전체 목록 (소분류 포함) — 사이드바/네비게이션용 */
     public ResponseEntity<List<CategoryResponse>> getCategoryList() {
-        List<CategoryTop> tops = categoryTopRepository.findAll();
+        List<CategoryTop> tops = categoryTopRepository.findByCategoryStatusOrderBySortOrderAsc(CategoryStatus.ACTIVATE);
         List<CategoryResponse> result = tops.stream()
                 .map(top -> new CategoryResponse(top,
-                        categorySubRepository.findByCategoryTopIdOrderBySortOrderAsc(top.getId())))
+                        categorySubRepository.findByCategoryTopIdAndCategoryStatusOrderBySortOrderAsc(top.getId(), CategoryStatus.ACTIVATE)))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(result);
     }
@@ -34,7 +35,7 @@ public class CategoryService {
     /** 특정 대분류의 소분류 목록만 조회 */
     public ResponseEntity<List<CategoryResponse.SubCategoryDto>> getSubCategories(Long topId) {
         List<CategorySub> subs =
-                categorySubRepository.findByCategoryTopIdOrderBySortOrderAsc(topId);
+                categorySubRepository.findByCategoryTopIdAndCategoryStatusOrderBySortOrderAsc(topId, CategoryStatus.ACTIVATE);
         List<CategoryResponse.SubCategoryDto> result = subs.stream()
                 .map(CategoryResponse.SubCategoryDto::new)
                 .collect(Collectors.toList());

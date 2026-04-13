@@ -1,6 +1,7 @@
 import api from '@/api/axios'
 
 export const paymentApi = {
+  bankTransfer: (data) => api.post('/api/order/payment/bank-transfer', data),
   ready: (data) => api.post('/api/order/payment/ready', data),
   confirm: (data) => api.post('/api/order/payment/confirm', data),
   approve: (data) => api.post('/api/order/payment/approve', data),

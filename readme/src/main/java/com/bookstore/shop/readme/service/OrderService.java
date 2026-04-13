@@ -39,6 +39,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    private static final String ADMIN_CANCEL_REASON = "관리자 주문 취소";
+    private static final String ADMIN_OUT_OF_STOCK_BULK_CANCEL_REASON = "관리자 품절 일괄 취소";
 
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
@@ -162,7 +164,11 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
         OrderStatus nextStatus = parseOrderStatus(status);
-        applyOrderStatusChange(order, nextStatus);
+        if (nextStatus == OrderStatus.CANCELED) {
+            cancelOrderInternal(order, ADMIN_CANCEL_REASON);
+        } else {
+            applyOrderStatusChange(order, nextStatus);
+        }
 
         return ResponseEntity.ok("주문 상태가 변경되었습니다.");
     }
@@ -179,6 +185,14 @@ public class OrderService {
             throw new RuntimeException("일부 주문을 찾을 수 없습니다.");
         }
 
+        if (nextStatus == OrderStatus.CANCELED) {
+            validateOutOfStockOrdersForBulkCancel(orders);
+            for (Order order : orders) {
+                cancelOrderInternal(order, ADMIN_OUT_OF_STOCK_BULK_CANCEL_REASON);
+            }
+            return ResponseEntity.ok(orders.size() + "건의 주문이 품절 취소되었습니다.");
+        }
+
         for (Order order : orders) {
             applyOrderStatusChange(order, nextStatus);
         }
@@ -191,6 +205,10 @@ public class OrderService {
         Order order = orderRepository.findByIdAndMemberId(orderId, memberId)
                 .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
 
+        cancelOrderInternal(order, cancelReason);
+    }
+
+    private void cancelOrderInternal(Order order, String cancelReason) {
         if (order.getOrderStatus() == OrderStatus.CANCELED) {
             throw new RuntimeException("이미 취소된 주문입니다.");
         }
@@ -199,14 +217,14 @@ public class OrderService {
             throw new RuntimeException("배송 완료된 주문은 주문 취소가 불가능합니다.");
         }
 
-        boolean shippingStarted = hasShippingStarted(orderId, order.getOrderStatus());
+        boolean shippingStarted = hasShippingStarted(order.getId(), order.getOrderStatus());
         int returnFee = shippingStarted ? RETURN_FEE : 0;
 
-        paymentRepository.findByOrderId(orderId).ifPresent(payment -> {
+        paymentRepository.findByOrderId(order.getId()).ifPresent(payment -> {
             if (payment.getPaymentStatus() == PaymentStatus.PAID || payment.getPaymentStatus() == PaymentStatus.READY) {
                 int refundAmount = Math.max(payment.getAmount() - returnFee, 0);
                 String detailedCancelReason = buildCancelReason(cancelReason, returnFee, refundAmount, payment.getAmount());
-                paymentService.cancelPayment(orderId, detailedCancelReason, refundAmount);
+                paymentService.cancelPayment(order.getId(), detailedCancelReason, refundAmount);
             }
         });
 
@@ -317,8 +335,30 @@ public class OrderService {
         );
     }
 
+    private void validateOutOfStockOrdersForBulkCancel(List<Order> orders) {
+        List<Long> orderIds = orders.stream().map(Order::getId).toList();
+        Map<Long, List<OrderItem>> itemsByOrderId = buildItemsByOrderId(orderIds);
+
+        boolean hasInvalidOrder = orders.stream()
+                .anyMatch(order -> !hasOutOfStockItem(itemsByOrderId.get(order.getId())));
+
+        if (hasInvalidOrder) {
+            throw new RuntimeException("재고가 주문 수량보다 부족한 상품이 포함된 주문만 일괄 취소할 수 있습니다.");
+        }
+    }
+
     private Page<OrderListResponse> buildOrderListResponsePage(Page<Order> ordersPage) {
         List<Long> orderIds = ordersPage.getContent().stream().map(Order::getId).toList();
+        Map<Long, List<OrderItem>> itemsByOrderId = buildItemsByOrderId(orderIds);
+
+        return ordersPage.map(order -> new OrderListResponse(
+                order,
+                buildItemSummary(itemsByOrderId.get(order.getId())),
+                hasOutOfStockItem(itemsByOrderId.get(order.getId()))
+        ));
+    }
+
+    private Map<Long, List<OrderItem>> buildItemsByOrderId(List<Long> orderIds) {
         Map<Long, List<OrderItem>> itemsByOrderId = new HashMap<>();
 
         if (!orderIds.isEmpty()) {
@@ -327,7 +367,7 @@ public class OrderService {
             }
         }
 
-        return ordersPage.map(order -> new OrderListResponse(order, buildItemSummary(itemsByOrderId.get(order.getId()))));
+        return itemsByOrderId;
     }
 
     private String buildItemSummary(List<OrderItem> items) {
@@ -340,5 +380,15 @@ public class OrderService {
         return items.size() == 1
                 ? first.getProductTitle()
                 : first.getProductTitle() + " 외 " + (items.size() - 1) + "건";
+    }
+
+    private boolean hasOutOfStockItem(List<OrderItem> items) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+
+        return items.stream().anyMatch(item ->
+                item.getProduct() == null || item.getProduct().getStock() < item.getQuantity()
+        );
     }
 }
