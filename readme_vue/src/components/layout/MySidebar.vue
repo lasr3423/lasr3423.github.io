@@ -24,7 +24,6 @@
 const menuItems = [
   { label: '주문 / 배송 조회', to: '/mypage/order' },
   { label: '결제 내역', to: '/mypage/payment' },
-  { label: '장바구니', to: '/cart' },
   { label: '내 문의 (QnA)', to: '/mypage/qna' },
   { label: '내 리뷰', to: '/mypage/review' },
   { label: '회원정보 변경', to: '/mypage/edit' },
