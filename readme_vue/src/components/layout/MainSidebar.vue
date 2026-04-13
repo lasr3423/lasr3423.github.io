@@ -63,8 +63,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { categoryApi } from '@/api/category'
 
 const route = useRoute()
 
@@ -81,43 +82,34 @@ const serviceMenus = [
   { label: '공지사항',   to: '/notice' },
 ]
 
-const categories = [
-  {
-    id: 1,
-    name: '국내도서',
-    subs: [
-      { id: 1,  name: '소설' },
-      { id: 2,  name: 'IT/컴퓨터' },
-      { id: 3,  name: '자기계발' },
-      { id: 4,  name: '경제/경영' },
-      { id: 5,  name: '역사/문화' },
-    ],
-  },
-  {
-    id: 2,
-    name: '외국도서',
-    subs: [
-      { id: 6,  name: '소설' },
-      { id: 7,  name: '자기계발' },
-      { id: 8,  name: '경제/경영' },
-      { id: 9,  name: '과학' },
-      { id: 10, name: '역사' },
-    ],
-  },
-  {
-    id: 3,
-    name: '일본도서',
-    subs: [
-      { id: 11, name: '소설' },
-      { id: 12, name: '자기계발' },
-      { id: 13, name: '비즈니스' },
-      { id: 14, name: '과학' },
-      { id: 15, name: '역사' },
-    ],
-  },
-]
+const categories = ref([])
 
 const activeTopId = ref(Number(route.query.topId) || 1)
+
+async function fetchCategories() {
+  try {
+    const { data } = await categoryApi.getTopCategories()
+    categories.value = Array.isArray(data)
+      ? data.map((top) => ({
+          id: Number(top.id),
+          name: top.name,
+          subs: Array.isArray(top.subCategories)
+            ? top.subCategories.map((sub) => ({
+                id: Number(sub.id),
+                name: sub.name,
+              }))
+            : [],
+        }))
+      : []
+
+    if (!route.query.topId && categories.value.length > 0) {
+      activeTopId.value = categories.value[0].id
+    }
+  } catch (error) {
+    console.error('사이드바 카테고리 조회 실패', error)
+    categories.value = []
+  }
+}
 
 function toggleTop(id) {
   activeTopId.value = activeTopId.value === id ? null : id
@@ -126,4 +118,16 @@ function toggleTop(id) {
 function isActiveSub(topId, subId) {
   return Number(route.query.topId) === topId && Number(route.query.subId) === subId
 }
+
+watch(
+  () => route.query.topId,
+  (topId) => {
+    activeTopId.value = topId ? Number(topId) : (categories.value[0]?.id ?? null)
+  },
+  { immediate: true },
+)
+
+onMounted(() => {
+  fetchCategories()
+})
 </script>

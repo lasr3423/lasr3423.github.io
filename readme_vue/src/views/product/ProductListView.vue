@@ -218,6 +218,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import { useCartStore } from '@/store/cart';
 import { useProductStore } from '@/store/product';
+import { categoryApi } from '@/api/category';
 import { resolveAssetUrl } from '@/utils/asset';
 
 const router = useRouter();
@@ -230,44 +231,28 @@ const selectedTopId = ref(null);
 const selectedSubId = ref(null);
 const searchKeyword = ref('');
 const searchType = ref('title');
+const categories = ref([]);
 
-const categoryTabs = [
+const categoryTabs = computed(() => [
   { label: '전체', topId: null },
-  { label: '국내도서', topId: 1 },
-  { label: '해외도서', topId: 2 },
-  { label: '일본도서', topId: 3 },
-];
-
-const subCategoryMap = {
-  1: [
-    { label: '전체', subId: null },
-    { label: '소설', subId: 1 },
-    { label: '자기계발', subId: 2 },
-    { label: '경제/경영', subId: 3 },
-    { label: '과학/기술', subId: 4 },
-    { label: '역사/문화', subId: 5 },
-  ],
-  2: [
-    { label: '전체', subId: null },
-    { label: '소설', subId: 6 },
-    { label: '자기계발', subId: 7 },
-    { label: '비즈니스', subId: 8 },
-    { label: '과학', subId: 9 },
-    { label: '역사', subId: 10 },
-  ],
-  3: [
-    { label: '전체', subId: null },
-    { label: '소설', subId: 11 },
-    { label: '자기계발', subId: 12 },
-    { label: '비즈니스', subId: 13 },
-    { label: '과학', subId: 14 },
-    { label: '역사', subId: 15 },
-  ],
-};
+  ...categories.value.map((top) => ({
+    label: top.name,
+    topId: Number(top.id),
+  })),
+]);
 
 const subCategoryTabs = computed(() => {
   if (selectedTopId.value === null) return [];
-  return subCategoryMap[selectedTopId.value] ?? [];
+  const top = categories.value.find((item) => Number(item.id) === selectedTopId.value);
+  if (!top) return [];
+
+  return [
+    { label: '전체', subId: null },
+    ...(Array.isArray(top.subCategories) ? top.subCategories : []).map((sub) => ({
+      label: sub.name,
+      subId: Number(sub.id),
+    })),
+  ];
 });
 
 const pageRange = computed(() => {
@@ -342,6 +327,16 @@ async function fetchByRoute() {
   await productStore.fetchProducts(page, selectedTopId.value, selectedSubId.value, searchKeyword.value);
 }
 
+async function fetchCategories() {
+  try {
+    const { data } = await categoryApi.getTopCategories();
+    categories.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('상품 카테고리 조회 실패', error);
+    categories.value = [];
+  }
+}
+
 watch(
   () => route.fullPath,
   () => {
@@ -350,6 +345,7 @@ watch(
 );
 
 onMounted(() => {
+  fetchCategories();
   fetchByRoute();
 });
 </script>

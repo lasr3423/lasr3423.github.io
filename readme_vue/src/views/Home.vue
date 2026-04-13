@@ -168,11 +168,11 @@ const servicePoints = [
 ];
 
 const quickCategories = [
-  { id: 1, name: '소설', icon: '📖', to: '/product?topId=1&subId=1' },
-  { id: 2, name: 'IT/컴퓨터', icon: '💻', to: '/product?topId=1&subId=2' },
-  { id: 3, name: '자기계발', icon: '🌱', to: '/product?topId=1&subId=3' },
-  { id: 4, name: '경제/경영', icon: '📈', to: '/product?topId=2&subId=8' },
-  { id: 5, name: '외국도서', icon: '🌍', to: '/product?topId=2' },
+  { id: 1, name: '한국소설', icon: '📖', to: '/product?topId=1&subId=1' },
+  { id: 2, name: '경제/경영', icon: '📈', to: '/product?topId=1&subId=4' },
+  { id: 3, name: '외국도서', icon: '🌍', to: '/product?topId=2' },
+  { id: 4, name: '그림책', icon: '🧸', to: '/product?topId=3&subId=11' },
+  { id: 5, name: '프로그래밍', icon: '💻', to: '/product?topId=4&subId=20' },
 ];
 
 const featuredBooks = [

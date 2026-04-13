@@ -2,30 +2,34 @@
   <footer class="mt-12 border-t border-slate-200 bg-slate-50">
 
     <!-- 상단: 브랜드 + 링크 -->
-    <div class="mx-auto flex max-w-[1440px] flex-col items-center gap-10 px-6 py-10 text-center">
+    <div class="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-10 text-center lg:flex-row lg:items-center lg:justify-between lg:gap-[47px] lg:text-left">
 
       <!-- 브랜드 -->
-      <div class="w-52 shrink-0">
-        <p class="text-lg font-bold text-brand-800">📚 ReadMe</p>
-        <p class="mt-2 text-xs leading-[1.9] text-slate-400">
-          도서 검색과 주문, 배송 조회를<br />이용할 수 있는 온라인 서점 ReadMe입니다.<br />국내외 도서를 확인하실 수 있습니다.
-        </p>
-        <div class="mt-4 flex flex-wrap justify-center gap-2">
-          <a
-            href="#"
-            class="rounded border border-slate-300 px-3 py-1.5 text-[11px] text-slate-500 transition hover:border-brand-800 hover:text-brand-800"
-          >🍎 App Store</a>
-          <a
-            href="#"
-            class="rounded border border-slate-300 px-3 py-1.5 text-[11px] text-slate-500 transition hover:border-brand-800 hover:text-brand-800"
-          >▶ Google Play</a>
+      <div class="shrink-0 lg:self-start">
+        <div class="flex flex-col items-center gap-4 lg:flex-row lg:items-center lg:gap-4">
+          <div class="w-52 shrink-0">
+            <p class="text-lg font-bold text-brand-800">📚 ReadMe</p>
+            <p class="mt-2 text-xs leading-[1.9] text-slate-400">
+              도서 검색과 주문, 배송 조회를<br />이용할 수 있는 온라인 서점 ReadMe입니다.<br />국내외 도서를 확인하실 수 있습니다.
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <a
+              href="#"
+              class="rounded border border-slate-300 px-3 py-1.5 text-[11px] text-slate-500 transition hover:border-brand-800 hover:text-brand-800"
+            >🍎 App Store</a>
+            <a
+              href="#"
+              class="rounded border border-slate-300 px-3 py-1.5 text-[11px] text-slate-500 transition hover:border-brand-800 hover:text-brand-800"
+            >▶ Google Play</a>
+          </div>
         </div>
       </div>
 
       <!-- 링크 컬럼 4개 -->
-      <div class="flex flex-wrap justify-center gap-8">
+      <div class="flex flex-1 flex-wrap justify-center gap-8 lg:justify-end">
 
-        <div class="flex min-w-[100px] flex-col items-center gap-2">
+        <div class="flex min-w-[100px] flex-col items-center gap-2 lg:items-start">
           <p class="mb-1 text-sm font-bold text-brand-800">고객 서비스</p>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">공지사항</a>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">자주 묻는 질문</a>
@@ -35,7 +39,7 @@
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">이용 가이드</a>
         </div>
 
-        <div class="flex min-w-[100px] flex-col items-center gap-2">
+        <div class="flex min-w-[100px] flex-col items-center gap-2 lg:items-start">
           <p class="mb-1 text-sm font-bold text-brand-800">회사 정보</p>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">회사 소개</a>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">채용 정보</a>
@@ -44,7 +48,7 @@
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">제휴 문의</a>
         </div>
 
-        <div class="flex min-w-[100px] flex-col items-center gap-2">
+        <div class="flex min-w-[100px] flex-col items-center gap-2 lg:items-start">
           <p class="mb-1 text-sm font-bold text-brand-800">서비스</p>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">프리미엄 구독</a>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">전자책</a>
@@ -53,7 +57,7 @@
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">기업 솔루션</a>
         </div>
 
-        <div class="flex min-w-[100px] flex-col items-center gap-2">
+        <div class="flex min-w-[100px] flex-col items-center gap-2 lg:items-start">
           <p class="mb-1 text-sm font-bold text-brand-800">정책</p>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">개인정보처리방침</a>
           <a href="#" class="text-xs text-slate-400 transition hover:text-accent-500">이용약관</a>

@@ -23,6 +23,7 @@ import java.util.Set;
 
 @Component
 @org.springframework.core.annotation.Order(2)
+@ConditionalOnProperty(name = "seed.commerce.enabled", havingValue = "true")
 @ConditionalOnProperty(name = "seed.product-topup.enabled", havingValue = "false", matchIfMissing = true)
 @RequiredArgsConstructor
 public class TestCommerceDataInitializer implements CommandLineRunner {
