@@ -36,6 +36,13 @@ public class ReviewService {
                         .map(ReviewResponse::new));
     }
 
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<ReviewResponse>> getRecentReviews(Pageable pageable) {
+        return ResponseEntity.ok(
+                reviewRepository.findAllByDeletedAtIsNull(pageable)
+                        .map(ReviewResponse::new));
+    }
+
     // ── 리뷰 상세 조회 (hits 자동 증가 — REQ-R-005) ──────────────────────────
     public ResponseEntity<ReviewResponse> getReviewDetail(Long reviewId) {
         Review review = findActiveReview(reviewId);

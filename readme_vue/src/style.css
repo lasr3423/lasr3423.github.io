@@ -5,33 +5,33 @@
   --font-sans: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
 
   /* Style Guide: Primary */
-  --color-brand-50: #f3f6fb;
-  --color-brand-100: #dde7f5;
-  --color-brand-200: #bccde7;
-  --color-brand-300: #8ea8d0;
-  --color-brand-400: #5f82b6;
-  --color-brand-500: #3d6292;
-  --color-brand-600: #264873;
-  --color-brand-700: #173251;
-  --color-brand-800: #102540;
-  --color-brand-900: #0b1a2f;
+  --color-brand-50: #eef4f8;
+  --color-brand-100: #dbe5ee;
+  --color-brand-200: #bccddc;
+  --color-brand-300: #97b0c6;
+  --color-brand-400: #6d8bab;
+  --color-brand-500: #486b92;
+  --color-brand-600: #27496e;
+  --color-brand-700: #173a5b;
+  --color-brand-800: #092c4c;
+  --color-brand-900: #071f36;
 
   /* Style Guide: Point */
   --color-accent-50: #fff4ea;
-  --color-accent-100: #ffe2c7;
-  --color-accent-200: #ffc48c;
-  --color-accent-300: #ffab5e;
-  --color-accent-400: #f89a3f;
-  --color-accent-500: #ef7d1a;
-  --color-accent-600: #d86408;
+  --color-accent-100: #ffe5ce;
+  --color-accent-200: #ffd1a8;
+  --color-accent-300: #ffb679;
+  --color-accent-400: #f9a151;
+  --color-accent-500: #f2954a;
+  --color-accent-600: #dd7d2f;
 
   /* Style Guide: UI Neutral */
-  --color-surface-50: #f8fafc;
-  --color-surface-100: #f1f5f9;
-  --color-surface-200: #e2e8f0;
+  --color-surface-50: #f9f9f8;
+  --color-surface-100: #f3f4f6;
+  --color-surface-200: #e5e7eb;
   --color-ink-700: #334155;
-  --color-ink-800: #1e293b;
-  --color-ink-900: #0f172a;
+  --color-ink-800: #1f2937;
+  --color-ink-900: #111827;
 }
 
 @layer base {
@@ -47,9 +47,9 @@
     margin: 0;
     min-height: 100vh;
     background:
-      radial-gradient(circle at top, rgba(255, 244, 234, 0.9), transparent 28%),
-      radial-gradient(circle at right top, rgba(221, 231, 245, 0.9), transparent 24%),
-      linear-gradient(180deg, #f8fafc 0%, #ffffff 38%, #f6f8fc 100%);
+      radial-gradient(circle at top, rgba(242, 149, 74, 0.08), transparent 22%),
+      radial-gradient(circle at right top, rgba(9, 44, 76, 0.08), transparent 26%),
+      linear-gradient(180deg, #f6f6f5 0%, #fbfbfb 40%, #f4f5f7 100%);
     color: var(--color-ink-800);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

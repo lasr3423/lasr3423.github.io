@@ -3,6 +3,7 @@
     <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">주문 관리</h1>
+      <p class="mt-1 text-sm text-slate-400">주문 상태를 확인하고 승인 또는 후속 처리가 필요한 주문을 정리합니다.</p>
     </section>
 
     <!-- 상태 필터 -->

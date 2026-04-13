@@ -46,6 +46,10 @@ const router = createRouter({
           component: () => import('@/views/board/ReviewListView.vue')
         },
         {
+          path: 'review/:reviewId',
+          component: () => import('@/views/board/ReviewDetailView.vue')
+        },
+        {
           path: 'cart',
           component: () => import('@/views/cart/CartView.vue'),
           meta: { requiresAuth: true }

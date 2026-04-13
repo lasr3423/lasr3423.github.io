@@ -3,6 +3,7 @@
     <section class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">My Account</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">마이페이지</h1>
+      <p class="mt-2 text-sm text-slate-500">내 정보와 주문, 결제, 활동 내역을 한곳에서 편하게 관리해 보세요.</p>
     </section>
 
     <div v-if="loading" class="flex items-center justify-center py-16 text-sm text-slate-400">불러오는 중...</div>

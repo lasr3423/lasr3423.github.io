@@ -5,7 +5,7 @@
         <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-600">
           ✓
         </div>
-        <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 처리 중</p>
+        <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 완료</p>
         <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
           결제 승인 확인 중
         </h1>
