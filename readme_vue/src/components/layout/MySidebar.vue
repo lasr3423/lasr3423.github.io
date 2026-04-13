@@ -1,7 +1,7 @@
 <template>
   <aside class="hidden w-64 shrink-0 xl:block">
     <div class="sticky top-24 guide-sidebar">
-      <div class="border-b border-slate-200 bg-brand-800 px-5 py-4 text-sm font-semibold tracking-[0.2em] text-white">
+      <div class="rounded-[1.25rem] bg-brand-800 px-5 py-4 text-sm font-semibold tracking-[0.2em] text-white">
         마이페이지
       </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
+  <header class="sticky top-0 z-40 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
     <div class="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-4 lg:px-6">
       <router-link to="/admin" class="shrink-0 text-2xl font-bold tracking-tight text-brand-800">
         ReadMe

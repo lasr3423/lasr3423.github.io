@@ -1,5 +1,5 @@
 <template>
-  <footer class="mt-12 border-t border-slate-200 bg-slate-50">
+  <footer class="mt-12 bg-white/80 shadow-[0_-10px_30px_rgba(15,23,42,0.04)] backdrop-blur">
 
     <!-- 상단: 브랜드 + 링크 -->
     <div class="mx-auto flex max-w-[1440px] flex-col gap-8 px-6 py-10 text-center lg:flex-row lg:items-center lg:justify-between lg:gap-[47px] lg:text-left">
@@ -16,11 +16,11 @@
           <div class="flex flex-col gap-2">
             <a
               href="#"
-              class="rounded border border-slate-300 px-3 py-1.5 text-[11px] text-slate-500 transition hover:border-brand-800 hover:text-brand-800"
+              class="rounded-xl bg-slate-100 px-3 py-1.5 text-[11px] text-slate-500 transition hover:bg-brand-50 hover:text-brand-800"
             >🍎 App Store</a>
             <a
               href="#"
-              class="rounded border border-slate-300 px-3 py-1.5 text-[11px] text-slate-500 transition hover:border-brand-800 hover:text-brand-800"
+              class="rounded-xl bg-slate-100 px-3 py-1.5 text-[11px] text-slate-500 transition hover:bg-brand-50 hover:text-brand-800"
             >▶ Google Play</a>
           </div>
         </div>
@@ -70,7 +70,7 @@
     </div>
 
     <!-- 하단: 회사 정보 -->
-    <div class="border-t border-slate-200 px-6 py-4">
+    <div class="px-6 py-4">
       <div class="mx-auto max-w-[1440px] space-y-1 text-center">
         <p class="text-[11px] text-slate-400">
           (주)리드미 &nbsp;|&nbsp; 대표이사: 홍길동 &nbsp;|&nbsp;
