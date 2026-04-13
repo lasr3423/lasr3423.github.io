@@ -23,10 +23,7 @@ public class OrderApiController {
     private final OrderService orderService;
 
     // ── POST /api/order ────────────────────────────────────────────────────
-    // 장바구니 → 주문 생성
-    // 응답: { orderId, finalPrice, itemName }
-    // → 프론트에서 orderStore.setOrder(orderId, finalPrice, itemName) 호출
-    // → router.push('/payment') 로 이동
+    // 장바구니 → 주문 생성로 이동
     @PostMapping
     public ResponseEntity<OrderCreateResponse> createOrder(
             @RequestBody OrderCreateRequest request,
@@ -38,7 +35,6 @@ public class OrderApiController {
 
     // ── GET /api/order ─────────────────────────────────────────────────────
     // 마이페이지 주문 목록 조회 (페이징)
-    // @PageableDefault : 기본 10개, 최신순 (orderAt 기준)
     @GetMapping
     public ResponseEntity<Page<OrderSummaryResponse>> getOrderList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -64,7 +60,6 @@ public class OrderApiController {
 
     // ── DELETE /api/order/{orderId} ────────────────────────────────────────
     // 주문 취소 + PG사 환불
-    // @RequestBody(required = false) : body 없이 호출해도 에러 안 남
     @DeleteMapping("/{orderId}")
     public ResponseEntity<String> cancelOrder(
             @PathVariable Long orderId,

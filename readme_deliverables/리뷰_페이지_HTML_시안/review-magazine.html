@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>리뷰 페이지 - 매거진형</title>
+  <style>
+    body { margin: 0; font-family: "Pretendard", sans-serif; background: #f6f3ee; color: #1f1a17; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
+    .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; margin-bottom: 32px; }
+    .hero-main, .hero-side { border-radius: 28px; overflow: hidden; background: #fff; box-shadow: 0 12px 30px rgba(0,0,0,.06); }
+    .hero-main .content, .hero-side .content { padding: 24px; }
+    .label { display: inline-block; font-size: 12px; letter-spacing: .08em; color: #8b5e3c; margin-bottom: 10px; }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 40px; margin-bottom: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .card { background: #fff; border-radius: 24px; padding: 22px; box-shadow: 0 10px 24px rgba(0,0,0,.05); }
+    .meta { margin-top: 12px; font-size: 13px; color: #7d746d; }
+    .stars { color: #d78e2d; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <article class="hero-main">
+        <div class="content">
+          <span class="label">EDITOR PICK</span>
+          <h1>이번 주 가장 공감받은 리뷰</h1>
+          <p>책을 읽은 사람의 감정과 해석이 자연스럽게 보이도록, 베스트 리뷰를 매거진처럼 전면에 배치하는 방식입니다.</p>
+        </div>
+      </article>
+      <article class="hero-side">
+        <div class="content">
+          <span class="label">TREND</span>
+          <h2>장르별 인기 리뷰</h2>
+          <p style="margin-top:10px;color:#6c625b;">소설, 인문, 자기계발처럼 카테고리별 베스트 리뷰를 노출하기 좋습니다.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <div class="stars">★★★★★</div>
+        <h3>작은 습관의 힘</h3>
+        <p style="margin-top:12px; line-height:1.6;">읽고 끝나는 책이 아니라 생활을 바꾸게 만드는 책. 리뷰를 짧게 잘라 보여주고, 클릭하면 상세로 확장되는 구조가 잘 어울립니다.</p>
+        <div class="meta">김민지 · 공감 142 · 조회 891</div>
+      </article>
+
+      <article class="card">
+        <div class="stars">★★★★☆</div>
+        <h3>불편한 편의점</h3>
+        <p style="margin-top:12px; line-height:1.6;">감성적인 문장과 여백이 살아있는 카드형 구성. 이미지 없이도 분위기 있게 보일 수 있습니다.</p>
+        <div class="meta">박지훈 · 공감 87 · 조회 530</div>
+      </article>
+
+      <article class="card">
+        <div class="stars">★★★★★</div>
+        <h3>역행자</h3>
+        <p style="margin-top:12px; line-height:1.6;">텍스트 중심이지만 무겁지 않고, 추천 리뷰 섹션을 운영하기 좋습니다.</p>
+        <div class="meta">이서윤 · 공감 213 · 조회 1,204</div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

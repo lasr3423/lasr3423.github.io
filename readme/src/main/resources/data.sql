@@ -4,10 +4,9 @@
 -- 기본 로그인 계정
 -- - admin@readme.test   / test1234!
 -- - manager@readme.test / test1234!
+-- - manager2~5@readme.test / test1234!
 -- - user1@readme.test   / test1234!
--- - user2@readme.test   / test1234!
--- - user3@readme.test   / test1234!
--- - user4@readme.test   / test1234!
+-- - user2~10@readme.test / test1234!
 -- ============================================================
 
 ALTER TABLE "order" DROP CONSTRAINT IF EXISTS order_orderstatus_check;
@@ -25,7 +24,17 @@ INSERT INTO member (id, created_at, updated_at, email, password, name, phone, ad
     (3, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user1@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '김독자', '010-7000-1001', '서울시 마포구 독서로 11', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
     (4, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user2@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '이리더', '010-7000-1002', '서울시 강서구 서점로 22', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL),
     (5, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user3@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '박페이지', '010-7000-1003', '경기도 성남시 책길 33', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
-    (6, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user4@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '최문장', '010-7000-1004', '부산시 해운대구 문고길 44', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL);
+    (6, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user4@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '최문장', '010-7000-1004', '부산시 해운대구 문고길 44', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL),
+    (7, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'manager2@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '정운영', '010-7000-0003', '서울시 광진구 운영길 3', 'MANAGER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (8, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'manager3@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '한관리', '010-7000-0004', '서울시 송파구 운영길 4', 'MANAGER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (9, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'manager4@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '윤지원', '010-7000-0005', '인천시 연수구 운영길 5', 'MANAGER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL),
+    (10, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'manager5@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '오서포트', '010-7000-0006', '대전시 유성구 운영길 6', 'MANAGER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (11, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user5@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '정챕터', '010-7000-1005', '서울시 은평구 독서로 55', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (12, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user6@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '한줄평', '010-7000-1006', '서울시 노원구 독서로 66', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL),
+    (13, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user7@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '오북마크', '010-7000-1007', '경기도 고양시 책길 77', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (14, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user8@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '임페이지', '010-7000-1008', '경기도 수원시 책길 88', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL),
+    (15, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user9@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '서리뷰', '010-7000-1009', '대구시 수성구 독서로 99', 'USER', 'ACTIVATE', 'LOCAL', NULL, TRUE, NULL),
+    (16, '2026-04-13 09:00:00', '2026-04-13 09:00:00', 'user10@readme.test', '$2y$10$dr59k6RpZFHCLim54ySFDecfS7MAvapjSFkZP.gv8J93kNtzTeJpy', '문혜진', '010-7000-1010', '광주시 북구 독서로 101', 'USER', 'ACTIVATE', 'LOCAL', NULL, FALSE, NULL);
 
 INSERT INTO category_top (id, created_at, updated_at, name, sort_order, category_status) VALUES
     (1, '2026-04-13 09:01:00', '2026-04-13 09:01:00', '국내도서', 1, 'ACTIVATE'),

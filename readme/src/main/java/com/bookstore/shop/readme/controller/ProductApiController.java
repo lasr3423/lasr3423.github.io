@@ -21,7 +21,7 @@ public class ProductApiController {
     // 유저 페이지
 
     // GET /api/product?keyword=&categoryTopId=&categorySubId=
-    // REQ-P-001(목록) + REQ-P-003(검색) + REQ-P-004(카테고리 필터) 통합
+    // 목록 + 검색 + 카테고리 필터 통합
     @GetMapping
     public ResponseEntity<Page<ProductListResponse>> getProductList(
             @RequestParam(required = false) Long categoryTopId,

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>메인 사이드바 스타일가이드 반영 시안</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #092c4c;
+      --secondary: #f2994a;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --line: #e0e0e0;
+      --text-strong: #1d1d1d;
+      --text-body: #4f4f4f;
+      --text-muted: #828282;
+      --shadow: 0 16px 40px rgba(9, 44, 76, 0.08);
+      --radius-xl: 24px;
+      --radius-lg: 20px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+      color: var(--text-strong);
+      padding: 40px 24px;
+    }
+
+    .frame {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 248px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding: 24px;
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .sidebar-head .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.72;
+    }
+
+    .sidebar-head h1 {
+      margin-top: 12px;
+      font-size: 24px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+
+    .sidebar-head p {
+      margin-top: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.82);
+    }
+
+    .section-label {
+      padding: 16px 20px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+
+    .section-body {
+      padding: 8px 12px 16px;
+    }
+
+    .menu-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 48px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      color: var(--text-body);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: 0.2s ease;
+    }
+
+    .menu-link:hover {
+      background: #f7fafc;
+      color: var(--primary);
+    }
+
+    .menu-link.active {
+      background: rgba(242, 153, 74, 0.12);
+      color: var(--primary);
+    }
+
+    .menu-badge {
+      min-width: 28px;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      background: #f3f4f6;
+      color: var(--text-muted);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line);
+    }
+
+    .category-block {
+      padding: 0 12px 12px;
+    }
+
+    .category-button {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 0;
+      background: transparent;
+      border-radius: var(--radius-md);
+      color: var(--text-strong);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .category-button.active {
+      background: #f8fafc;
+      color: var(--primary);
+    }
+
+    .category-button .arrow {
+      color: var(--text-muted);
+      transition: transform 0.2s ease;
+    }
+
+    .category-button.active .arrow {
+      transform: rotate(90deg);
+    }
+
+    .sub-list {
+      margin-top: 8px;
+      display: grid;
+      gap: 8px;
+      padding-left: 8px;
+    }
+
+    .sub-link {
+      display: block;
+      min-height: 40px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-body);
+      text-decoration: none;
+      font-size: 14px;
+      line-height: 1.4;
+      transition: 0.2s ease;
+    }
+
+    .sub-link:hover {
+      background: #f8fafc;
+      color: var(--primary);
+    }
+
+    .sub-link.active {
+      background: rgba(9, 44, 76, 0.06);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .service-card {
+      margin: 4px 12px 16px;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, #fff8f1 0%, #ffffff 100%);
+      border: 1px solid #f6d6b6;
+    }
+
+    .service-card h2 {
+      font-size: 16px;
+      line-height: 1.1;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .service-card p {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: var(--text-body);
+    }
+
+    .service-card .button {
+      margin-top: 16px;
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 12px;
+      border: 0;
+      background: var(--secondary);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .preview {
+      min-height: 820px;
+      border-radius: 32px;
+      padding: 40px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.04);
+    }
+
+    .preview .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .preview h2 {
+      margin-top: 16px;
+      font-size: 40px;
+      line-height: 1.1;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .preview p {
+      margin-top: 16px;
+      max-width: 760px;
+      font-size: 16px;
+      line-height: 1.4;
+      color: var(--text-body);
+    }
+
+    .token-grid {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .token-card {
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .swatch {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+
+    .token-card h3 {
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 800;
+      color: var(--text-strong);
+    }
+
+    .token-card p {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--text-body);
+    }
+
+    @media (max-width: 1100px) {
+      .frame {
+        grid-template-columns: 1fr;
+      }
+
+      .token-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="eyebrow">ReadMe UI</div>
+        <h1>메인 사이드바</h1>
+        <p>현재 구조는 유지하고, PDF 스타일가이드의 컬러와 간격 규칙으로 정리한 버전입니다.</p>
+      </div>
+
+      <div class="section-label">주요 메뉴</div>
+      <div class="section-body">
+        <a href="#" class="menu-link active">
+          <span>베스트셀러</span>
+          <span class="menu-badge">HOT</span>
+        </a>
+        <a href="#" class="menu-link">
+          <span>신간도서</span>
+          <span class="menu-badge">NEW</span>
+        </a>
+        <a href="#" class="menu-link">
+          <span>MD 추천</span>
+          <span class="menu-badge">MD</span>
+        </a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">카테고리</div>
+      <div class="category-block">
+        <button class="category-button active" type="button">
+          <span>국내도서</span>
+          <span class="arrow">›</span>
+        </button>
+        <div class="sub-list">
+          <a href="#" class="sub-link">소설</a>
+          <a href="#" class="sub-link active">IT/컴퓨터</a>
+          <a href="#" class="sub-link">자기계발</a>
+          <a href="#" class="sub-link">경제/경영</a>
+          <a href="#" class="sub-link">역사/문화</a>
+        </div>
+      </div>
+
+      <div class="category-block">
+        <button class="category-button" type="button">
+          <span>외국도서</span>
+          <span class="arrow">›</span>
+        </button>
+      </div>
+
+      <div class="category-block">
+        <button class="category-button" type="button">
+          <span>일본도서</span>
+          <span class="arrow">›</span>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-label">고객 서비스</div>
+      <div class="section-body">
+        <a href="#" class="menu-link">
+          <span>이벤트</span>
+        </a>
+        <a href="#" class="menu-link">
+          <span>상품 리뷰</span>
+        </a>
+        <a href="#" class="menu-link">
+          <span>QnA</span>
+        </a>
+        <a href="#" class="menu-link">
+          <span>공지사항</span>
+        </a>
+      </div>
+
+      <div class="service-card">
+        <h2>이번 주 MD 추천</h2>
+        <p>스타일가이드의 세컨더리 컬러를 강조 포인트로만 사용한 보조 카드입니다.</p>
+        <button class="button" type="button">보러 가기</button>
+      </div>
+    </aside>
+
+    <main class="preview">
+      <div class="eyebrow">UI Style Guidelines Reference</div>
+      <h2>사이드바도 컴포넌트 규칙 안에서 정리</h2>
+      <p>
+        참고한 PDF 기준으로 보면, 이 프로젝트는 진한 네이비를 메인 브랜드 색으로 쓰고 오렌지를 포인트로 얹는 구조가 핵심입니다.
+        그래서 이번 시안은 기존 정보 구조는 그대로 두고, 버튼 높이와 여백을 8px 단위로 정리하고 카드 라운드도 더 일정하게 맞췄습니다.
+      </p>
+
+      <div class="token-grid">
+        <section class="token-card">
+          <div class="swatch" style="background:#092c4c;"></div>
+          <h3>Primary</h3>
+          <p>`#092C4C`를 헤더와 활성 상태의 중심색으로 사용했습니다.</p>
+        </section>
+
+        <section class="token-card">
+          <div class="swatch" style="background:#f2994a;"></div>
+          <h3>Secondary</h3>
+          <p>`#F2994A`는 배지나 CTA처럼 강조가 필요한 지점에만 제한적으로 넣었습니다.</p>
+        </section>
+
+        <section class="token-card">
+          <div class="swatch" style="background:#f8fafc;border:1px solid #e0e0e0;"></div>
+          <h3>Surface</h3>
+          <p>배경은 과하지 않게 밝은 뉴트럴을 쓰고, 선과 그림자로 위계를 만들었습니다.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

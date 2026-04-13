@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>리뷰 페이지 디자인 시안 3종</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #f1f5f9; color: #1e293b; }
+  h2 { font-size: 1.5rem; font-weight: 800; }
+
+  /* ───── 공통 레이블 ───── */
+  .design-label {
+    background: #1e293b; color: #fff;
+    font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    padding: .4rem 1rem; border-radius: 0 0 1rem 1rem;
+    display: inline-block; margin-bottom: 1.5rem;
+  }
+  .design-section { padding: 2.5rem 1.5rem; border-bottom: 2px dashed #cbd5e1; }
+  .star { color: #f59e0b; }
+  .star-empty { color: #e2e8f0; }
+
+  /* ══════════════════════════════════════
+     디자인 A — 카드 그리드 (SNS 피드형)
+  ══════════════════════════════════════ */
+  #designA { background: #fff; }
+  #designA .page-header { padding: 2rem; background: linear-gradient(135deg,#1e3a5f,#2563eb); color:#fff; border-radius: 1.5rem; margin-bottom:1.5rem; }
+  #designA .page-header p { font-size:.8rem; opacity:.7; margin-bottom:.3rem; letter-spacing:.15em; text-transform:uppercase; }
+  #designA .tab-bar { display:flex; gap:.5rem; margin-bottom:1.5rem; }
+  #designA .tab { padding:.5rem 1.2rem; border-radius:2rem; font-size:.85rem; font-weight:600; background:#f1f5f9; color:#64748b; cursor:pointer; }
+  #designA .tab.active { background:#2563eb; color:#fff; }
+  #designA .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+  #designA .card { border:1px solid #e2e8f0; border-radius:1.25rem; padding:1.25rem; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+  #designA .card-top { display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem; }
+  #designA .avatar { width:36px; height:36px; border-radius:50%; background:#dbeafe; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; color:#2563eb; flex-shrink:0; }
+  #designA .card-name { font-size:.85rem; font-weight:700; color:#1e293b; }
+  #designA .card-date { font-size:.72rem; color:#94a3b8; }
+  #designA .card-book { font-size:.78rem; color:#2563eb; font-weight:600; background:#eff6ff; padding:.25rem .7rem; border-radius:.5rem; display:inline-block; margin-bottom:.6rem; }
+  #designA .card-content { font-size:.82rem; line-height:1.6; color:#475569; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  #designA .card-footer { display:flex; align-items:center; justify-content:space-between; margin-top:.9rem; padding-top:.75rem; border-top:1px solid #f1f5f9; }
+  #designA .likes { font-size:.78rem; color:#94a3b8; display:flex; gap:.75rem; }
+  #designA .write-fab { position:fixed; bottom:2rem; right:2rem; width:52px; height:52px; border-radius:50%; background:#2563eb; color:#fff; font-size:1.4rem; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(37,99,235,.4); cursor:pointer; }
+  #designA .filters { display:flex; gap:.5rem; margin-bottom:1.25rem; flex-wrap:wrap; }
+  #designA .filter-chip { padding:.35rem .9rem; border:1px solid #e2e8f0; border-radius:2rem; font-size:.78rem; color:#64748b; cursor:pointer; }
+  #designA .filter-chip.on { border-color:#2563eb; color:#2563eb; background:#eff6ff; }
+
+  /* ══════════════════════════════════════
+     디자인 B — 책 중심 목록형 (교보문고 스타일)
+  ══════════════════════════════════════ */
+  #designB { background: #fafaf9; }
+  #designB .page-header { border-bottom:2px solid #1e293b; padding-bottom:1rem; margin-bottom:1.5rem; display:flex; align-items:flex-end; justify-content:space-between; }
+  #designB .page-header h2 { font-size:1.6rem; }
+  #designB .page-header span { font-size:.8rem; color:#64748b; }
+  #designB .layout { display:grid; grid-template-columns:240px 1fr; gap:1.5rem; }
+  #designB .sidebar { border-right:1px solid #e2e8f0; padding-right:1.5rem; }
+  #designB .sidebar-title { font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#94a3b8; margin-bottom:.75rem; }
+  #designB .book-item { display:flex; gap:.75rem; align-items:center; padding:.6rem .5rem; border-radius:.75rem; cursor:pointer; margin-bottom:.25rem; }
+  #designB .book-item.active { background:#f1f5f9; }
+  #designB .book-thumb { width:36px; height:48px; background:#e2e8f0; border-radius:.35rem; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.6rem; color:#94a3b8; }
+  #designB .book-info { min-width:0; }
+  #designB .book-title { font-size:.8rem; font-weight:600; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #designB .book-cnt { font-size:.72rem; color:#94a3b8; }
+  #designB .review-row { border-bottom:1px solid #f1f5f9; padding:1.25rem 0; display:flex; gap:1rem; }
+  #designB .review-score { flex-shrink:0; text-align:center; }
+  #designB .score-big { font-size:2rem; font-weight:800; color:#1e293b; line-height:1; }
+  #designB .score-sub { font-size:.72rem; color:#94a3b8; margin-top:.25rem; }
+  #designB .review-body { flex:1; min-width:0; }
+  #designB .review-meta { display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem; flex-wrap:wrap; }
+  #designB .review-name { font-size:.85rem; font-weight:700; }
+  #designB .review-date { font-size:.75rem; color:#94a3b8; }
+  #designB .review-text { font-size:.85rem; line-height:1.7; color:#475569; }
+  #designB .helpful { margin-top:.75rem; display:flex; gap:.5rem; }
+  #designB .helpful button { border:1px solid #e2e8f0; background:#fff; padding:.25rem .8rem; border-radius:2rem; font-size:.75rem; color:#64748b; cursor:pointer; }
+  #designB .rating-bar { display:flex; align-items:center; gap:.5rem; margin-bottom:.25rem; }
+  #designB .bar-bg { flex:1; background:#f1f5f9; border-radius:2rem; height:6px; }
+  #designB .bar-fill { background:#f59e0b; height:100%; border-radius:2rem; }
+  #designB .summary-box { background:#fff; border:1px solid #e2e8f0; border-radius:1rem; padding:1rem; margin-bottom:1.5rem; display:flex; gap:1.5rem; align-items:center; }
+  #designB .avg-score { font-size:3rem; font-weight:800; color:#1e293b; line-height:1; }
+
+  /* ══════════════════════════════════════
+     디자인 C — 전체 리뷰 피드 (무한스크롤형)
+  ══════════════════════════════════════ */
+  #designC { background: #f8fafc; }
+  #designC .page-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; }
+  #designC .page-header h2 { font-size:1.4rem; }
+  #designC .header-badge { background:#0f172a; color:#fff; font-size:.72rem; font-weight:700; padding:.3rem .8rem; border-radius:2rem; }
+  #designC .top-bar { display:flex; gap:.75rem; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; }
+  #designC .sort-select { border:1px solid #e2e8f0; background:#fff; padding:.45rem .9rem; border-radius:.75rem; font-size:.82rem; color:#475569; }
+  #designC .search-input { flex:1; border:1px solid #e2e8f0; background:#fff; padding:.45rem 1rem; border-radius:.75rem; font-size:.82rem; outline:none; min-width:160px; }
+  #designC .feed-item { background:#fff; border:1px solid #e2e8f0; border-radius:1.25rem; padding:1.25rem; margin-bottom:.75rem; display:flex; gap:1rem; }
+  #designC .feed-book-thumb { width:56px; height:76px; background:#e2e8f0; border-radius:.5rem; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.6rem; color:#94a3b8; text-align:center; padding:.25rem; }
+  #designC .feed-main { flex:1; min-width:0; }
+  #designC .feed-book-name { font-size:.78rem; color:#2563eb; font-weight:600; margin-bottom:.3rem; }
+  #designC .feed-header { display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem; }
+  #designC .feed-name { font-size:.88rem; font-weight:700; }
+  #designC .feed-date { font-size:.75rem; color:#94a3b8; margin-left:auto; }
+  #designC .feed-text { font-size:.85rem; line-height:1.7; color:#475569; }
+  #designC .feed-img-row { display:flex; gap:.5rem; margin-top:.75rem; }
+  #designC .feed-img { width:60px; height:60px; background:#f1f5f9; border-radius:.5rem; border:1px solid #e2e8f0; flex-shrink:0; }
+  #designC .feed-actions { display:flex; gap:.5rem; margin-top:.75rem; }
+  #designC .feed-btn { border:1px solid #e2e8f0; background:#fff; padding:.3rem .85rem; border-radius:2rem; font-size:.78rem; color:#64748b; cursor:pointer; }
+  #designC .feed-btn.like { border-color:#d1fae5; color:#059669; background:#f0fdf4; }
+  #designC .write-bar { background:#fff; border:1px solid #e2e8f0; border-radius:1.25rem; padding:1rem 1.25rem; margin-bottom:1rem; display:flex; align-items:center; gap:.75rem; cursor:pointer; }
+  #designC .write-avatar { width:36px; height:36px; border-radius:50%; background:#dbeafe; flex-shrink:0; }
+  #designC .write-placeholder { font-size:.85rem; color:#94a3b8; }
+  #designC .sticky-header { background:#f8fafc; padding:.75rem 0; position:sticky; top:0; z-index:10; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     디자인 A — SNS 카드 그리드형
+══════════════════════════════════ -->
+<div class="design-section" id="designA">
+  <div class="design-label">디자인 A — SNS 카드 그리드형</div>
+
+  <div class="page-header">
+    <p>BOOK REVIEW</p>
+    <h2>독자들의 생생한 리뷰</h2>
+  </div>
+
+  <!-- 탭: 전체/베스트/최신 -->
+  <div class="tab-bar">
+    <div class="tab active">전체</div>
+    <div class="tab">베스트 리뷰</div>
+    <div class="tab">최신순</div>
+    <div class="tab">별점 높은순</div>
+  </div>
+
+  <!-- 필터 칩 (책 선택) -->
+  <div class="filters">
+    <span style="font-size:.78rem;color:#94a3b8;align-self:center;">상품</span>
+    <div class="filter-chip on">클린 코드</div>
+    <div class="filter-chip">모던 자바스크립트</div>
+    <div class="filter-chip">리팩터링</div>
+    <div class="filter-chip">파친코</div>
+    <div class="filter-chip">채식주의자</div>
+  </div>
+
+  <!-- 카드 그리드 -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar">김</div>
+        <div>
+          <div class="card-name">김도서</div>
+          <div class="card-date">2026.03.12</div>
+        </div>
+        <span style="margin-left:auto;font-size:.85rem;" class="star">★★★★★</span>
+      </div>
+      <div class="card-book">클린 코드</div>
+      <div class="card-content">코드의 가독성에 대해 이렇게 깊이 있게 다룬 책은 처음이었습니다. 실무에서도 바로 적용할 수 있는 내용이 많아 강력 추천합니다.</div>
+      <div class="card-footer">
+        <div class="likes"><span>👍 12</span><span>💬 3</span></div>
+        <span style="font-size:.75rem;color:#94a3b8;">조회 87</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar" style="background:#fce7f3;color:#db2777;">이</div>
+        <div>
+          <div class="card-name">이책장</div>
+          <div class="card-date">2026.03.10</div>
+        </div>
+        <span style="margin-left:auto;font-size:.85rem;" class="star">★★★★<span class="star-empty">☆</span></span>
+      </div>
+      <div class="card-book">모던 자바스크립트</div>
+      <div class="card-content">자바스크립트의 최신 문법을 체계적으로 정리해줘서 좋았습니다. 예제 코드가 실용적이고 따라하기 쉬워요.</div>
+      <div class="card-footer">
+        <div class="likes"><span>👍 8</span><span>💬 1</span></div>
+        <span style="font-size:.75rem;color:#94a3b8;">조회 54</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-top">
+        <div class="avatar" style="background:#d1fae5;color:#059669;">박</div>
+        <div>
+          <div class="card-name">박읽기</div>
+          <div class="card-date">2026.03.08</div>
+        </div>
+        <span style="margin-left:auto;font-size:.85rem;" class="star">★★★★★</span>
+      </div>
+      <div class="card-book">파친코</div>
+      <div class="card-content">4대에 걸친 가족의 이야기가 이렇게 가슴 깊이 다가올 줄 몰랐어요. 읽는 내내 눈물이 났습니다.</div>
+      <div class="card-footer">
+        <div class="likes"><span>👍 24</span><span>💬 7</span></div>
+        <span style="font-size:.75rem;color:#94a3b8;">조회 142</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAB -->
+  <div class="write-fab">✏️</div>
+  <p style="font-size:.75rem;color:#94a3b8;margin-top:1rem;">※ 우측 하단 ✏️ 버튼으로 리뷰 작성</p>
+</div>
+
+
+<!-- ══════════════════════════════════
+     디자인 B — 책 중심 목록형
+══════════════════════════════════ -->
+<div class="design-section" id="designB">
+  <div class="design-label">디자인 B — 책 사이드바 + 목록형 (교보문고 스타일)</div>
+
+  <div class="page-header">
+    <h2>상품 리뷰</h2>
+    <span>총 128건의 리뷰</span>
+  </div>
+
+  <div class="layout">
+    <!-- 좌측: 책 목록 -->
+    <div class="sidebar">
+      <div class="sidebar-title">상품 선택</div>
+      <div class="book-item active">
+        <div class="book-thumb">📗</div>
+        <div class="book-info">
+          <div class="book-title">클린 코드</div>
+          <div class="book-cnt">리뷰 34건</div>
+        </div>
+      </div>
+      <div class="book-item">
+        <div class="book-thumb">📘</div>
+        <div class="book-info">
+          <div class="book-title">모던 자바스크립트</div>
+          <div class="book-cnt">리뷰 21건</div>
+        </div>
+      </div>
+      <div class="book-item">
+        <div class="book-thumb">📕</div>
+        <div class="book-info">
+          <div class="book-title">리팩터링</div>
+          <div class="book-cnt">리뷰 18건</div>
+        </div>
+      </div>
+      <div class="book-item">
+        <div class="book-thumb">📙</div>
+        <div class="book-info">
+          <div class="book-title">파친코</div>
+          <div class="book-cnt">리뷰 55건</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우측: 리뷰 목록 -->
+    <div>
+      <!-- 평점 요약 -->
+      <div class="summary-box">
+        <div>
+          <div class="avg-score">4.6</div>
+          <div class="star" style="font-size:1rem;">★★★★★</div>
+          <div style="font-size:.75rem;color:#94a3b8;margin-top:.25rem;">34건 기준</div>
+        </div>
+        <div style="flex:1;">
+          <div class="rating-bar"><span style="font-size:.75rem;width:16px;text-align:right;">5</span><div class="bar-bg"><div class="bar-fill" style="width:70%"></div></div><span style="font-size:.75rem;color:#94a3b8;">22</span></div>
+          <div class="rating-bar"><span style="font-size:.75rem;width:16px;text-align:right;">4</span><div class="bar-bg"><div class="bar-fill" style="width:20%"></div></div><span style="font-size:.75rem;color:#94a3b8;">7</span></div>
+          <div class="rating-bar"><span style="font-size:.75rem;width:16px;text-align:right;">3</span><div class="bar-bg"><div class="bar-fill" style="width:6%"></div></div><span style="font-size:.75rem;color:#94a3b8;">2</span></div>
+          <div class="rating-bar"><span style="font-size:.75rem;width:16px;text-align:right;">2</span><div class="bar-bg"><div class="bar-fill" style="width:3%"></div></div><span style="font-size:.75rem;color:#94a3b8;">1</span></div>
+          <div class="rating-bar"><span style="font-size:.75rem;width:16px;text-align:right;">1</span><div class="bar-bg"><div class="bar-fill" style="width:3%"></div></div><span style="font-size:.75rem;color:#94a3b8;">1</span></div>
+        </div>
+        <button style="border:1px solid #e2e8f0;border-radius:.75rem;padding:.6rem 1.2rem;font-size:.82rem;cursor:pointer;white-space:nowrap;">리뷰 작성</button>
+      </div>
+
+      <!-- 리뷰 row -->
+      <div class="review-row">
+        <div class="review-score">
+          <div class="score-big">5</div>
+          <div class="star" style="font-size:.85rem;">★★★★★</div>
+          <div class="score-sub">만점</div>
+        </div>
+        <div class="review-body">
+          <div class="review-meta">
+            <span class="review-name">김도서</span>
+            <span class="review-date">2026.03.12</span>
+          </div>
+          <div class="review-text">코드의 가독성에 대해 이렇게 깊이 있게 다룬 책은 처음이었습니다. 실무에서도 바로 적용할 수 있는 내용이 많아서 강력 추천합니다. 특히 함수 이름 짓기 챕터가 인상 깊었어요.</div>
+          <div class="helpful">
+            <button>👍 도움돼요 12</button>
+            <button>👎 별로예요 1</button>
+          </div>
+        </div>
+      </div>
+      <div class="review-row">
+        <div class="review-score">
+          <div class="score-big">4</div>
+          <div class="star" style="font-size:.85rem;">★★★★<span class="star-empty">☆</span></div>
+          <div class="score-sub">좋음</div>
+        </div>
+        <div class="review-body">
+          <div class="review-meta">
+            <span class="review-name">이책장</span>
+            <span class="review-date">2026.03.10</span>
+          </div>
+          <div class="review-text">전반적으로 좋은 책입니다. 다만 일부 예제가 자바 위주라 다른 언어 사용자에게는 조금 생소할 수 있어요. 그래도 개념 자체는 범용적이라 추천합니다.</div>
+          <div class="helpful">
+            <button>👍 도움돼요 8</button>
+            <button>👎 별로예요 0</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     디자인 C — 전체 피드형
+══════════════════════════════════ -->
+<div class="design-section" id="designC">
+  <div class="design-label">디자인 C — 전체 리뷰 피드형</div>
+
+  <div class="page-header">
+    <h2>리뷰 피드</h2>
+    <div class="header-badge">128건</div>
+  </div>
+
+  <!-- 검색 / 정렬 바 -->
+  <div class="top-bar">
+    <input class="search-input" placeholder="책 제목 또는 리뷰 내용 검색" />
+    <select class="sort-select"><option>최신순</option><option>평점 높은순</option><option>좋아요순</option></select>
+  </div>
+
+  <!-- 리뷰 작성 트리거 바 -->
+  <div class="write-bar">
+    <div class="write-avatar"></div>
+    <div class="write-placeholder">읽은 책의 리뷰를 남겨보세요...</div>
+    <button style="border:1px solid #2563eb;color:#2563eb;background:#eff6ff;border-radius:.75rem;padding:.4rem .9rem;font-size:.8rem;cursor:pointer;white-space:nowrap;">작성하기</button>
+  </div>
+
+  <!-- 피드 아이템들 -->
+  <div class="feed-item">
+    <div class="feed-book-thumb">📗<br/>클린<br/>코드</div>
+    <div class="feed-main">
+      <div class="feed-book-name">클린 코드 — 로버트 마틴</div>
+      <div class="feed-header">
+        <span class="star">★★★★★</span>
+        <span class="feed-name">김도서</span>
+        <span class="feed-date">2026.03.12</span>
+      </div>
+      <div class="feed-text">코드의 가독성에 대해 이렇게 깊이 있게 다룬 책은 처음이었습니다. 실무에서도 바로 적용할 수 있는 내용이 많아 강력 추천합니다. 특히 함수 이름 짓기와 주석에 대한 챕터가 인상 깊었어요.</div>
+      <div class="feed-img-row">
+        <div class="feed-img"></div>
+        <div class="feed-img"></div>
+      </div>
+      <div class="feed-actions">
+        <button class="feed-btn like">👍 좋아요 12</button>
+        <button class="feed-btn">👎 별로예요 1</button>
+        <button class="feed-btn">💬 댓글 3</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="feed-item">
+    <div class="feed-book-thumb">📕<br/>파친<br/>코</div>
+    <div class="feed-main">
+      <div class="feed-book-name">파친코 — 이민진</div>
+      <div class="feed-header">
+        <span class="star">★★★★★</span>
+        <span class="feed-name">박읽기</span>
+        <span class="feed-date">2026.03.08</span>
+      </div>
+      <div class="feed-text">4대에 걸친 가족의 이야기가 이렇게 가슴 깊이 다가올 줄 몰랐어요. 읽는 내내 눈물이 났습니다. 꼭 읽어보세요.</div>
+      <div class="feed-actions">
+        <button class="feed-btn like">👍 좋아요 24</button>
+        <button class="feed-btn">👎 별로예요 0</button>
+        <button class="feed-btn">💬 댓글 7</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="feed-item">
+    <div class="feed-book-thumb">📘<br/>모던<br/>JS</div>
+    <div class="feed-main">
+      <div class="feed-book-name">모던 자바스크립트 — 이웅모</div>
+      <div class="feed-header">
+        <span class="star">★★★★<span class="star-empty">☆</span></span>
+        <span class="feed-name">이책장</span>
+        <span class="feed-date">2026.03.05</span>
+      </div>
+      <div class="feed-text">자바스크립트의 최신 문법을 체계적으로 정리해줘서 좋았습니다. 예제 코드가 실용적이고 따라하기 쉬워요.</div>
+      <div class="feed-actions">
+        <button class="feed-btn like">👍 좋아요 8</button>
+        <button class="feed-btn">👎 별로예요 2</button>
+        <button class="feed-btn">💬 댓글 1</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
