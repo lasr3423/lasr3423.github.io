@@ -7,10 +7,10 @@
         </div>
         <p class="mt-6 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">결제 처리 중</p>
         <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-          결제 결과를 확인하고 있습니다
+          결제 승인 확인 중
         </h1>
         <p class="mt-3 text-sm leading-6 text-slate-500">
-          승인 정보를 확인한 뒤 주문 내역으로 이동합니다.
+          결제 승인 확인 후 주문 내역으로 이동합니다.
         </p>
       </div>
     </div>

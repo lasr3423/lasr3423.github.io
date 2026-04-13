@@ -5,7 +5,7 @@
         <div>
           <p class="text-sm font-semibold uppercase tracking-[0.18em] text-brand-700">Cart</p>
           <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">장바구니</h1>
-          <p class="mt-2 text-sm leading-6 text-slate-500">선택한 도서를 확인하고 주문 단계로 자연스럽게 이어갈 수 있어요.</p>
+          <p class="mt-2 text-sm leading-6 text-slate-500">선택한 도서를 확인하고 주문을 진행하실 수 있습니다.</p>
         </div>
         <p class="text-sm text-slate-400">총 {{ cartStore.items.length }}개 상품</p>
       </div>
@@ -21,7 +21,7 @@
 
     <section v-else-if="cartStore.items.length === 0" class="page-section text-center">
       <p class="text-base font-semibold text-slate-700">장바구니가 비어 있습니다.</p>
-      <p class="mt-2 text-sm text-slate-500">마음에 드는 도서를 담아 주문을 시작해 보세요.</p>
+      <p class="mt-2 text-sm text-slate-500">도서를 담으면 이곳에서 주문을 진행하실 수 있습니다.</p>
       <button
         type="button"
         class="mt-6 rounded-2xl bg-brand-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700"
@@ -51,7 +51,7 @@
           <article
             v-for="item in cartStore.items"
             :key="item.cartItemId"
-            class="grid gap-4 px-5 py-5 lg:grid-cols-[28px_minmax(0,1fr)_120px_150px_120px] lg:items-center lg:px-6"
+            class="grid gap-4 px-5 py-5 lg:grid-cols-[28px_minmax(0,1fr)_120px_150px_140px] lg:items-center lg:px-6"
           >
             <div class="pt-1">
               <input
@@ -61,31 +61,31 @@
               />
             </div>
 
-            <div class="flex min-w-0 gap-4">
+            <div class="flex min-w-0 items-center gap-4">
               <img
                 :src="resolveAssetUrl(item.thumbnail)"
                 :alt="item.title"
                 class="h-28 w-20 shrink-0 cursor-pointer rounded-2xl object-cover"
                 @click="router.push(`/product/${item.productId}`)"
               />
-              <div class="min-w-0">
+              <div class="flex min-h-28 min-w-0 flex-1 flex-col justify-center">
                 <button
                   type="button"
-                  class="line-clamp-2 text-left text-base font-bold leading-6 text-slate-900 transition hover:text-brand-700"
+                  class="card-title-2 text-left text-base font-bold leading-6 text-slate-900 transition hover:text-brand-700"
                   @click="router.push(`/product/${item.productId}`)"
                 >
                   {{ item.title }}
                 </button>
-                <p class="mt-2 text-sm text-slate-500">{{ item.author }}</p>
+                <p class="card-meta-1 mt-2 text-sm text-slate-500">{{ item.author }}</p>
                 <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">빠른 배송 가능</p>
               </div>
             </div>
 
-            <div class="text-sm font-semibold text-slate-700 lg:text-right">
+            <div class="numeric-stable text-sm font-semibold text-slate-700 lg:text-right">
               {{ Number(item.salePrice).toLocaleString() }}원
             </div>
 
-            <div class="lg:justify-self-center">
+            <div class="flex min-h-10 items-center lg:justify-self-center">
               <div class="inline-flex items-center overflow-hidden rounded-full border border-slate-200 bg-slate-50">
                 <button
                   type="button"
@@ -95,7 +95,7 @@
                 >
                   -
                 </button>
-                <span class="min-w-12 text-center text-sm font-semibold text-slate-900">{{ item.quantity }}</span>
+                <span class="numeric-stable min-w-12 text-center text-sm font-semibold text-slate-900">{{ item.quantity }}</span>
                 <button
                   type="button"
                   class="h-10 w-10 text-lg text-slate-600 transition hover:bg-slate-200"
@@ -106,7 +106,7 @@
               </div>
             </div>
 
-            <div class="text-base font-bold text-brand-800 lg:text-right">
+            <div class="numeric-stable flex min-h-10 items-center text-base font-bold text-brand-800 lg:justify-end lg:text-right">
               {{ Number(item.salePrice * item.quantity).toLocaleString() }}원
             </div>
           </article>

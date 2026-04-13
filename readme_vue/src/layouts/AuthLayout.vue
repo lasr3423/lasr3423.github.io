@@ -9,27 +9,27 @@
           <h1 class="mt-4 text-4xl font-bold leading-tight">
             좋은 책을
             <br>
-            더 편안하게 만나는 방법
+            한곳에서 만나는 서점
           </h1>
           <p class="mt-5 max-w-xl text-sm leading-7 text-brand-100">
-            베스트셀러 탐색부터 주문과 결제, 배송 조회까지 한 흐름으로 이어지는 온라인 서점 경험을 제공합니다.
+            도서 검색부터 주문, 결제, 배송 조회까지 한곳에서 이용하실 수 있습니다.
           </p>
 
           <div class="mt-10 grid gap-4 sm:grid-cols-3">
             <article class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">혜택</p>
               <p class="mt-2 text-lg font-bold">첫 구매 쿠폰</p>
-              <p class="mt-2 text-xs leading-6 text-brand-100">신규 회원 대상 할인과 추천 도서를 한눈에 확인할 수 있어요.</p>
+              <p class="mt-2 text-xs leading-6 text-brand-100">신규 회원 할인 혜택을 이용하실 수 있습니다.</p>
             </article>
             <article class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">주문</p>
-              <p class="mt-2 text-lg font-bold">간편한 결제</p>
-              <p class="mt-2 text-xs leading-6 text-brand-100">장바구니부터 주문, 결제 내역까지 한 번에 관리할 수 있어요.</p>
+              <p class="mt-2 text-lg font-bold">주문 및 결제</p>
+              <p class="mt-2 text-xs leading-6 text-brand-100">장바구니, 주문, 결제 내역을 확인하실 수 있습니다.</p>
             </article>
             <article class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur">
               <p class="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">관리</p>
               <p class="mt-2 text-lg font-bold">배송 조회</p>
-              <p class="mt-2 text-xs leading-6 text-brand-100">마이페이지에서 주문 상태와 배송 현황을 바로 확인할 수 있어요.</p>
+              <p class="mt-2 text-xs leading-6 text-brand-100">마이페이지에서 주문 상태와 배송 현황을 확인하실 수 있습니다.</p>
             </article>
           </div>
         </section>

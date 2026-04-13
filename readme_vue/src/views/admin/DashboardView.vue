@@ -6,7 +6,7 @@
           <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-200">Admin Dashboard</p>
           <h1 class="mt-3 text-3xl font-bold tracking-tight">관리자 대시보드</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-200">
-            오늘 처리해야 할 주문, 배송, 문의 현황을 한 번에 확인하고 바로 필요한 관리 화면으로 이동할 수 있습니다.
+            오늘 처리할 주문, 배송, 문의 현황을 확인할 수 있습니다.
           </p>
 
           <div class="mt-6 grid gap-4 sm:grid-cols-3">

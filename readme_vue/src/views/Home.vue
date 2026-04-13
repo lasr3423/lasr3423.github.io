@@ -10,11 +10,11 @@
           <h1 class="text-4xl font-bold leading-tight tracking-tight text-white md:text-5xl">
             이달의 도서를
             <br>
-            ReadMe에서 만나보세요
+            ReadMe에서 확인하세요
           </h1>
           <p class="max-w-xl text-sm leading-7 text-brand-100 md:text-base">
             베스트셀러와 신간, 이벤트 도서를 둘러보고
-            주문부터 배송 조회까지 한곳에서 이용하실 수 있습니다.
+            주문부터 배송 조회까지 한곳에서 확인하실 수 있습니다.
           </p>
           <div class="flex flex-wrap gap-3 pt-2">
             <router-link
@@ -34,18 +34,18 @@
       </article>
 
       <aside class="grid gap-4 md:grid-cols-2 xl:grid-cols-1">
-        <article class="surface-panel p-6">
+      <article class="surface-panel card-fixed p-6">
           <span class="point-chip">이번 주 이벤트</span>
           <h2 class="mt-4 text-xl font-bold text-slate-900">첫 구매 회원 10% 할인</h2>
-          <p class="mt-2 text-sm leading-6 text-slate-500">
-            회원가입 후 첫 주문에 사용할 수 있는 할인 혜택을 확인해 보세요.
+          <p class="card-copy-2 mt-2 text-sm leading-6 text-slate-500">
+            회원가입 후 첫 주문에 사용할 수 있는 할인 혜택 안내입니다.
           </p>
           <router-link class="mt-5 inline-flex text-sm font-semibold text-brand-800 hover:text-accent-500" to="/signup">
             혜택 안내
           </router-link>
         </article>
 
-        <article class="overflow-hidden rounded-[2rem] border border-accent-100 bg-gradient-to-br from-accent-50 to-white p-6 shadow-sm">
+        <article class="card-fixed overflow-hidden rounded-[2rem] border border-accent-100 bg-gradient-to-br from-accent-50 to-white p-6 shadow-sm">
           <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">도서 안내</p>
           <h2 class="mt-4 text-xl font-bold text-slate-900">카테고리별 도서 안내</h2>
           <ul class="mt-4 space-y-3 text-sm text-slate-600">
@@ -58,12 +58,12 @@
     </div>
 
     <section class="grid gap-4 md:grid-cols-3">
-      <article v-for="point in servicePoints" :key="point.title" class="surface-panel p-5">
+      <article v-for="point in servicePoints" :key="point.title" class="surface-panel card-fixed p-5">
         <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-2xl">
           {{ point.icon }}
         </div>
         <h3 class="text-lg font-bold text-slate-900">{{ point.title }}</h3>
-        <p class="mt-2 text-sm leading-6 text-slate-500">{{ point.description }}</p>
+        <p class="card-copy-3 mt-2 text-sm leading-6 text-slate-500">{{ point.description }}</p>
       </article>
     </section>
 
@@ -83,7 +83,7 @@
           v-for="cat in quickCategories"
           :key="cat.id"
           :to="cat.to"
-          class="surface-soft flex flex-col items-center gap-3 px-4 py-5 text-center transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white"
+          class="surface-soft card-fixed min-h-[7.5rem] items-center gap-3 px-4 py-5 text-center transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white"
         >
           <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-2xl">
             {{ cat.icon }}
@@ -108,16 +108,16 @@
         <article
           v-for="book in featuredBooks"
           :key="book.id"
-          class="surface-soft cursor-pointer overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+          class="surface-soft card-fixed cursor-pointer overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
           @click="router.push(`/product/${book.id}`)"
         >
           <div class="mb-4 flex h-40 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-slate-100 text-4xl">
             {{ book.icon }}
           </div>
           <span class="point-chip">{{ book.badge }}</span>
-          <p class="mt-3 line-clamp-2 text-base font-bold text-slate-900">{{ book.title }}</p>
-          <p class="mt-1 text-sm text-slate-500">{{ book.author }}</p>
-          <p class="mt-4 text-lg font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
+          <p class="card-title-2 mt-3 text-base font-bold text-slate-900">{{ book.title }}</p>
+          <p class="card-meta-1 mt-1 text-sm text-slate-500">{{ book.author }}</p>
+          <p class="numeric-stable mt-auto pt-4 text-lg font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
         </article>
       </div>
     </section>
@@ -137,7 +137,7 @@
         <article
           v-for="book in bestSellers"
           :key="book.id"
-          class="rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-200 hover:shadow-md"
+          class="card-fixed rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-200 hover:shadow-md"
         >
           <div class="mb-3 flex items-center justify-between">
             <span class="flex h-9 w-9 items-center justify-center rounded-full bg-accent-50 text-sm font-bold text-accent-600">
@@ -145,9 +145,9 @@
             </span>
             <span class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">BEST</span>
           </div>
-          <p class="line-clamp-2 min-h-12 text-sm font-bold text-slate-900">{{ book.title }}</p>
-          <p class="mt-2 text-xs text-slate-500">{{ book.author }}</p>
-          <p class="mt-4 text-base font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
+          <p class="card-title-2 text-sm font-bold text-slate-900">{{ book.title }}</p>
+          <p class="card-meta-1 mt-2 text-xs text-slate-500">{{ book.author }}</p>
+          <p class="numeric-stable mt-auto pt-4 text-base font-bold text-brand-800">{{ book.price.toLocaleString() }}원</p>
         </article>
       </div>
     </section>
@@ -163,8 +163,8 @@ const router = useRouter();
 
 const servicePoints = [
   { icon: '🚚', title: '배송 안내', description: '주문 후 배송 준비부터 배송 완료까지 상태를 확인하실 수 있습니다.' },
-  { icon: '🎁', title: '회원 혜택', description: '회원가입 후 첫 구매 할인과 이벤트 혜택을 이용하실 수 있습니다.' },
-  { icon: '💳', title: '결제 안내', description: '주문 페이지에서 결제 수단을 선택하고 결제 내역을 확인하실 수 있습니다.' },
+  { icon: '🎁', title: '회원 혜택', description: '회원가입 후 첫 구매 할인과 이벤트 혜택을 안내합니다.' },
+  { icon: '💳', title: '결제 안내', description: '주문 페이지에서 결제 수단과 결제 내역을 확인하실 수 있습니다.' },
 ];
 
 const quickCategories = [

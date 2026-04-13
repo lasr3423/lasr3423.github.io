@@ -6,7 +6,7 @@
           <p class="point-chip">관리자 QnA</p>
           <h1 class="section-title mt-3">문의 상태를 관리하고 관리자 답변을 등록하세요</h1>
           <p class="mt-2 text-sm text-slate-500">
-            미답변 문의를 빠르게 확인하고 답변 수정, 삭제, 상태 변경까지 처리할 수 있습니다.
+            미답변 문의 확인과 답변 등록, 상태 변경을 처리할 수 있습니다.
           </p>
         </div>
 

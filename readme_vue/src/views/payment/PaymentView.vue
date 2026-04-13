@@ -3,9 +3,9 @@
     <div class="mx-auto max-w-5xl">
       <div class="mb-8">
         <p class="point-chip">결제 수단 선택</p>
-        <h1 class="section-title mt-3">원하는 방식으로 결제를 진행해 주세요</h1>
+        <h1 class="section-title mt-3">결제 수단을 선택해 주세요</h1>
         <p class="mt-2 text-sm text-slate-500">
-          계좌이체, 토스페이, 카카오페이, 네이버페이 중 원하는 방식으로 결제를 진행할 수 있습니다.
+          계좌이체, 토스페이, 카카오페이, 네이버페이 중에서 선택하실 수 있습니다.
         </p>
       </div>
 
@@ -70,11 +70,11 @@
                 <div class="flex items-center justify-between">
                   <span class="text-base font-semibold text-slate-900">계좌이체</span>
                   <span class="rounded-full bg-[#eef6ff] px-3 py-1 text-xs font-semibold text-[#2169f3]">
-                    별도 결제
+                    입금 확인
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  다른 페이와 별개로 계좌이체 주문을 바로 접수합니다.
+                  계좌이체 주문을 접수한 뒤 입금 확인 절차를 진행합니다.
                 </p>
               </button>
 
@@ -88,11 +88,11 @@
                 <div class="flex items-center justify-between">
                   <span class="text-base font-semibold text-slate-900">토스페이</span>
                   <span class="rounded-full bg-[#e8f1ff] px-3 py-1 text-xs font-semibold text-[#2169f3]">
-                    토스 연동
+                    간편결제
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  토스페이 자체창을 바로 열어 빠르게 결제합니다.
+                  토스페이 결제창으로 이동합니다.
                 </p>
               </button>
 
@@ -106,11 +106,11 @@
                 <div class="flex items-center justify-between">
                   <span class="text-base font-semibold text-slate-900">카카오페이</span>
                   <span class="rounded-full bg-[#fff4bf] px-3 py-1 text-xs font-semibold text-[#765400]">
-                    백엔드 연동
+                    결제창 이동
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  백엔드 결제 준비 API를 호출한 뒤 카카오 결제창으로 이동합니다.
+                  카카오페이 결제창으로 이동합니다.
                 </p>
               </button>
 
@@ -124,11 +124,11 @@
                 <div class="flex items-center justify-between">
                   <span class="text-base font-semibold text-slate-900">네이버페이</span>
                   <span class="rounded-full bg-[#dcfce7] px-3 py-1 text-xs font-semibold text-[#127a37]">
-                    UX 시작
+                    서비스 준비 중
                   </span>
                 </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">
-                  네이버페이 SDK를 불러와 팝업 결제 UX를 시작합니다. 현재는 샌드박스 흐름 기준입니다.
+                  네이버페이 결제창으로 이동합니다. 현재는 테스트 환경입니다.
                 </p>
               </button>
             </div>
@@ -158,7 +158,7 @@
               {{ formatPrice(orderStore.finalPrice) }}원
             </p>
             <p class="mt-2 text-sm text-slate-500">
-              선택한 결제 수단으로 안전하게 결제를 진행합니다.
+              선택한 결제 수단으로 결제를 진행합니다.
             </p>
 
             <div class="mt-5 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-600">
@@ -166,12 +166,12 @@
               <p class="mt-2 leading-6">
                 {{
                   selectedPaymentMethod === 'KAKAO'
-                    ? '결제 준비 API 호출 후 카카오 결제창으로 이동합니다.'
+                    ? '카카오페이 결제창으로 이동합니다.'
                     : selectedPaymentMethod === 'NAVER'
-                      ? '네이버페이 SDK를 불러와 팝업 결제창을 띄웁니다.'
+                      ? '네이버페이 결제창으로 이동합니다.'
                       : selectedPaymentMethod === 'BANK_TRANSFER'
-                        ? '계좌이체 방식으로 주문을 접수하고 바로 완료 처리합니다.'
-                        : '토스페이 자체창을 열어 간편결제를 진행합니다.'
+                        ? '계좌이체 주문을 접수합니다.'
+                        : '토스페이 결제를 진행합니다.'
                 }}
               </p>
             </div>
@@ -180,7 +180,7 @@
               v-if="selectedPaymentMethod === 'NAVER'"
               class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm text-emerald-700"
             >
-              샌드박스 기준으로 네이버페이 팝업을 띄웁니다. 팝업 차단이 켜져 있으면 결제가 시작되지 않을 수 있습니다.
+              네이버페이는 현재 테스트 환경으로 연결됩니다.
             </div>
 
             <button
@@ -188,7 +188,7 @@
               :disabled="loading"
               @click="startPayment"
             >
-              {{ loading ? '결제창 준비 중...' : `${selectedProviderLabel}로 결제하기` }}
+              {{ loading ? '처리 중...' : `${selectedProviderLabel} 결제` }}
             </button>
 
             <button

@@ -4,7 +4,7 @@
       <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">상품 등록</h1>
       <p class="mt-3 text-sm leading-6 text-slate-500">
-        카테고리 이름을 기준으로 상품을 분류하고, 필요하면 이 화면 안에서 새 카테고리를 바로 추가할 수 있습니다.
+        카테고리를 선택해 상품을 등록하고 필요한 경우 새 카테고리를 추가할 수 있습니다.
       </p>
     </section>
 

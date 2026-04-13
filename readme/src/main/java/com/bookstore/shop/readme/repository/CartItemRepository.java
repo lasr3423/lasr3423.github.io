@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     // 장바구니에 담긴 상품 목록 조회
-    List<CartItem> findByCartId(Long CartId);
+    List<CartItem> findByCartIdOrderByCreatedAtAsc(Long cartId);
 
     // 특정 상품을 장바구니에서 제거
     void deleteByCartIdAndProductId(Long cartId, Long productId);

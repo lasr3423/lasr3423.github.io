@@ -35,7 +35,7 @@ public class CartService {
         if (cart == null) return List.of();
 
         // 2. 장바구니에 담긴 상품 목록 조회
-        return cartItemRepository.findByCartId(cart.getId())
+        return cartItemRepository.findByCartIdOrderByCreatedAtAsc(cart.getId())
                 .stream()
                 .map(CartItemResponse::new)
                 .collect(Collectors.toList());
@@ -67,7 +67,7 @@ public class CartService {
                 ));
 
         // 5. 이미 담긴 상품이면 수량을 추가하고, 없는 상품이면 새로 추가하기
-        cartItemRepository.findByCartId(cart.getId())
+        cartItemRepository.findByCartIdOrderByCreatedAtAsc(cart.getId())
                 .stream()
                 .filter(item -> item.getProduct().getId().equals(req.getProductId()))   // product.getId()가 일치하는 항목 찾기
                 .findFirst()

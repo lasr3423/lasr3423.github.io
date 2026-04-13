@@ -46,8 +46,8 @@
               </div>
               <div class="surface-soft p-4">
                 <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">배송</p>
-                <p class="mt-2 text-sm font-semibold text-slate-700">오늘 주문 시 빠른 출고</p>
-                <p class="mt-1 text-xs leading-5 text-slate-500">배송 현황은 마이페이지에서 바로 확인할 수 있어요.</p>
+                <p class="mt-2 text-sm font-semibold text-slate-700">주문 확인 후 순차 출고</p>
+                <p class="mt-1 text-xs leading-5 text-slate-500">배송 현황은 마이페이지에서 확인하실 수 있습니다.</p>
               </div>
             </div>
 
@@ -112,13 +112,13 @@
           </div>
 
           <div v-else-if="activeTab === 'review'" class="surface-soft px-6 py-12 text-center">
-            <p class="text-base font-semibold text-slate-700">리뷰 기능은 준비 중입니다.</p>
-            <p class="mt-2 text-sm text-slate-500">다음 단계에서 도서별 리뷰 화면이 연결될 예정이에요.</p>
+            <p class="text-base font-semibold text-slate-700">리뷰 서비스 준비 중입니다.</p>
+            <p class="mt-2 text-sm text-slate-500">도서별 리뷰 기능은 추후 제공될 예정입니다.</p>
           </div>
 
           <div v-else-if="activeTab === 'qna'" class="surface-soft px-6 py-12 text-center">
-            <p class="text-base font-semibold text-slate-700">Q&amp;A 기능은 준비 중입니다.</p>
-            <p class="mt-2 text-sm text-slate-500">문의 등록과 답변 확인 흐름을 이 영역에 연결할 예정이에요.</p>
+            <p class="text-base font-semibold text-slate-700">Q&amp;A 서비스 준비 중입니다.</p>
+            <p class="mt-2 text-sm text-slate-500">문의 등록과 답변 확인 기능은 추후 제공될 예정입니다.</p>
           </div>
 
           <div v-else class="grid gap-4 lg:grid-cols-2">

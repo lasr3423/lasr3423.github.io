@@ -3,7 +3,7 @@
     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h3 class="text-base font-semibold text-slate-900">카테고리 관리</h3>
-        <p class="mt-1 text-sm text-slate-500">상품 등록과 수정 중에도 대분류와 소분류를 바로 추가하거나 이름을 수정할 수 있습니다.</p>
+        <p class="mt-1 text-sm text-slate-500">대분류와 소분류를 추가하거나 이름을 수정할 수 있습니다.</p>
       </div>
       <button
         type="button"

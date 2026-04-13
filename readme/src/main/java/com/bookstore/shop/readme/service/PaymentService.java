@@ -339,7 +339,7 @@ public class PaymentService {
         // 2. 해당 회원의 장바구니 조회 (없으면 아무것도 안 함)
         cartRepository.findByMemberId(memberId).ifPresent(cart -> {
             // 3. 주문된 상품에 해당하는 아이템만 필터링해서 삭제
-            List<CartItem> toRemove = cartItemRepository.findByCartId(cart.getId())
+            List<CartItem> toRemove = cartItemRepository.findByCartIdOrderByCreatedAtAsc(cart.getId())
                     .stream()
                     .filter(ci -> orderedProductIds.contains(ci.getProduct().getId()))
                     .collect(Collectors.toList());
