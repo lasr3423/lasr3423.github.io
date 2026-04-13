@@ -1,7 +1,7 @@
 <template>
   <aside class="hidden w-60 shrink-0 xl:block">
     <div class="sticky top-24 guide-sidebar">
-      <p class="border-b border-slate-200 px-5 py-4 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
+      <p class="px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
         주요 메뉴
       </p>
       <div class="p-3">
@@ -20,33 +20,33 @@
         </router-link>
       </div>
 
-      <p class="border-y border-slate-200 px-5 py-4 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
+      <p class="px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
         카테고리
       </p>
-      <div v-for="top in categories" :key="top.id" class="border-b border-slate-100 last:border-b-0">
+      <div v-for="top in categories" :key="top.id" class="mx-3 mb-2 rounded-[1.25rem] bg-slate-50/80 last:mb-0">
         <button
           type="button"
           class="flex w-full items-center justify-between px-5 py-4 text-sm font-semibold transition"
-          :class="activeTopId === top.id ? 'bg-brand-50 text-brand-800' : 'text-slate-700 hover:bg-slate-50 hover:text-brand-800'"
+          :class="activeTopId === top.id ? 'text-brand-800' : 'text-slate-700 hover:text-brand-800'"
           @click="toggleTop(top.id)"
         >
           <span>{{ top.name }}</span>
           <span class="text-xs text-slate-400">{{ activeTopId === top.id ? '−' : '+' }}</span>
         </button>
-        <div v-if="activeTopId === top.id" class="bg-slate-50 px-4 py-3">
+        <div v-if="activeTopId === top.id" class="px-4 pb-3">
           <router-link
             v-for="sub in top.subs"
             :key="sub.id"
             :to="`/product?topId=${top.id}&subId=${sub.id}`"
             class="mb-2 block rounded-xl px-4 py-3 text-sm font-medium text-slate-600 transition last:mb-0 hover:bg-white hover:text-brand-800"
-            :class="isActiveSub(top.id, sub.id) ? 'bg-white text-brand-800 shadow-sm' : ''"
+            :class="isActiveSub(top.id, sub.id) ? 'bg-white text-brand-800 shadow-[0_10px_18px_rgba(15,23,42,0.06)]' : ''"
           >
             {{ sub.name }}
           </router-link>
         </div>
       </div>
 
-      <p class="border-y border-slate-200 px-5 py-4 text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
+      <p class="px-5 py-3 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
         고객 서비스
       </p>
       <div class="p-3">

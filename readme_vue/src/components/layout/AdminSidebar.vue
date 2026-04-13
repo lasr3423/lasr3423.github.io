@@ -1,7 +1,7 @@
 <template>
   <aside class="hidden w-64 shrink-0 xl:block">
     <div class="sticky top-24 guide-sidebar">
-      <div class="border-b border-slate-200 px-5 py-4 text-sm font-semibold tracking-[0.2em] text-brand-800">
+      <div class="px-5 py-3 text-sm font-semibold tracking-[0.2em] text-brand-800">
         관리자 메뉴
       </div>
 

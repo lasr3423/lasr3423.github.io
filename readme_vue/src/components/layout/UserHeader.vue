@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
+  <header class="sticky top-0 z-50 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur">
     <div class="app-shell flex items-center gap-4 py-3">
       <router-link
         to="/"
@@ -8,7 +8,7 @@
         ReadMe
       </router-link>
 
-      <div class="mx-auto flex max-w-2xl flex-1 overflow-hidden rounded-lg border border-slate-200 transition focus-within:border-brand-800">
+      <div class="mx-auto flex max-w-2xl flex-1 overflow-hidden rounded-2xl bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_24px_rgba(15,23,42,0.07)] transition">
         <input
           v-model="searchKeyword"
           type="text"
@@ -18,7 +18,7 @@
         />
         <select
           v-model="searchType"
-          class="border-l border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-500 outline-none"
+          class="bg-slate-50 px-3 py-2.5 text-sm text-slate-500 outline-none"
         >
           <option value="title">도서명</option>
           <option value="author">저자</option>
@@ -65,8 +65,7 @@
       </nav>
     </div>
 
-    <div class="border-t border-slate-100">
-      <div class="app-shell flex items-center gap-6 overflow-x-auto py-2 text-sm font-medium text-slate-600">
+    <div class="app-shell flex items-center gap-6 overflow-x-auto py-2 pb-3 text-sm font-medium text-slate-600">
         <router-link
           v-for="item in primaryMenus"
           :key="item.label"
@@ -75,7 +74,6 @@
         >
           {{ item.label }}
         </router-link>
-      </div>
     </div>
   </header>
 </template>

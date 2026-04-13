@@ -1,9 +1,9 @@
 <template>
   <section class="space-y-10">
     <div class="grid gap-6 xl:grid-cols-[1.45fr_0.75fr]">
-      <article class="relative overflow-hidden rounded-[2rem] bg-brand-800 px-8 py-10 text-white shadow-2xl shadow-brand-900/20">
-        <div class="absolute right-0 top-0 h-52 w-52 rounded-full bg-white/10 blur-3xl"></div>
-        <div class="absolute bottom-0 left-16 h-28 w-28 rounded-full bg-accent-400/30 blur-2xl"></div>
+      <article class="relative overflow-hidden rounded-[1.9rem] bg-linear-to-br from-brand-800 to-brand-700 px-8 py-10 text-white shadow-[0_18px_42px_rgba(9,44,76,0.18)]">
+        <div class="absolute right-8 top-8 h-20 w-20 rounded-[1.5rem] bg-white/8"></div>
+        <div class="absolute bottom-8 right-32 h-12 w-12 rounded-xl bg-accent-400/25"></div>
 
         <div class="relative max-w-2xl space-y-5">
           <span class="point-chip !bg-white/10 !text-brand-100">봄 시즌 큐레이션</span>
@@ -18,13 +18,13 @@
           </p>
           <div class="flex flex-wrap gap-3 pt-2">
             <router-link
-              class="rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-800 transition hover:bg-brand-50"
+              class="rounded-full bg-white px-6 py-3 text-sm font-bold text-brand-800 transition hover:bg-slate-100"
               to="/product"
             >
               전체 도서 보러가기
             </router-link>
             <router-link
-              class="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              class="rounded-full bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/14"
               :to="authStore.isLoggedIn ? '/mypage' : '/signin'"
             >
               {{ authStore.isLoggedIn ? '마이페이지' : '로그인' }}
@@ -45,7 +45,7 @@
           </router-link>
         </article>
 
-        <article class="card-fixed overflow-hidden rounded-[2rem] border border-accent-100 bg-gradient-to-br from-accent-50 to-white p-6 shadow-sm">
+        <article class="card-fixed overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-accent-50 via-[#fff8f1] to-white p-6 shadow-[0_12px_28px_rgba(242,149,74,0.12)]">
           <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">도서 안내</p>
           <h2 class="mt-4 text-xl font-bold text-slate-900">카테고리별 도서 안내</h2>
           <ul class="mt-4 space-y-3 text-sm text-slate-600">
@@ -79,10 +79,10 @@
             v-for="section in featuredSections"
             :key="section.key"
             type="button"
-            class="rounded-full border px-4 py-2 text-sm font-semibold transition"
+            class="rounded-full px-4 py-2 text-sm font-semibold shadow-[0_6px_16px_rgba(15,23,42,0.04)] transition"
             :class="activeSectionKey === section.key
-              ? 'border-brand-700 bg-brand-800 text-white'
-              : 'border-slate-200 bg-white text-slate-600 hover:border-brand-200 hover:text-brand-800'"
+              ? 'bg-brand-800 text-white'
+              : 'bg-white text-slate-600 hover:text-brand-800'"
             @click="activeSectionKey = section.key"
           >
             {{ section.label }}
@@ -96,7 +96,7 @@
           v-for="product in activeProducts"
           :key="product.id"
           :to="`/product/${product.id}`"
-          class="surface-soft card-fixed min-h-[7.5rem] overflow-hidden px-4 py-5 transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white"
+          class="surface-soft card-fixed min-h-[7.5rem] overflow-hidden px-4 py-5 transition hover:-translate-y-0.5 hover:bg-white"
         >
           <img
             :src="resolveAssetUrl(product.thumbnail)"
@@ -147,7 +147,7 @@
         <article
           v-for="category in visibleCategories"
           :key="category.id"
-          class="surface-soft card-fixed overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+          class="surface-soft card-fixed overflow-hidden p-4 transition hover:-translate-y-0.5 hover:shadow-[0_14px_26px_rgba(15,23,42,0.08)]"
         >
           <button
             type="button"
@@ -166,7 +166,7 @@
               v-for="subCategory in (category.subCategories || []).slice(0, 4)"
               :key="subCategory.id"
               type="button"
-              class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-brand-200 hover:text-brand-800"
+              class="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-[0_6px_14px_rgba(15,23,42,0.05)] transition hover:text-brand-800"
               @click="goToSubCategory(category, subCategory)"
             >
               {{ subCategory.name }}
@@ -192,7 +192,7 @@
         <article
           v-for="review in recentReviews"
           :key="review.id"
-          class="card-fixed rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-200 hover:shadow-md"
+          class="card-fixed rounded-[1.75rem] bg-white p-4 shadow-[0_12px_28px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(15,23,42,0.08)]"
         >
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
