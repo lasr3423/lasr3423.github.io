@@ -284,7 +284,8 @@ public class KakaoProductTopUpRunner implements CommandLineRunner {
             return fallback;
         }
         if (priceValue instanceof Number number) {
-            return number.intValue();
+            int parsed = number.intValue();
+            return parsed >= 0 ? parsed : fallback;
         }
 
         String digits = String.valueOf(priceValue).replaceAll("[^0-9]", "");
@@ -299,11 +300,14 @@ public class KakaoProductTopUpRunner implements CommandLineRunner {
     }
 
     private int calcSalePrice(int price, BigDecimal discountRate) {
+        if (price <= 0) {
+            return 0;
+        }
         if (discountRate == null || discountRate.compareTo(BigDecimal.ZERO) == 0) {
             return price;
         }
         BigDecimal ratio = BigDecimal.ONE.subtract(discountRate.divide(BigDecimal.valueOf(100)));
-        return ratio.multiply(BigDecimal.valueOf(price)).intValue();
+        return Math.max(0, ratio.multiply(BigDecimal.valueOf(price)).intValue());
     }
 
     private String defaultText(String value, String fallback) {
