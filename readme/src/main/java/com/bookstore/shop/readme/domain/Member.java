@@ -70,7 +70,6 @@ public class Member extends BaseEntity {
         return m;
     }
 
-    /* ── 소셜 로그인 팩토리 ── */
     public static Member createOAuth(String email,
                                      String name,
                                      AuthProvider provider,

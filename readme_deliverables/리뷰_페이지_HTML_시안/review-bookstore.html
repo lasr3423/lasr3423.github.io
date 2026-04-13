@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>리뷰 페이지 - 서점형</title>
+  <style>
+    body { margin: 0; font-family: "Pretendard", sans-serif; background: #fcfbf8; color: #222; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+    .summary { display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-bottom: 28px; }
+    .box { background: #fff; border: 1px solid #eee6da; border-radius: 24px; padding: 24px; }
+    .score { font-size: 56px; font-weight: 800; color: #b96a1d; }
+    .bars div { margin-bottom: 10px; }
+    .bar { height: 10px; background: #f1e7da; border-radius: 999px; overflow: hidden; }
+    .fill { height: 100%; background: linear-gradient(90deg, #d08b3d, #8f4b22); }
+    .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .card { background: #fff; border: 1px solid #eee6da; border-radius: 22px; padding: 20px; }
+    .book { font-size: 18px; font-weight: 700; }
+    .info { margin-top: 8px; color: #7b6e63; font-size: 14px; }
+    .desc { margin-top: 14px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="summary">
+      <div class="box">
+        <div style="font-size:14px; color:#8d7f73;">전체 리뷰 평점</div>
+        <div class="score">4.8</div>
+        <div style="margin-top:8px; color:#6d6258;">총 2,184개 리뷰</div>
+      </div>
+
+      <div class="box bars">
+        <div>5점<div class="bar"><div class="fill" style="width:78%"></div></div></div>
+        <div>4점<div class="bar"><div class="fill" style="width:14%"></div></div></div>
+        <div>3점<div class="bar"><div class="fill" style="width:5%"></div></div></div>
+        <div>2점<div class="bar"><div class="fill" style="width:2%"></div></div></div>
+        <div>1점<div class="bar"><div class="fill" style="width:1%"></div></div></div>
+      </div>
+    </section>
+
+    <section class="cards">
+      <article class="card">
+        <div class="book">모순</div>
+        <div class="info">★★★★★ · 최유진 · 소설</div>
+        <div class="desc">
+          쇼핑몰형 구조에 가장 잘 맞는 타입입니다. 상단에서 신뢰도 있는 요약을 보여주고,
+          하단에서는 리뷰 카드를 안정적으로 배치할 수 있습니다.
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="book">죽고 싶지만 떡볶이는 먹고 싶어</div>
+        <div class="info">★★★★☆ · 김서현 · 에세이</div>
+        <div class="desc">
+          평점 분포와 리뷰 카드가 동시에 보여서 구매 전환에도 유리합니다.
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="book">클린 코드</div>
+        <div class="info">★★★★★ · 박성민 · IT</div>
+        <div class="desc">
+          책별 리뷰, 전체 리뷰, 베스트 리뷰를 확장하기 쉬운 구조입니다.
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="book">달러구트 꿈 백화점</div>
+        <div class="info">★★★★☆ · 이나경 · 판타지</div>
+        <div class="desc">
+          가장 무난하지만 실제 서비스로 만들었을 때 실패 확률이 가장 낮은 타입입니다.
+        </div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

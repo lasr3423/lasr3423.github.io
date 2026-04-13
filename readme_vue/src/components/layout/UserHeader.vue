@@ -65,7 +65,7 @@
       </nav>
     </div>
 
-    <div class="border-t border-slate-100 bg-slate-50/90">
+    <div class="border-t border-slate-100">
       <div class="app-shell flex items-center gap-6 overflow-x-auto py-2 text-sm font-medium text-slate-600">
         <router-link
           v-for="item in primaryMenus"

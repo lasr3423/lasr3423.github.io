@@ -4,7 +4,7 @@
       <p class="text-sm font-semibold uppercase tracking-[0.24em] text-brand-700">Login</p>
       <h1 class="text-3xl font-bold tracking-tight text-slate-900">ReadMe 로그인</h1>
       <p class="text-sm leading-6 text-slate-500">
-        이메일 또는 소셜 계정으로 로그인하실 수 있습니다.
+        이메일 계정으로 로그인하거나 소셜 로그인을 통해 빠르게 시작해 보세요.
       </p>
     </div>
 

@@ -17,7 +17,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    // 상품 목록 조회 + 키워드 검색 (REQ-P-001, REQ-P-003, REQ-P-004 통합)
+    // 상품 목록 조회 + 키워드 검색
     @Transactional(readOnly = true)
     public Page<ProductListResponse> getProductList(Long categoryTopId, Long categorySubId,
                                                      String keyword, Pageable pageable) {
