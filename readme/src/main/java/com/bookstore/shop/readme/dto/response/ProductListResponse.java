@@ -30,7 +30,7 @@ public class ProductListResponse {
         this.title = product.getTitle();
         this.author = product.getAuthor();
         this.price = product.getPrice();
-        this.salePrice = product.getSalePrice();
+        this.salePrice = normalizeSalePrice(product);
         this.discountRate = product.getDiscountRate();
         this.thumbnail = product.getThumbnail();
         this.salesCount = product.getSalesCount();
@@ -40,5 +40,20 @@ public class ProductListResponse {
         this.categoryTopName = product.getCategoryTop().getName();
         this.categorySubId = product.getCategorySub().getId();
         this.categorySubName = product.getCategorySub().getName();
+    }
+
+    private int normalizeSalePrice(Product product) {
+        if (product.getSalePrice() >= 0) {
+            return product.getSalePrice();
+        }
+        if (product.getPrice() <= 0) {
+            return 0;
+        }
+        BigDecimal rate = product.getDiscountRate() == null ? BigDecimal.ZERO : product.getDiscountRate();
+        if (rate.compareTo(BigDecimal.ZERO) <= 0) {
+            return product.getPrice();
+        }
+        BigDecimal ratio = BigDecimal.ONE.subtract(rate.divide(BigDecimal.valueOf(100)));
+        return Math.max(0, ratio.multiply(BigDecimal.valueOf(product.getPrice())).intValue());
     }
 }

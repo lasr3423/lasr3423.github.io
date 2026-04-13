@@ -38,6 +38,10 @@ const router = createRouter({
           component: () => import('@/views/board/NoticeDetailView.vue')
         },
         {
+          path: 'event',
+          component: () => import('@/views/board/EventView.vue')
+        },
+        {
           path: 'qna',
           component: () => import('@/views/board/QnaListView.vue')
         },

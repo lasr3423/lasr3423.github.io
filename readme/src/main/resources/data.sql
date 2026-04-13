@@ -212,7 +212,7 @@ ISBN: 9791162158593
 출판사: 홀수
 ISBN: 9791186264706
 출간일시: 2017-12-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633157&q=%EA%B3%A0%EB%93%B1+%EA%B5%AD%EC%96%B4+%EC%9D%B8%EB%AC%B8+%EC%82%AC%ED%9A%8C+%EC%98%88%EC%88%A0%282018%29%28%ED%99%80%EC%88%98%29%28%ED%99%80%EB%A1%9C+%EA%B3%B5%EB%B6%80%ED%95%98%EB%8A%94+%EC%88%98%EB%8A%A5+%EA%B5%AD%EC%96%B4+%EA%B8%B0%EC%B6%9C+%EB%B6%84%EC%84%9D%29', 13000, 0.00, -1, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633157%3Ftimestamp%3D20220809182421', 96, 64, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633157&q=%EA%B3%A0%EB%93%B1+%EA%B5%AD%EC%96%B4+%EC%9D%B8%EB%AC%B8+%EC%82%AC%ED%9A%8C+%EC%98%88%EC%88%A0%282018%29%28%ED%99%80%EC%88%98%29%28%ED%99%80%EB%A1%9C+%EA%B3%B5%EB%B6%80%ED%95%98%EB%8A%94+%EC%88%98%EB%8A%A5+%EA%B5%AD%EC%96%B4+%EA%B8%B0%EC%B6%9C+%EB%B6%84%EC%84%9D%29', 13000, 0.00, 13000, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633157%3Ftimestamp%3D20220809182421', 96, 64, 'ACTIVATE', NULL),
     (33, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 3, '미술관에 간 인문학자', '안현배', '9791187150091', '조각을 그저 바라보는데 그치지 않고 곳곳에 담겨진 의미를 읽어내야 비로소 작품의 진면모를 감상하게 된다. 하나의 미술 작품을 제대로 감상하는 것이 인문학적 소양을 기르는 가장 효과적인 공부인 것도 그 때문이다.    『미술관에 간 인문학자』는 파리1대학에서 역사와 예술사를 공부하며 10년 넘게 루브르 박물관 속 명작의 숲을 탐사해온 인문학자 안현배의 독특한 미술 감상서다. 저자는 고전을, 신화를, 문학을, 역사를 읽듯 책 속의 명작들이 읽혀지도록 해박한
 출판사: 어바웃어북
 ISBN: 9791187150091
@@ -322,7 +322,7 @@ ISBN: 9788960864870
 출판사: 유페이퍼
 ISBN: 9791173120756
 출간일시: 2024-10-31T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6762604&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 5000, 10.00, -1, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6762604%3Ftimestamp%3D20241101164524', 162, 108, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6762604&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 5000, 10.00, 4500, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6762604%3Ftimestamp%3D20241101164524', 162, 108, 'ACTIVATE', NULL),
     (55, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '창의력(어린이를 위한)(어린이 자기계발동화 18)', '한창욱', '9788960862357', '어린이를 위한 자기계발동화『어린이를 위한 창의력』. 어린이에게 꼭 필요한 인성만을 골라 재미있고 감동적인 이야기로 풀어낸「어린이 자기계발동화」시리즈의 18번째 책이다. 창의력을 잃어버린 세 아이가 생각 도둑을 찾아다니는 이야기를 그리고 있다. 마을 사람들의 생각을 빼앗아간 생각 도둑을 잡기 위해서는 다섯 단계의 창의력 문제를 풀어야 한다. 다섯 가지의 창의력 미션을 해결하면서 생각 도둑에게 점점 다가가는 아이들. 이 책은 쫓고 쫓기는 추격전 속에서
 출판사: 위즈덤하우스
 ISBN: 9788960862357
@@ -332,43 +332,43 @@ ISBN: 9788960862357
 출판사: 비즈니스맵
 ISBN: 4808962601411
 출간일시: 2010-07-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4479188&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 0, 0.00, -1, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4479188%3Ftimestamp%3D20190301021602', 168, 112, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4479188&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 0, 0.00, 0, 27, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4479188%3Ftimestamp%3D20190301021602', 168, 112, 'ACTIVATE', NULL),
     (57, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', '멍그리', '9791193054765', '이 전자책은 자기계발을 위한 포괄적인 가이드를 제공하며, 자기계발에 관한 다양한 측면을 다루고 있습니다.개인의 목표를 달성하고, 긍정적인 습관을 기르고, 사고방식을 개선하기 위한 실용적인 전략과 기술을 제공하며, 스트레스 관리와 도전 극복에도 도움이 됩니다.이 전자책은 자기계발 분야의 전문가에 의해 쓰여졌으며 독자들이 자신의 최고 버전이 되기 위해 행동을 취하도록 격려하기 위해 고안되었다.알기 쉬운 조언과 실행 가능한 단계를 통해 이 전자책은 자신의
 출판사: 작가와
 ISBN: 9791193054765
 출간일시: 2023-04-13T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6331486&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 9900, 5.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6331486', 171, 114, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6331486&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 9900, 5.00, 9405, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6331486', 171, 114, 'ACTIVATE', NULL),
     (58, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', '나카노 아키라', '4808962602203', '피터 드러커가 이야기하는 21세기 지식사회 프로페셔널의 조건!  ''현대 경영학의 아버지''로 불리는 경영 이론가 피터 드러커가 들려주는 자기계발론『피터 드러커의 자기계발』. 바쁜 비즈니스맨들을 위해 출퇴근길 30분 정도의 투자로 경영대가들의 핵심이론을 골라 읽을 수 있게 구성한「비즈니스 에센셜 시리즈」의 첫 번째 책이다. 널리 알려진 를 비롯한 , &lt;21세기 지식경영&gt; 등의 저서들을 참고하여 드러커의 자기계발론을 알기 쉽게 정리했다.
 출판사: 비즈니스맵
 ISBN: 4808962602203
 출간일시: 2011-08-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4623192&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 0, 10.00, -1, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4623192%3Ftimestamp%3D20190301203420', 174, 116, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4623192&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 0, 10.00, 0, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4623192%3Ftimestamp%3D20190301203420', 174, 116, 'ACTIVATE', NULL),
     (59, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', '한국인재경영연구회', '9788964180259', '학계ㆍ산업 분야에서 활동하는 전문가가 모인 한국인재경영연구회가 편저한 『성공하는 사람들의 자기계발』. 동서고금을 통해 성공한 사람들의 실천적 사례와 지혜를 연구하여 불확실성 시대 속에서도 지속적 성공인생을 추구하는 현대인에게 이상과 비전을 건넨다. 특히 우리가 자신의 내부에 잠든 잠재능력을 발견하여 끄집어내 활용하는 방법을 소개하고 있다. 성공 속으로 걸어들어가도록 인도한다.
 출판사: 경영자료사
 ISBN: 9788964180259
 출간일시: 2012-01-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4381173&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 6900, 15.00, -1, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4381173%3Ftimestamp%3D20190228130914', 177, 118, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4381173&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 6900, 15.00, 5865, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4381173%3Ftimestamp%3D20190228130914', 177, 118, 'ACTIVATE', NULL),
     (60, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 5, '자기계발', 'Ghat GPT 저자 화이트워터 역자', '9791170850502', '동기 부여는 자기계발에 있어서 매우 중요한 역할을 합니다. 자기계발은 개인의 성장과 발전을 위해 목표를 설정하고 그에 따라 행동을 취하는 과정을 말합니다. 이러한 과정을 구체적으로 설명해주는 내용을 전달해주는 책입니다.
 출판사: 작가와
 ISBN: 9791170850502
 출간일시: 2023-05-24T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6357171&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 3500, 0.00, -1, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6357171', 180, 0, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6357171&q=%EC%9E%90%EA%B8%B0%EA%B3%84%EB%B0%9C', 3500, 0.00, 3500, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6357171', 180, 0, 'ACTIVATE', NULL),
     (61, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설', '한국소설가협회', '2002976000518', '출판사: 삼문
 ISBN: 2002976000518
 출간일시: 1996-03-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=107949&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 7000, 5.00, -1, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F107949%3Ftimestamp%3D20250425142252', 183, 2, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=107949&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 7000, 5.00, 6650, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F107949%3Ftimestamp%3D20250425142252', 183, 2, 'ACTIVATE', NULL),
     (62, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설(계간)', '한국소설가협회', '2009960000011', '출판사: 한국소설가협회
 ISBN: 2009960000011
 출간일시: 1997-03-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=278133&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%28%EA%B3%84%EA%B0%84%29', 8000, 10.00, -1, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F278133%3Ftimestamp%3D20250425164813', 186, 4, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=278133&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%28%EA%B3%84%EA%B0%84%29', 8000, 10.00, 7200, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F278133%3Ftimestamp%3D20250425164813', 186, 4, 'ACTIVATE', NULL),
     (63, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설 (8월호)', '편집부', '9771228648602', '출판사: 한국소설가협회
 ISBN: 9771228648602
 출간일시: 2010-08-27T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5670270&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%288%EC%9B%94%ED%98%B8%29', 15000, 15.00, -1, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5670270%3Ftimestamp%3D20250531154352', 189, 6, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5670270&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%288%EC%9B%94%ED%98%B8%29', 15000, 15.00, 12750, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5670270%3Ftimestamp%3D20250531154352', 189, 6, 'ACTIVATE', NULL),
     (64, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국소설(8월호)', '한국소설가협회', '2011869000023', '출판사: 청어와삐삐
 ISBN: 2011869000023
 출간일시: 2001-12-15T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=285724&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%288%EC%9B%94%ED%98%B8%29', 7000, 0.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F285724%3Ftimestamp%3D20250425165347', 192, 8, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=285724&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%288%EC%9B%94%ED%98%B8%29', 7000, 0.00, 7000, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F285724%3Ftimestamp%3D20250425165347', 192, 8, 'ACTIVATE', NULL),
     (65, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국모더니즘 소설연구(양장본 HardCover)', '김진석', '9791195464050', '『한국모더니즘 소설연구』는 한국모더니즘에 대해 다룬 책이다. 이상, 최명익, 박태원 등 일제 강점기의 모더니즘 작가 연구에 초점을 맞췄다. 또한 아방가르드 문학을 대표하는 한국의 초현실주의 문학과 이상의 수필 세계에 대해 살펴본다.
 출판사: 국학자료원
 ISBN: 9791195464050
@@ -972,7 +972,7 @@ ISBN: 9788959754274
 출판사: 상상스퀘어
 ISBN: 9791124248096
 출간일시: 2026-02-13T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=7157638&q=%EC%9A%B0%EB%A6%AC+%EC%A7%91+%EC%9D%B8%EB%AC%B8%ED%95%99%3A+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 15400, 10.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7157638%3Ftimestamp%3D20260215121833', 170, 20, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7157638&q=%EC%9A%B0%EB%A6%AC+%EC%A7%91+%EC%9D%B8%EB%AC%B8%ED%95%99%3A+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4', 15400, 10.00, 13860, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7157638%3Ftimestamp%3D20260215121833', 170, 20, 'ACTIVATE', NULL),
     (191, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '중고생이 꼭 읽어야 할 한국중장편소설 40', '박경리', '9788965823599', '매년 새 학기가 되면 수많은 문학 해설서가 쏟아져 나온다. 그만큼 문학 작품을 쉽게 접할 수 있는 환경이 조성되었지만, 해설과 질문이 부실한 책이 대부분이다. 『한국중장편소설 40』은 쉽고 재미있는 문학 공부를 위해 다양한 장치를 활용했다. 어려운 어휘는 바로 옆에서 풀이했고, 본문 중간중간 주석을 달아 작품을 쉽게 이해할 수 있도록 구성했다. 수능·논술·내신을 위해서 ‘작품 길잡이’, ‘구성과 줄거리’, ‘생각해 볼까요?’ 등으로 작품을 상세히 분석
 출판사: 리베르
 ISBN: 9788965823599
@@ -987,7 +987,7 @@ ISBN: 9791157766703
 출판사: IWELL(아이웰콘텐츠)
 ISBN: 4801155571881
 출간일시: 2014-08-08T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4454345&q=%EC%86%8C%EC%84%A4+%EC%9D%B4%EC%88%9C%EC%8B%A0+%28%EC%A4%91%ED%95%99%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%29', 5000, 5.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4454345%3Ftimestamp%3D20190228225004', 179, 26, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4454345&q=%EC%86%8C%EC%84%A4+%EC%9D%B4%EC%88%9C%EC%8B%A0+%28%EC%A4%91%ED%95%99%EC%83%9D%EC%9D%B4+%EA%BC%AD+%EC%9D%BD%EC%96%B4%EC%95%BC+%ED%95%A0+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%29', 5000, 5.00, 4750, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4454345%3Ftimestamp%3D20190228225004', 179, 26, 'ACTIVATE', NULL),
     (194, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '소설 100인 100선 13(한국소설 100년)', '김영현, 김채원, 현길언, 김향숙', '9788958081135', '출판사: 일송미디어
 ISBN: 9788958081135
 출간일시: 2007-05-20T00:00:00.000+09:00
@@ -1004,7 +1004,7 @@ ISBN: 9788958081142
 출판사: 역락
 ISBN: 9791173964428
 출간일시: 2025-12-29T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=7117345&q=2000%EB%85%84-2020%EB%85%84+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EB%AC%B8%ED%95%99%EC%97%B0%EA%B5%AC', 20000, 5.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7117345%3Ftimestamp%3D20260327125939', 191, 34, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7117345&q=2000%EB%85%84-2020%EB%85%84+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4%EB%AC%B8%ED%95%99%EC%97%B0%EA%B5%AC', 20000, 5.00, 19000, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7117345%3Ftimestamp%3D20260327125939', 191, 34, 'ACTIVATE', NULL),
     (198, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '2000년-2020년 한국소설문학연구', '석추영', '9791173964404', '산업화와 민주화를 거쳐 짧은 시간 안에 세계의 주목을 받는 국가로 성장했습니다. 21세기 한국 사회는 지속적인 경제 발전과 세계화, 정보화에 따른 역동적 변화를 겪으며 새로운 사회적 국면으로 이동하고 있습니다. 이러한 흐름 속에서 한국 소설은 날카로운 감수성과 현실을 응시하는 서사적 힘을 바탕으로 시대의 징후를 기록하는 중요한 역할을 담당해왔습니다. 21세기 한국문학을 이해하려면, 이 시대의 문학적 특징을 가장 잘 드러낼 수 있는 작품들이 무엇인지부터 고민해야
 출판사: 역락
 ISBN: 9791173964404
@@ -1024,7 +1024,7 @@ ISBN: 9788979444445
 출판사: 스마트북
 ISBN: 9791175725676
 출간일시: 2025-11-02T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=7065420&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0+%EB%85%B8%ED%8A%B8+%EC%96%91%EA%B7%80%EC%9E%90+%EB%AA%A8%EC%88%9C%EC%9D%84+%EC%A4%91%EC%8B%AC%EC%9C%BC%EB%A1%9C', 6500, 5.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7065420%3Ftimestamp%3D20251104103612', 3, 42, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7065420&q=%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0+%EB%85%B8%ED%8A%B8+%EC%96%91%EA%B7%80%EC%9E%90+%EB%AA%A8%EC%88%9C%EC%9D%84+%EC%A4%91%EC%8B%AC%EC%9C%BC%EB%A1%9C', 6500, 5.00, 6175, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7065420%3Ftimestamp%3D20251104103612', 3, 42, 'ACTIVATE', NULL),
     (202, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '현실 고양을 꿈꾸는 한국소설 (한국 서사문학 특강 2)', '장미영', '9788995330081', '출판사: 글솟대
 ISBN: 9788995330081
 출간일시: 2004-11-20T00:00:00.000+09:00
@@ -1058,7 +1058,7 @@ ISBN: 9788994217451
 출판사: 새미
 ISBN: 9791167975676
 출간일시: 2026-03-26T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=7187522&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EA%B3%BC+%ED%83%80%EC%9E%90%EC%9D%98+%EC%A0%95%EC%B9%98%ED%95%99', 7000, 0.00, -1, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7187522%3Ftimestamp%3D20260328103653', 24, 56, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7187522&q=%ED%95%9C%EA%B5%AD%ED%98%84%EB%8C%80%EC%86%8C%EC%84%A4%EA%B3%BC+%ED%83%80%EC%9E%90%EC%9D%98+%EC%A0%95%EC%B9%98%ED%95%99', 7000, 0.00, 7000, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7187522%3Ftimestamp%3D20260328103653', 24, 56, 'ACTIVATE', NULL),
     (209, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 1, 1, '한국이 싫어서(워터프루프북)', '장강명', '9788937438639', '의 소설을 담아 여름 해변이나 수영장뿐만 아니라 따뜻한 욕조 안, 비 내리는 카페의 테라스, 어디서든지 마음 놓고 독서를 즐길 수 있도록 만든 워터프루프북이다. 일반적인 종이와는 달리 나무가 아닌 돌로 만드는 재활용, 친환경 종이인 미네랄 페이퍼로 만든 책으로, 가볍게 휴대하고 물에 젖었을 때 신속하게 건조되도록 2권으로 분권했고 PVC 투명 파우치에 담아 보관할 수 있도록 구성했다.    사회 비판적 문제에서 SF까지 아우르는 다양한 소재, 흡인력 있는
 출판사: 민음사
 ISBN: 9788937438639
@@ -1118,7 +1118,7 @@ ISBN: 9791192641843
 출판사: 애플북스
 ISBN: 9791192641874
 출간일시: 2025-04-23T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6899889&q=%EA%B5%90%EA%B3%BC%EC%84%9C+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%ED%95%B5%EC%8B%AC%EC%9D%BD%EA%B8%B0', 13000, 0.00, -1, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6899889%3Ftimestamp%3D20250425204928', 60, 80, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6899889&q=%EA%B5%90%EA%B3%BC%EC%84%9C+%ED%95%9C%EA%B5%AD%EC%86%8C%EC%84%A4+%ED%95%B5%EC%8B%AC%EC%9D%BD%EA%B8%B0', 13000, 0.00, 13000, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6899889%3Ftimestamp%3D20250425204928', 60, 80, 'ACTIVATE', NULL),
     (221, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '전공영어 영미소설 읽기(6판)(영미문학 시리즈 2)', '유희태', '9791161320793', '[전공영어 영미소설 읽기―유희태 영미문학시리즈 2] 3판은 교원임용고사를 준비하는 수험생들을 위해 쓰였다. 영미소설은 18세기부터 시작해 21세기 현재까지 약 200년 동안의 짧지 않은 시간을 포괄하고 있다. 시험을 준비하는 수험생입장에선 방대한 분량의 소설작품을 읽는 것은 큰 부담일 수밖에 없다. 시간의 제약도 크고 독해 자체가 잘 되지 않는 것이 소설읽기의 큰 장애일 것이다. 그 이유로 해서, 영미소설은 대다수의 예비교사들에겐 막연한 두려움과 부담
 출판사: 위드북
 ISBN: 9791161320793
@@ -1229,7 +1229,7 @@ ISBN: 9789919182717
 출판사: 북스토리
 ISBN: 9788993480849
 출간일시: 2012-06-05T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1400590&q=%EB%A6%AC%EC%8A%A4%ED%83%80%ED%8A%B8+%EC%9D%BC%EB%B3%B8%EC%96%B4+%3A+%EB%9D%BC%EC%87%BC%EB%AA%BD+%EC%99%B8+%28%EC%9B%90%EC%84%9C+%EC%B4%88%EA%B8%89%29', 9800, 15.00, -1, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1400590%3Ftimestamp%3D20230227050654', 129, 6, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1400590&q=%EB%A6%AC%EC%8A%A4%ED%83%80%ED%8A%B8+%EC%9D%BC%EB%B3%B8%EC%96%B4+%3A+%EB%9D%BC%EC%87%BC%EB%AA%BD+%EC%99%B8+%28%EC%9B%90%EC%84%9C+%EC%B4%88%EA%B8%89%29', 9800, 15.00, 8330, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1400590%3Ftimestamp%3D20230227050654', 129, 6, 'ACTIVATE', NULL),
     (244, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 7, '노부영 Outdoor Opposites (원서&CD)', 'Brenda Williams Rachel Oldfield (ILT)', '9789919183516', '출판사: JYBooks
 ISBN: 9789919183516
 출간일시: 2016-01-18T00:00:00.000+09:00
@@ -1277,7 +1277,7 @@ ISBN: 9780764143274
 출판사: Cengage Learning
 ISBN: 9780324366068
 출간일시: 2021-01-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=2446536&q=Business+English', 205560, 5.00, -1, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2446536%3Ftimestamp%3D20230918225737', 159, 26, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2446536&q=Business+English', 205560, 5.00, 195282, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2446536%3Ftimestamp%3D20230918225737', 159, 26, 'ACTIVATE', NULL),
     (254, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 8, 'Business English', '조동인, 이중희', '9788965410591', '『Business English』는 Business English에 늘 접하고 있거나 혹은 취업을 위해 Business English를 준비하는 직장이들을 위해 만들어진 책이다. 구성은 강의 파트와 샘플파트로 크게 나누었으며 강의한 내용을 샘플파트에서 적절한 샘플을 찾아 각 개인이 자신에게 맞는 부분을 적용해 볼 수 있도록 구성하였다. 강의파트는 총 16장으로, 샘플파트는 총 4장으로 되어있어 현대 직장생활에서 많이 활용할 수 있는 실용 샘플을 위주로
 출판사: 진영사
 ISBN: 9788965410591
@@ -1331,7 +1331,7 @@ ISBN: 9781623157081
 출판사: Norton
 ISBN: 9780393116823
 출간일시: 2010-03-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=2806760&q=Psychology+%28Paperback%29', 85400, 0.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2806760%3Ftimestamp%3D20260131110849', 192, 48, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=2806760&q=Psychology+%28Paperback%29', 85400, 0.00, 85400, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F2806760%3Ftimestamp%3D20260131110849', 192, 48, 'ACTIVATE', NULL),
     (265, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 9, 'Psychology', 'Wayne Weiten', '9781305498204', '출판사: Cengage Learning
 ISBN: 9781305498204
 출간일시: 2018-06-01T00:00:00.000+09:00
@@ -1421,12 +1421,12 @@ ISBN: 9791159630415
 출판사: 도서출판 동인
 ISBN: 9791194890379
 출간일시: 2025-07-09T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6967962&q=%EC%97%AD%EC%82%AC+%EC%86%8D%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 15000, 15.00, -1, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6967962%3Ftimestamp%3D20260326131944', 49, 86, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6967962&q=%EC%97%AD%EC%82%AC+%EC%86%8D%EC%9D%98+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 15000, 15.00, 12750, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6967962%3Ftimestamp%3D20260326131944', 49, 86, 'ACTIVATE', NULL),
     (284, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설 속의 여성, 결혼, 그리고 삶', '김현숙', '9791194890829', '【대한민국 학술원 추천 우수학술도서 선정】 소설 속에는 여러 가지 삶의 형태들이 나타난다. 그 중에서도 이 책은 여성의 삶에 주목한다. 19, 20세기 영미소설 속에서 여성의 삶은 어떻게 투영되어 있는지, 결혼은 그들의 삶에 어떤 영향을 주었는지, 영미작가들은 여성의 삶은 어떤 시각으로 바라보았는지 조목조목 들여다본다.
 출판사: 도서출판 동인
 ISBN: 9791194890829
 출간일시: 2025-07-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6982249&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%86%8D%EC%9D%98+%EC%97%AC%EC%84%B1%2C+%EA%B2%B0%ED%98%BC%2C+%EA%B7%B8%EB%A6%AC%EA%B3%A0+%EC%82%B6', 12000, 0.00, -1, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6982249%3Ftimestamp%3D20250726143809', 52, 88, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6982249&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%86%8D%EC%9D%98+%EC%97%AC%EC%84%B1%2C+%EA%B2%B0%ED%98%BC%2C+%EA%B7%B8%EB%A6%AC%EA%B3%A0+%EC%82%B6', 12000, 0.00, 12000, 33, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6982249%3Ftimestamp%3D20250726143809', 52, 88, 'ACTIVATE', NULL),
     (285, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '강의실 밖으로 나온 영미소설', '여국현', '9791198392466', '문학작품을 만나는 가장 좋은 방법은 원본 텍스트나 번역본을 직접 읽는 것이다. 그러나 독자들은 여러 가지 한계로 그러지 못하는 경우가 많다. 특히 외국어로 된 장편 소설의 경우는 그럴 가능성이 크다.  『강의실 밖으로 나온 영미소설』은 문학작품 읽고 싶었지만 어떤 작품부터 시작해야 할지 막막했던 독자, 작품과 작가에 대해 알고 싶은 독자, 효율적으로 문학작품을 읽고 싶은 독자들을 위해 18세기에서 20세기 대표적인 영미 소설 21편의 플롯을 꼼꼼하게 소개
 출판사: 득수
 ISBN: 9791198392466
@@ -1436,7 +1436,7 @@ ISBN: 9791198392466
 출판사: 시대고시기획
 ISBN: 9791138399555
 출간일시: 2025-08-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=7010806&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%C2%B74%EB%8B%A8%EA%B3%84+20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 16800, 10.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7010806%3Ftimestamp%3D20250830103724', 58, 92, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7010806&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+3%C2%B74%EB%8B%A8%EA%B3%84+20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 16800, 10.00, 15120, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7010806%3Ftimestamp%3D20250830103724', 58, 92, 'ACTIVATE', NULL),
     (287, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 소설 속 장르', '한국근대영미소설학회', '9788983963727', '이 책은 영문과 학부생이나 대학원생뿐 아니라 일반 대중들이 영미 소설 속 각 하부장르의 정의와 특징, 그리고 그 계보를 이해하고 이를 바탕으로 영미소설사를 개관해볼 수 있게 이끄는 안내서로 의도되었다. 일반 독자뿐 아니라 영문학 전공자들도 그간 소설 속 각 하부장르에 대한 용어를 사용해왔으나 그 특징 및 역사적 성격과 계보에 대해서 다소 막연한 이해에 머물러 온 것이 사실이다. 영미 소설 속 각 하부장르에 관한 이해를 돕는 책이 그사이 발간된 적이
 출판사: 신아사
 ISBN: 9788983963727
@@ -1451,7 +1451,7 @@ ISBN: 9788986175332
 출판사: 넥서스
 ISBN: 9788960004993
 출간일시: 2008-12-05T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=821312&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 12000, 5.00, -1, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F821312%3Ftimestamp%3D20230907133345', 67, 98, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=821312&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 12000, 5.00, 11400, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F821312%3Ftimestamp%3D20230907133345', 67, 98, 'ACTIVATE', NULL),
     (290, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'SD에듀 독학사 영어영문학과 2단계 19세기 영미소설', '서지윤', '9791138331425', '도서 특징 이 책은 독학사 시험에 응시하는 수험생들이 단기간에 효과적인 학습을 할 수 있도록 다음과 같이 구성하였습니다. ▶ 단원 개요 핵심이론을 학습하기에 앞서 각 단원에서 파악해야 할 중점과 학습목표를 수록하였습니다. ▶ 핵심이론 다년간 출제된 독학학위제 평가영역을 철저히 분석하여 시험에 꼭 출제되는 내용을 ‘핵심이론’으로 선별하여 수록하였으며, 중요도 체크 및 이론 안의 ‘더 알아두기’를 통해 심화 학습과 학습 내용 정리를 효율적으로 할 수
 출판사: 시대고시기획
 ISBN: 9791138331425
@@ -1461,11 +1461,11 @@ ISBN: 9791138331425
 출판사: 넥서스
 ISBN: 4808960004993
 출간일시: 2009-04-12T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4372436&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 7200, 15.00, -1, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4372436%3Ftimestamp%3D20190228115831', 73, 102, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4372436&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EB%8B%A8%EC%96%B4%EC%82%AC%EC%A0%84', 7200, 15.00, 6120, 40, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4372436%3Ftimestamp%3D20190228115831', 73, 102, 'ACTIVATE', NULL),
     (292, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '20세기 영미소설', 'JOSEPH CONRAD 외', '9788995381861', '출판사: 명지문고
 ISBN: 9788995381861
 출간일시: 2007-06-10T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1438392&q=20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 20000, 0.00, -1, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1438392%3Ftimestamp%3D20190130014214', 76, 104, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1438392&q=20%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 20000, 0.00, 20000, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1438392%3Ftimestamp%3D20190130014214', 76, 104, 'ACTIVATE', NULL),
     (293, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해', '심상욱', '9788984481336', '출판사: 전주대학교출판부
 ISBN: 9788984481336
 출간일시: 2010-02-15T00:00:00.000+09:00
@@ -1473,15 +1473,15 @@ ISBN: 9788984481336
     (294, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '현대영미소설연구', '김용철', '2004051003506', '출판사: 신아사
 ISBN: 2004051003506
 출간일시: 1982-11-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=147314&q=%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC', 9000, 10.00, -1, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F147314%3Ftimestamp%3D20251205125541', 82, 108, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=147314&q=%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%97%B0%EA%B5%AC', 9000, 10.00, 8100, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F147314%3Ftimestamp%3D20251205125541', 82, 108, 'ACTIVATE', NULL),
     (295, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해', '유희태', '9788996123101', '출판사: 비욘드
 ISBN: 9788996123101
 출간일시: 2009-01-05T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1459265&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 28000, 15.00, -1, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1459265%3Ftimestamp%3D20190130043038', 85, 110, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1459265&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 28000, 15.00, 23800, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1459265%3Ftimestamp%3D20190130043038', 85, 110, 'ACTIVATE', NULL),
     (296, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해', '박태영', '9788941443988', '출판사: 박문각
 ISBN: 9788941443988
 출간일시: 2006-03-08T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=571891&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 16000, 0.00, -1, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571891%3Ftimestamp%3D20190123204758', 88, 112, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=571891&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 16000, 0.00, 16000, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571891%3Ftimestamp%3D20190123204758', 88, 112, 'ACTIVATE', NULL),
     (297, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설과 도시인문학', '정희원', '9791188350056', '서울시립대 도시인문학연구소에 출간하는 도시인문학총서 제 25권. 영국소설 전공자인 필자가 도시인문학적 시각에서 영미소설을 분석한 연구결과를 모은 저서이다. 책의 1부에서는 빅토리아 시대의 대표적 재현 양식인 도시 스케치(urban sketch) 장르를 통해 디킨즈가 재현하고 있는 런던과 타자의 삶에 대해 고민해본 뒤 이후 1920년대 버지니아 울프와 1960년대 아녜스 바르다에게 런던과 파리는 각각 어떤 공간이었는지 생각해본다. 책의 2부에서는 대서양
 출판사: 라움
 ISBN: 9791188350056
@@ -1511,12 +1511,12 @@ ISBN: 9788955068283
 출판사: 도서출판DRM연구원
 ISBN: 9788998239152
 출간일시: 2014-09-11T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4490738&q=%EC%98%81%EB%AF%B8+%EC%86%8C%EC%84%A4%ED%95%B4%EC%A0%9C%28%EC%A0%9C2%ED%8C%90%29', 8300, 10.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4490738%3Ftimestamp%3D20251114103740', 106, 4, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4490738&q=%EC%98%81%EB%AF%B8+%EC%86%8C%EC%84%A4%ED%95%B4%EC%A0%9C%28%EC%A0%9C2%ED%8C%90%29', 8300, 10.00, 7470, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4490738%3Ftimestamp%3D20251114103740', 106, 4, 'ACTIVATE', NULL),
     (303, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설과 젠더', '조애리', '4808993047141', '『19세기 영미소설과 젠더』는  이후 쓴 글들 중 젠더에 초점을 맞춘 여덟 편의 글을 모았다. 구체적으로 19세기 영미 소설 속에서 나타나는 젠더를 어떻게 이해할 것인가가 논의의 핵심을 두고 있으며, 젠더 이데올로기가 구성되고 작동되는 과정을 다각적으로 바라본다.
 출판사: LIE
 ISBN: 4808993047141
 출간일시: 2013-11-14T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4608391&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%A0%A0%EB%8D%94', 8400, 15.00, -1, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4608391%3Ftimestamp%3D20190301183146', 109, 6, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4608391&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%A0%A0%EB%8D%94', 8400, 15.00, 7140, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4608391%3Ftimestamp%3D20190301183146', 109, 6, 'ACTIVATE', NULL),
     (304, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 분석(2012)(Beyond)', '유희태', '9788941476962', '- 독자대상 : 교원임용고시 수험생 - 구성 : 이론 + 문제 - 특징 : ① 영미소설에 대해 구체적이며 체계적으로 분석함 ② 이해를 돕기 위한 Actual Test를 수록함
 출판사: 박문각
 ISBN: 9788941476962
@@ -1526,7 +1526,7 @@ ISBN: 9788941476962
 출판사: 본투비
 ISBN: 9791169179362
 출간일시: 2025-02-04T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6835498&q=%EC%98%A4+%ED%97%A8%EB%A6%AC+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%84%A0%EC%A7%91%2C+%EB%86%80%EB%9D%BC%EC%9A%B4+%EB%B0%98%EC%A0%84+%EA%B2%B0%EB%A7%90+%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+%EC%86%8C%EC%84%A4', 8000, 5.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6835498%3Ftimestamp%3D20250205154354', 115, 10, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6835498&q=%EC%98%A4+%ED%97%A8%EB%A6%AC+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%84%A0%EC%A7%91%2C+%EB%86%80%EB%9D%BC%EC%9A%B4+%EB%B0%98%EC%A0%84+%EA%B2%B0%EB%A7%90+%EC%98%81%EB%AF%B8%EB%AC%B8%ED%95%99+%EC%86%8C%EC%84%A4', 8000, 5.00, 7600, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6835498%3Ftimestamp%3D20250205154354', 115, 10, 'ACTIVATE', NULL),
     (306, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대영미소설 속 질병, 재난, 공동체', '한국근대영미소설학회', '9791193320099', '『근대 영미소설 속 질병, 재난, 공동체』는 최근 펜데믹의 위기와 기록적인 기후 재난의 시대에 문학과 공동체의 역할을 모색하는 차원에서 기획되었다. 현재 재난은 전 지구적인 현상이 되었고 전 지구 공동체가 공동의 노력을 기울여 재난 상황에 대처하고 위기를 극복해야 한다는 인식을 하게 되었다. 이 책은 근대 영문학에 투영된 재난과 재난 서사를 되돌아봄으로써 21세기 현재 상황을 객관적으로 점검하고 해법을 찾는 시간을 갖고자 한다. 이 책에서 다루는 작품
 출판사: 신아사
 ISBN: 9791193320099
@@ -1536,11 +1536,11 @@ ISBN: 9791193320099
 출판사: 시대고시기획
 ISBN: 9791138390217
 출간일시: 2025-03-06T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6859594&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%C2%B74%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 17500, 15.00, -1, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6859594%3Ftimestamp%3D20250313155347', 121, 14, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6859594&q=%EC%8B%9C%EB%8C%80%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%C2%B74%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 17500, 15.00, 14875, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6859594%3Ftimestamp%3D20250313155347', 121, 14, 'ACTIVATE', NULL),
     (308, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '페미니즘 시각에서 영미소설 읽기', '박희진 외', '9788952103734', '출판사: 서울대학교출판부
 ISBN: 9788952103734
 출간일시: 2002-08-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=632214&q=%ED%8E%98%EB%AF%B8%EB%8B%88%EC%A6%98+%EC%8B%9C%EA%B0%81%EC%97%90%EC%84%9C+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0', 16000, 0.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632214%3Ftimestamp%3D20190124030645', 124, 16, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=632214&q=%ED%8E%98%EB%AF%B8%EB%8B%88%EC%A6%98+%EC%8B%9C%EA%B0%81%EC%97%90%EC%84%9C+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4+%EC%9D%BD%EA%B8%B0', 16000, 0.00, 16000, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F632214%3Ftimestamp%3D20190124030645', 124, 16, 'ACTIVATE', NULL),
     (309, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '모비딕(영미소설 해설총서 4)', '김옥례', '9788983965004', '출판사: 신아사
 ISBN: 9788983965004
 출간일시: 2005-11-10T00:00:00.000+09:00
@@ -1548,7 +1548,7 @@ ISBN: 9788983965004
     (310, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해(교원임용)', '유희태 편', '9788941424826', '출판사: 박문각
 ISBN: 9788941424826
 출간일시: 2001-05-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=571106&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4%28%EA%B5%90%EC%9B%90%EC%9E%84%EC%9A%A9%29', 27000, 10.00, -1, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571106%3Ftimestamp%3D20190123204154', 130, 20, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=571106&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4%28%EA%B5%90%EC%9B%90%EC%9E%84%EC%9A%A9%29', 27000, 10.00, 24300, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F571106%3Ftimestamp%3D20190123204154', 130, 20, 'ACTIVATE', NULL),
     (311, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '현대 영미 소설비평의 특성', '안진수', '9788977271296', '출판사: 현대미학사
 ISBN: 9788977271296
 출간일시: 1999-02-15T00:00:00.000+09:00
@@ -1566,7 +1566,7 @@ ISBN: 9788995911181
 출판사: 도서출판 동인
 ISBN: 9788955069914
 출간일시: 2024-08-14T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6709022&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%98%81%ED%99%94%EC%9D%98+%EC%83%81%ED%98%B8%ED%85%8D%EC%8A%A4%ED%8A%B8%EC%84%B1+%EC%97%B0%EA%B5%AC', 12000, 10.00, -1, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6709022%3Ftimestamp%3D20260326131840', 142, 28, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6709022&q=%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%EA%B3%BC+%EC%98%81%ED%99%94%EC%9D%98+%EC%83%81%ED%98%B8%ED%85%8D%EC%8A%A4%ED%8A%B8%EC%84%B1+%EC%97%B0%EA%B5%AC', 12000, 10.00, 10800, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6709022%3Ftimestamp%3D20260326131840', 142, 28, 'ACTIVATE', NULL),
     (315, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미소설의 이해. 1(2008)(유희태)', '유희태', '9788941444282', '출판사: 박문각
 ISBN: 9788941444282
 출간일시: 2008-02-20T00:00:00.000+09:00
@@ -1618,7 +1618,7 @@ ISBN: 9788997311453
 출판사: 나무독학사
 ISBN: 9788997311415
 출간일시: 2015-03-23T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1481547&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29', 21000, 5.00, -1, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481547%3Ftimestamp%3D20190130074444', 175, 50, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1481547&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29', 21000, 5.00, 19950, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1481547%3Ftimestamp%3D20190130074444', 175, 50, 'ACTIVATE', NULL),
     (326, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '소음과 분노(서숙 교수의 영미소설 특강 7)', '서숙', '9791158901691', '이화여자대학교 영어영문학과에서 30여 년 동안 영미소설을 강의한 서숙 교수가 자신의 강의록을 소설별로 엮은 독특한 형식의 시리즈 「서숙 교수의 영미소설 특강」 제7권 『소음과 분노』. ''소음과 분노''는 남북전쟁 이후 미국 남부의 한 명문가의 몰락을 통해 전통적인 가치와 기존 질서의 붕괴를 그린 작품으로, 무엇보다 서술의 연속성을 거부하고 ‘의식의 흐름’ 기법 등을 통해 새로운 소설 유형을 구축한 모더니즘 소설의 걸작으로 평가받는 소설이다. 저자는
 출판사: 이화여자대학교출판문화원
 ISBN: 9791158901691
@@ -1647,15 +1647,15 @@ ISBN: 9791158902995
 출판사: 시대고시기획
 ISBN: 9791138336628
 출간일시: 2022-10-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6858082&q=SD%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 17500, 15.00, -1, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6858082%3Ftimestamp%3D20250521223246', 193, 62, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6858082&q=SD%EC%97%90%EB%93%80+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84+19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4', 17500, 15.00, 14875, 43, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6858082%3Ftimestamp%3D20250521223246', 193, 62, 'ACTIVATE', NULL),
     (332, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '토니 모리슨(현대영미소설학회 작가총서 2)', '김미현, 이명호', '9788955063806', '출판사: 동인
 ISBN: 9788955063806
 출간일시: 2009-01-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=703422&q=%ED%86%A0%EB%8B%88+%EB%AA%A8%EB%A6%AC%EC%8A%A8%28%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%ED%95%99%ED%9A%8C+%EC%9E%91%EA%B0%80%EC%B4%9D%EC%84%9C+2%29', 18000, 0.00, -1, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703422%3Ftimestamp%3D20221025123426', 196, 64, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=703422&q=%ED%86%A0%EB%8B%88+%EB%AA%A8%EB%A6%AC%EC%8A%A8%28%ED%98%84%EB%8C%80%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%ED%95%99%ED%9A%8C+%EC%9E%91%EA%B0%80%EC%B4%9D%EC%84%9C+2%29', 18000, 0.00, 18000, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F703422%3Ftimestamp%3D20221025123426', 196, 64, 'ACTIVATE', NULL),
     (333, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설(EBS 독학사 영어영문학과 2단계)', '독학사연구회', '9788992248518', '출판사: 지식과미래
 ISBN: 9788992248518
 출간일시: 2010-03-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1369490&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28EBS+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29', 21000, 5.00, -1, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1369490%3Ftimestamp%3D20190128041003', 199, 66, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1369490&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EB%AF%B8%EC%86%8C%EC%84%A4%28EBS+%EB%8F%85%ED%95%99%EC%82%AC+%EC%98%81%EC%96%B4%EC%98%81%EB%AC%B8%ED%95%99%EA%B3%BC+2%EB%8B%A8%EA%B3%84%29', 21000, 5.00, 19950, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1369490%3Ftimestamp%3D20190128041003', 199, 66, 'ACTIVATE', NULL),
     (334, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '태양은 다시 떠오른다(서숙 교수의 영미소설 특강 6)', '서숙', '9791185909271', '이화여자대학교 영어영문학과에서 30여 년 동안 영미소설을 강의한 서숙 교수가 자신의 강의록을 소설별로 엮은 독특한 형식의 시리즈 「서숙 교수의 영미소설 특강」 제6권 『태양은 다시 떠오른다』. 이 책은 1차 대전 참전 후 신문사 특파원으로 파리에 와 있는 제이크, 그의 애인 브렛, 미국에서 건너온 작가 로버트 등, 파리에서 카페와 술집을 전전하며 무기력하고 암울한 생활을 하던 주인공 일행이 태양과 투우의 나라 스페인으로 여행을 가면서 새로운 가치에
 출판사: 이화여자대학교출판부
 ISBN: 9791185909271
@@ -1683,7 +1683,7 @@ ISBN: 9788973008568
 출판사: 한국방송통신대학교출판문화원
 ISBN: 4809050202015
 출간일시: 2016-08-04T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4515448&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 6000, 15.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4515448%3Ftimestamp%3D20190301061022', 17, 78, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4515448&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 6000, 15.00, 5100, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4515448%3Ftimestamp%3D20190301061022', 17, 78, 'ACTIVATE', NULL),
     (340, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'iMBC 캠퍼스 독당i 독학사 영어영문학과 3단계 20세기 영미소설', '이다현', '9788963929637', '-독자대상 : 독학학위제(독학사) 영어영문학과 3단계(전공심화과정인정시험) 준비생 -구성 : 국가평생교육진흥원 독학학위제 시험 평가영역에 준한 이론과 문제 -특징 1. 최신 평가영역과 기출 경향을 완벽히 반영한 이론+문제풀이 통합교재 2. 영어영문학과 전문 교수진의 체계적인 강의, 해설 3. 시험 평가영역을 철저히 반영한 체계적인 이론 정리 4. 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이
 출판사: 지식과미래
 ISBN: 9788963929637
@@ -1692,7 +1692,7 @@ ISBN: 9788963929637
     (341, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설', '한국방송통신대학교 편집부', '9788920043345', '출판사: 한국방송통신대학교출판문화원
 ISBN: 9788920043345
 출간일시: 2024-07-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6690856&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 0, 5.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6690856%3Ftimestamp%3D20240831160536', 23, 82, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6690856&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 0, 5.00, 0, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6690856%3Ftimestamp%3D20240831160536', 23, 82, 'ACTIVATE', NULL),
     (342, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영미소설과 젠더(L I E영문학 총서 제22권)(양장본 HardCover)', '조애리', '9788993047141', '『19세기 영미소설과 젠더』는 &lt;성ㆍ역사ㆍ소설&gt; 이후 쓴 글들 중 젠더에 초점을 맞춘 여덟 편의 글을 모았다. 구체적으로 19세기 영미 소설 속에서 나타나는 젠더를 어떻게 이해할 것인가가 논의의 핵심을 두고 있으며, 젠더 이데올로기가 구성되고 작동되는 과정을 다각적으로 바라본다.
 출판사: LIE
 ISBN: 9788993047141
@@ -1702,7 +1702,7 @@ ISBN: 9788993047141
 출판사: 형설출판사
 ISBN: 9788947275132
 출간일시: 2014-08-05T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=610344&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%82%B0%EC%B1%85', 15000, 15.00, -1, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F610344%3Ftimestamp%3D20190124004959', 29, 86, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=610344&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%82%B0%EC%B1%85', 15000, 15.00, 12750, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F610344%3Ftimestamp%3D20190124004959', 29, 86, 'ACTIVATE', NULL),
     (344, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, 'iMBC 캠퍼스 독당i 독학사 4단계 영어영문학 통합본 2: 고급영어 / 영미소설', '김유민, 이다현', '9788963926285', '“독당i”독학사 합격은 당연히 iMBC 캠퍼스  -독자대상 : 독학학위제(독학사) 영어영문학과 4단계(학위취득인정시험) 준비생 -구성 : 국가평생교육진흥원 독학학위제 시험 평가영역에 준한 이론과 문제  -특징 1. 최신 평가영역과 기출 경향을 완벽히 반영한 이론+문제풀이 통합교재 2. 영어영문학과 전문 교수진의 체계적인 강의, 해설 3. 시험 평가영역을 철저히 반영한 체계적인 이론 정리 4. 출제경향 분석에 따른 적중률 높은 확인학습문제 풀이
 출판사: 지식과미래
 ISBN: 9788963926285
@@ -1711,7 +1711,7 @@ ISBN: 9788963926285
     (345, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설 산책', '최한용', '4808947241434', '출판사: 형설출판사
 ISBN: 4808947241434
 출간일시: 2009-07-15T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=4396813&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%82%B0%EC%B1%85', 0, 5.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4396813%3Ftimestamp%3D20190228151912', 35, 90, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=4396813&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%82%B0%EC%B1%85', 0, 5.00, 0, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F4396813%3Ftimestamp%3D20190228151912', 35, 90, 'ACTIVATE', NULL),
     (346, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설의 이해', '박병주, 유인호, 신진범', '9788947275217', '[영미 단편소설 산책]이 세상에 태어난 지 어느덧 6년이란 세월이 흘렀다. 최근의 6년 사이에 과거의 60년 이상의 시간에 버금 될 만큼 많은 정보가 쏟아져 나오고 학생들이 요구하는 영어학습도 빠른 속도로 변하고 있다. 필자는 그동안 학생들에게 [단편소설]을 강의하면서 수정 보완이 필요하다고 판단되어 개정판을 내게 되었다. 특히 이 개정판은 과학기술 시대의 도래를 예견한 H. G. Wells의 작품을 수록했으며 E. A. Poe나 O Henry의 경우
 출판사: 형설출판사
 ISBN: 9788947275217
@@ -1726,19 +1726,19 @@ ISBN: 9788994265162
 출판사: 민음사
 ISBN: 2002374007799
 출간일시: 1994-11-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=85324&q=%EC%98%81%EB%AF%B8+%EC%97%AC%EC%84%B1%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 12000, 0.00, -1, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F85324%3Ftimestamp%3D20251205121553', 44, 96, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=85324&q=%EC%98%81%EB%AF%B8+%EC%97%AC%EC%84%B1%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4', 12000, 0.00, 12000, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F85324%3Ftimestamp%3D20251205121553', 44, 96, 'ACTIVATE', NULL),
     (349, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편 소설의 이해 1', '최한용', '9788984391420', '출판사: 조선대학교출판부
 ISBN: 9788984391420
 출간일시: 2005-06-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1187722&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4+1', 8000, 5.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1187722%3Ftimestamp%3D20190127055524', 47, 98, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1187722&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8+%EC%86%8C%EC%84%A4%EC%9D%98+%EC%9D%B4%ED%95%B4+1', 8000, 5.00, 7600, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1187722%3Ftimestamp%3D20190127055524', 47, 98, 'ACTIVATE', NULL),
     (350, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설의 정신분석', '이우권 편', '2008288012171', '출판사: 형설출판사
 ISBN: 2008288012171
 출간일시: 1984-09-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=260532&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%A0%95%EC%8B%A0%EB%B6%84%EC%84%9D', 8500, 10.00, -1, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F260532%3Ftimestamp%3D20251205140744', 50, 100, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=260532&q=%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%9D%98+%EC%A0%95%EC%8B%A0%EB%B6%84%EC%84%9D', 8500, 10.00, 7650, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F260532%3Ftimestamp%3D20251205140744', 50, 100, 'ACTIVATE', NULL),
     (351, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '원어로 읽는 명작 영미단편소설', '백낙승, 이영애', '9788971572450', '출판사: 강원대학교출판부
 ISBN: 9788971572450
 출간일시: 2008-08-10T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=983697&q=%EC%9B%90%EC%96%B4%EB%A1%9C+%EC%9D%BD%EB%8A%94+%EB%AA%85%EC%9E%91+%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 12000, 15.00, -1, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F983697%3Ftimestamp%3D20220825211057', 53, 102, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=983697&q=%EC%9B%90%EC%96%B4%EB%A1%9C+%EC%9D%BD%EB%8A%94+%EB%AA%85%EC%9E%91+%EC%98%81%EB%AF%B8%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4', 12000, 15.00, 10200, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F983697%3Ftimestamp%3D20220825211057', 53, 102, 'ACTIVATE', NULL),
     (352, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미단편소설선집(계명교양총서 21)', '김인수', '9788975851575', '입신출세를 하겠다는 야망과 허영심에 사로잡힌 인간 의 단면을 보여주고 있는 &lt;20년 후&gt;와 국화를 가꾸는 일과 집안일을 하는 등 평범한 일상에 불만족한 엘리 사가 떠돌이 장사꾼을 보고 자유에로의 동경을 품어본다는 &lt;국화&gt; 등 영미단편소설 일곱 편을 담았다.
 출판사: 계명대학교출판부
 ISBN: 9788975851575
@@ -1747,7 +1747,7 @@ ISBN: 9788975851575
     (353, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미 단편소설 강독(중등임용고시대비)', '김유석', '9788991004863', '출판사: 고원
 ISBN: 9788991004863
 출간일시: 2007-03-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1336591&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EA%B0%95%EB%8F%85%28%EC%A4%91%EB%93%B1%EC%9E%84%EC%9A%A9%EA%B3%A0%EC%8B%9C%EB%8C%80%EB%B9%84%29', 14000, 5.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1336591%3Ftimestamp%3D20220929035157', 59, 106, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1336591&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EA%B0%95%EB%8F%85%28%EC%A4%91%EB%93%B1%EC%9E%84%EC%9A%A9%EA%B3%A0%EC%8B%9C%EB%8C%80%EB%B9%84%29', 14000, 5.00, 13300, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1336591%3Ftimestamp%3D20220929035157', 59, 106, 'ACTIVATE', NULL),
     (354, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '연애소설: 영미편', '나다니엘 호손, 도리스 레싱', '9788973008636', '『연애소설(영미편)』은 주제를 기쁨(연宴)ㆍ슬픔(애哀)ㆍ소외(소疎)ㆍ담론(설說) 의 네 가지로 나누어, 프랜시스 베이컨, 나다니엘 호손, 버지니아 울프, F. 스콧 피츠제럴드, 도리스 레싱 등 16세기부터 20세기에 이르기까지 여러 시기를 어우르는 저명한 작가들의 다양한 작품들을 소개함으로써, 그동안 사랑에 대한 생각은 어떻게 변해왔는지, 영국과 미국, 여성과 남성 작가들이 그리고 있는 사랑의 모습은 어떻게 다른지 비교하면서 감상할 수 있다
 출판사: 글빛
 ISBN: 9788973008636
@@ -1762,12 +1762,12 @@ ISBN: 9791165162450
 출판사: 뉴가출판사
 ISBN: 9791168200494
 출간일시: 2021-10-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5881819&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EA%B8%80%EC%93%B0%EA%B8%B0.+The+Book+of+Short+Story-Writing%3A+An+Art+or+a+Trade%3F%2C+by+N.+Bryllion+Fagin', 15000, 0.00, -1, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5881819', 68, 112, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5881819&q=%EC%98%81%EB%AF%B8+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EA%B8%80%EC%93%B0%EA%B8%B0.+The+Book+of+Short+Story-Writing%3A+An+Art+or+a+Trade%3F%2C+by+N.+Bryllion+Fagin', 15000, 0.00, 15000, 31, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5881819', 68, 112, 'ACTIVATE', NULL),
     (357, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '다섯 편의 걸작 단편 추리 소설 1. (영미 클래식 미스터리 걸작선)', '휴 월폴, 에드먼드 클러리휴 벤틀리, 로드 던세이니, 리처드 오스틴 프리먼, 메리 로버츠 라인하트', '9791185924878', '오스틴 프리먼) 5. 립스틱 (메리 로버츠 라인하트)  그 중 하나만을 골라 간단히 1.은가면에 대하여서 평을 하자면:  번역을 교정하며 또다시 읽으며 느끼게 되는 것……인간이 얼마나 무서운 존재인가 하는 것. 그리고 이 작품이 그저 소설에 불과하지만 세상을 살다 보면 실제로 그런 인간을 정말 마주치게 된다는 섬찍함을 제대로 그려내고 있다. 또한 그런 사악함에 이용당하는 선량한 인간성에 대한 분노와 동정. 여태껏 내가 번역하거나 읽은 작품 중 가장 소름 끼치는
 출판사: 판도라
 ISBN: 9791185924878
 출간일시: 2019-12-12T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5159390&q=%EB%8B%A4%EC%84%AF+%ED%8E%B8%EC%9D%98+%EA%B1%B8%EC%9E%91+%EB%8B%A8%ED%8E%B8+%EC%B6%94%EB%A6%AC+%EC%86%8C%EC%84%A4+1.+%28%EC%98%81%EB%AF%B8+%ED%81%B4%EB%9E%98%EC%8B%9D+%EB%AF%B8%EC%8A%A4%ED%84%B0%EB%A6%AC+%EA%B1%B8%EC%9E%91%EC%84%A0%29', 3900, 5.00, -1, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5159390', 71, 114, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5159390&q=%EB%8B%A4%EC%84%AF+%ED%8E%B8%EC%9D%98+%EA%B1%B8%EC%9E%91+%EB%8B%A8%ED%8E%B8+%EC%B6%94%EB%A6%AC+%EC%86%8C%EC%84%A4+1.+%28%EC%98%81%EB%AF%B8+%ED%81%B4%EB%9E%98%EC%8B%9D+%EB%AF%B8%EC%8A%A4%ED%84%B0%EB%A6%AC+%EA%B1%B8%EC%9E%91%EC%84%A0%29', 3900, 5.00, 3705, 32, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5159390', 71, 114, 'ACTIVATE', NULL),
     (358, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영미문학 46 Selected  American Short Storied : 미국단편 소설선집', '신아사 편집부', '2004051001427', '&lt;&lt;영미 문학 시리즈&gt;&gt;는 주요 영미 문학 작품을 원작의 참맛 그대로 느껴볼 수 있는 책이다. 시리즈 각 권별로 차이는 있지만, 작가와 작품 등에 관한 간단한 소개를 하고(주로 우리말로 소개하고 있지만, 영어 원문으로 되어 있는 경우도 있음), 문학 작품 텍스트를 영어 원문 그대로 실었다. 영문 텍스트 밑에는 주요 어휘 및 어구, 내용을 이해하는 데 도움을 주는 참고사항에 대한 우리말 뜻풀이(주석)를 달아 놓았다. 필요한 경우 영어
 출판사: 신아사
 ISBN: 2004051001427
@@ -1777,12 +1777,12 @@ ISBN: 2004051001427
 출판사: 글월마로니
 ISBN: 9788990503084
 출간일시: 2003-08-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1330984&q=%ED%95%B5%EC%A0%84+%EC%9D%B4%ED%9B%84+%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EC%97%90%EC%84%9C%EC%9D%98+%EB%AC%B5%EC%8B%9C%EB%A1%9D%EC%A0%81+%EB%B9%84%EC%A0%84%28%ED%95%9C%EA%B5%AD%EC%98%81%EB%AF%B8%EB%AC%B8%ED%99%94%ED%95%99%ED%9A%8C+%EC%B4%9D%EC%84%9C+5%29', 8000, 15.00, -1, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1330984%3Ftimestamp%3D20221025133820', 77, 118, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1330984&q=%ED%95%B5%EC%A0%84+%EC%9D%B4%ED%9B%84+%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EC%97%90%EC%84%9C%EC%9D%98+%EB%AC%B5%EC%8B%9C%EB%A1%9D%EC%A0%81+%EB%B9%84%EC%A0%84%28%ED%95%9C%EA%B5%AD%EC%98%81%EB%AF%B8%EB%AC%B8%ED%99%94%ED%95%99%ED%9A%8C+%EC%B4%9D%EC%84%9C+5%29', 8000, 15.00, 6800, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1330984%3Ftimestamp%3D20221025133820', 77, 118, 'ACTIVATE', NULL),
     (360, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '앨리스 애덤스', '부스 타킹턴', '9791196893903', '부스 타킹턴의 1922년 퓰리처 수상작 는 중산층 집안 출신의 발랄하고 아름다운 앨리스 애덤스가 상류 사회 진출과 꿈에 그리던 이상형 아서 러셀과의 결혼을 위해 자신의 배경을 거짓으로 꾸며 내는 과정에서 겪는 희비극적인 사건과 이를 통한 그녀의 성찰을 그렸다. 또한 제1차 세계대전 직후 미국에서 이뤄진 급격한 산업 발전과 팽배하는 물질주의가 한 가정에 미친 영향을 사실적으로 담아냈다.
 출판사: 코호북스
 ISBN: 9791196893903
 출간일시: 2019-12-19T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5165791&q=%EC%95%A8%EB%A6%AC%EC%8A%A4+%EC%95%A0%EB%8D%A4%EC%8A%A4', 8000, 0.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5165791', 80, 0, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5165791&q=%EC%95%A8%EB%A6%AC%EC%8A%A4+%EC%95%A0%EB%8D%A4%EC%8A%A4', 8000, 0.00, 8000, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5165791', 80, 0, 'ACTIVATE', NULL),
     (361, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '기묘한 이야기', '찰스 디킨스, 너대니얼 호손', '9791130816999', '영미문학 단편소설집인 『기묘한 이야기』가 푸른사상의 〈세계문학전집 3〉으로 출간되었다. 19세기부터 20세기 초까지 영미문학을 대표하는 거장들의 단편소설을 한 권의 소설집으로 묶었다. 봄, 여름, 가을, 겨울, 사계절의 분위기에 어울리는 작품들을 엮어 문학과 인생을 순환하는 계절의 의미와 함께 성찰해 볼 수 있는 독특한 선집이다.
 출판사: 푸른사상
 ISBN: 9791130816999
@@ -1845,7 +1845,7 @@ ISBN: 9788983964663
     (373, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영국소설강의', '근대영미소설학회', '9788937411342', '출판사: 민음사
 ISBN: 9788937411342
 출간일시: 1998-06-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=538101&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4%EA%B0%95%EC%9D%98', 15000, 5.00, -1, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F538101%3Ftimestamp%3D20190123171734', 119, 26, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=538101&q=19%EC%84%B8%EA%B8%B0+%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4%EA%B0%95%EC%9D%98', 15000, 5.00, 14250, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F538101%3Ftimestamp%3D20190123171734', 119, 26, 'ACTIVATE', NULL),
     (374, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '19세기 영국 소설 강의', '근대영미소설학회', '9788983960757', '출판사: 신아사
 ISBN: 9788983960757
 출간일시: 1999-08-25T00:00:00.000+09:00
@@ -1859,7 +1859,7 @@ ISBN: 9788983969095
 출판사: 도서출판 동인
 ISBN: 9788955069709
 출간일시: 2024-06-26T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6671798&q=%ED%97%A8%EB%A6%AC+%EC%A0%9C%EC%9E%84%EC%8A%A4%EC%9D%98+%EC%86%8C%EC%84%A4', 26000, 0.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6671798%3Ftimestamp%3D20260326131927', 128, 32, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6671798&q=%ED%97%A8%EB%A6%AC+%EC%A0%9C%EC%9E%84%EC%8A%A4%EC%9D%98+%EC%86%8C%EC%84%A4', 26000, 0.00, 26000, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6671798%3Ftimestamp%3D20260326131927', 128, 32, 'ACTIVATE', NULL),
     (377, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헨리 제임스의 소설: 변화중인 의식', '전남대학교 영미문화연구소', '9788955067972', '▶ 헨리 제임스의 소설에 관한 내용을 담은 전문서적입니다.
 출판사: 동인
 ISBN: 9788955067972
@@ -1873,7 +1873,7 @@ ISBN: 9788983969248
     (379, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대의 시선에서 보는 식물, 동물, 행성 서사', '한국근대영미소설학회', '9791173421068', '출판사: 신아사
 ISBN: 9791173421068
 출간일시: 2025-08-13T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6999433&q=%EA%B7%BC%EB%8C%80%EC%9D%98+%EC%8B%9C%EC%84%A0%EC%97%90%EC%84%9C+%EB%B3%B4%EB%8A%94+%EC%8B%9D%EB%AC%BC%2C+%EB%8F%99%EB%AC%BC%2C+%ED%96%89%EC%84%B1+%EC%84%9C%EC%82%AC', 14000, 15.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6999433%3Ftimestamp%3D20250815103754', 137, 38, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6999433&q=%EA%B7%BC%EB%8C%80%EC%9D%98+%EC%8B%9C%EC%84%A0%EC%97%90%EC%84%9C+%EB%B3%B4%EB%8A%94+%EC%8B%9D%EB%AC%BC%2C+%EB%8F%99%EB%AC%BC%2C+%ED%96%89%EC%84%B1+%EC%84%9C%EC%82%AC', 14000, 15.00, 11900, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6999433%3Ftimestamp%3D20250815103754', 137, 38, 'ACTIVATE', NULL),
     (380, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '근대의 시선에서 보는 식물, 동물, 행성 서사', '한국근대영미소설학회', '9791173420931', '살아가는 세상이 더 복잡해지고 과학기술 발전이 더욱 정교해질수록, 우리 중 일부는 근대영미소설에 재현된 식물과 동물, 나아가 행성에 대해 다른 관점으로 라보게 될 것이다. 일례로, 수 도널드슨과 윌 킴리카는 2011년 『주폴리스』에서 동물 권리를 위한 정치 이론을 펼친다. 저자는 1824년 마차용 말의 학대를 막기 위해 결성된 동물학대방지협회에서 시작된 운동이 현재 수많은 동물 애호 단체가 생겨나게 했고, 동물에 대한 윤리적 대우를 논하는 공적 논의
 출판사: 신아사
 ISBN: 9791173420931
@@ -1897,20 +1897,20 @@ ISBN: 9788983968227
     (384, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영국소설사', 'JOHN RICHETTI', '9788983961211', '출판사: 신아사
 ISBN: 9788983961211
 출간일시: 2000-06-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175177&q=%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4%EC%82%AC', 29000, 0.00, -1, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175177%3Ftimestamp%3D20190127041437', 152, 48, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1175177&q=%EC%98%81%EA%B5%AD%EC%86%8C%EC%84%A4%EC%82%AC', 29000, 0.00, 29000, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1175177%3Ftimestamp%3D20190127041437', 152, 48, 'ACTIVATE', NULL),
     (385, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '미국소설사', 'EMORY ELLIOTT 외', '9788983961662', '출판사: 신아사
 ISBN: 9788983961662
 출간일시: 2001-08-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1177711&q=%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EC%82%AC', 29000, 5.00, -1, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177711%3Ftimestamp%3D20190127043445', 155, 50, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1177711&q=%EB%AF%B8%EA%B5%AD%EC%86%8C%EC%84%A4%EC%82%AC', 29000, 5.00, 27550, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1177711%3Ftimestamp%3D20190127043445', 155, 50, 'ACTIVATE', NULL),
     (386, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '고성의 괴사건 : 해외 추리소설 시리즈', '존 딕슨 카 저자', '9791192616421', '베스트셀러 영미추리소설 시리즈
 출판사: 진태출판사
 ISBN: 9791192616421
 출간일시: 2023-06-23T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6884937&q=%EA%B3%A0%EC%84%B1%EC%9D%98+%EA%B4%B4%EC%82%AC%EA%B1%B4+%3A+%ED%95%B4%EC%99%B8+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%EC%8B%9C%EB%A6%AC%EC%A6%88', 7000, 10.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6884937%3Ftimestamp%3D20250404165655', 158, 52, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6884937&q=%EA%B3%A0%EC%84%B1%EC%9D%98+%EA%B4%B4%EC%82%AC%EA%B1%B4+%3A+%ED%95%B4%EC%99%B8+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%EC%8B%9C%EB%A6%AC%EC%A6%88', 7000, 10.00, 6300, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6884937%3Ftimestamp%3D20250404165655', 158, 52, 'ACTIVATE', NULL),
     (387, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '고독한 은행가(삼인사해외신작소설 003)', '딕 프랜시스', '2003047000017', '출판사: 삼인사
 ISBN: 2003047000017
 출간일시: 1991-04-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=110128&q=%EA%B3%A0%EB%8F%85%ED%95%9C+%EC%9D%80%ED%96%89%EA%B0%80%28%EC%82%BC%EC%9D%B8%EC%82%AC%ED%95%B4%EC%99%B8%EC%8B%A0%EC%9E%91%EC%86%8C%EC%84%A4+003%29', 4500, 15.00, -1, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F110128%3Ftimestamp%3D20251205123203', 161, 54, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=110128&q=%EA%B3%A0%EB%8F%85%ED%95%9C+%EC%9D%80%ED%96%89%EA%B0%80%28%EC%82%BC%EC%9D%B8%EC%82%AC%ED%95%B4%EC%99%B8%EC%8B%A0%EC%9E%91%EC%86%8C%EC%84%A4+003%29', 4500, 15.00, 3825, 25, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F110128%3Ftimestamp%3D20251205123203', 161, 54, 'ACTIVATE', NULL),
     (388, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '데미안(소설 사진을 만나다 해외 단편선 2)', '헤르만 헤세', '9788958611646', '사진작가 홍성덕과 함께 읽는 데미안. 『데미안』은 헤르만 헤세가 정신분석학의 영향을 받아 자기탐구의 길을 개척했다는 평을 받고 있는 성장소설이다. 신앙이 깊고 성결하며 예의바른 부모가 속한 밝은 세계와 부랑자, 주정뱅이, 강도 등 악의 세계가 교직하는 경계에서 주인공 싱클레어가 데미안이라는 수수께끼 소년의 영향을 받아 참된 자아를 찾는 과정을 그리고 있다.
 출판사: 청년정신
 ISBN: 9788958611646
@@ -1935,7 +1935,7 @@ ISBN: 9788964307878
 출판사: 책과길
 ISBN: 9788987351735
 출간일시: 2016-07-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1255124&q=%EC%BD%94%EB%A0%88%EC%95%84+%ED%99%A9%EC%A0%9C+%EC%8B%9C%EC%B9%B4%EA%B3%A0+%EA%B3%B5%EC%A3%BC', 12800, 0.00, -1, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1255124%3Ftimestamp%3D20190127120214', 176, 64, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1255124&q=%EC%BD%94%EB%A0%88%EC%95%84+%ED%99%A9%EC%A0%9C+%EC%8B%9C%EC%B9%B4%EA%B3%A0+%EA%B3%B5%EC%A3%BC', 12800, 0.00, 12800, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1255124%3Ftimestamp%3D20190127120214', 176, 64, 'ACTIVATE', NULL),
     (393, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '어느 삼성 맨의 지난 이야기', '향암香庵 이희관', '9788924125467', '국내 굴지의 가전제품 제조 S 전자에서 나 역시 모든 열정과 청춘을 쏟았지만, 그때 그 시절에 누구보다 대단한 노력을 발휘했던 후배의 한 사람으로서 여전히 기억 속에 자리 잡고 있는데 오래전부터 지난 세월의 경험을 후배나 젊은이들에게 전달과 나눔을 실천하고 싶다는 [자리이타 自利利他] 정신을 말 해오던 터라 이제[어느 삼성 맨의 지난 이야기]라는 해외시장 개척 실화 소설 출판하고자 한다는 말을 듣고 다시 지난 시간을 되새기며 우리나라 산업일꾼과 수출 일
 출판사: 퍼플
 ISBN: 9788924125467
@@ -1980,7 +1980,7 @@ ISBN: 1400000309704
 출판사: 로그인
 ISBN: 9791155092781
 출간일시: 2014-06-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1548606&q=%EC%9B%90%EC%84%9C+%EC%9D%B4%EA%B8%B0%EB%8A%94+%EC%98%81%EB%8B%A8%EC%96%B4', 14800, 5.00, -1, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1548606%3Ftimestamp%3D20221025143128', 3, 82, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1548606&q=%EC%9B%90%EC%84%9C+%EC%9D%B4%EA%B8%B0%EB%8A%94+%EC%98%81%EB%8B%A8%EC%96%B4', 14800, 5.00, 14060, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1548606%3Ftimestamp%3D20221025143128', 3, 82, 'ACTIVATE', NULL),
     (402, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '초급 번역패턴 500 플러스', '김명철', '9788967908270', '미드, 애니, 소설, 원서를 처음 시작할 때 알아야 할 번역의 핵심이 담긴 기본서. 번역에 필요한 필수패턴 103개와 그에 해당하는 실제 번역패턴 600여 개가 수록되어, 어디서도 볼 수 없었던 실전 번역의 패턴을 접할 수 있다.
 출판사: 넥서스
 ISBN: 9788967908270
@@ -1990,12 +1990,12 @@ ISBN: 9788967908270
 출판사: 유페이퍼
 ISBN: 9791170560142
 출간일시: 2023-10-07T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6460077&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+%EA%B3%B5%ED%8F%AC%EC%86%8C%EC%84%A4+%EB%82%98%EC%9D%B4%ED%8A%B8+%EB%9E%9C%EB%93%9C+The+Night+Land', 2500, 15.00, -1, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6460077', 9, 86, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6460077&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+%EA%B3%B5%ED%8F%AC%EC%86%8C%EC%84%A4+%EB%82%98%EC%9D%B4%ED%8A%B8+%EB%9E%9C%EB%93%9C+The+Night+Land', 2500, 15.00, 2125, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6460077', 9, 86, 'ACTIVATE', NULL),
     (404, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '플랫랜드 Flatland (영어 원서 읽기  최초 수학 추리소설 & SF소설 장르 개척)', 'Edwin A Abbott (에드윈 A 애보트)', '9791163103882', '플랫랜드 Flatland (영어 원서 읽기: 최초 수학 추리소설 &amp; SF소설 장르 개척) 플랫랜드(Flatland: A Romance of Many Dimensions))는 1884년에 영국 빅토리아 시대의 신학자이자 교육자였던 에드윈 A. 애보트(Edwin A. Abbott, 1838-1926)가 지은 수학 소설(Mathematical Fiction)인 동시에 최초의 SF소설이다. 신선하고 매력적인 이야기로 많은 사람의 사랑을 받은 이 책
 출판사: 유페이퍼
 ISBN: 9791163103882
 출간일시: 2018-08-03T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=3740647&q=%ED%94%8C%EB%9E%AB%EB%9E%9C%EB%93%9C+Flatland+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C+%EC%9D%BD%EA%B8%B0++%EC%B5%9C%EC%B4%88+%EC%88%98%ED%95%99+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%26+SF%EC%86%8C%EC%84%A4+%EC%9E%A5%EB%A5%B4+%EA%B0%9C%EC%B2%99%29', 4000, 0.00, -1, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3740647', 12, 88, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=3740647&q=%ED%94%8C%EB%9E%AB%EB%9E%9C%EB%93%9C+Flatland+%28%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C+%EC%9D%BD%EA%B8%B0++%EC%B5%9C%EC%B4%88+%EC%88%98%ED%95%99+%EC%B6%94%EB%A6%AC%EC%86%8C%EC%84%A4+%26+SF%EC%86%8C%EC%84%A4+%EC%9E%A5%EB%A5%B4+%EA%B0%9C%EC%B2%99%29', 4000, 0.00, 4000, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F3740647', 12, 88, 'ACTIVATE', NULL),
     (405, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '플랫랜드 : Flatland (‘최초 SF 소설’ - 영어 원서)', 'Edwin A Abbott (에드윈 A 애보트)', '9791127241346', '플랫랜드 : Flatland (‘최초 SF 소설’ - 영어 원서)  World Classic Reading Book (세계 고전문학 리딩북)  1. 최초 SF 소설 2. 수학 기반 소설(Mathematical Fiction) 3. "플랫랜드" 작품을 준 분야  1) 문학 《평면세계》Charles Howard Hinton, 1905년 《Sphereland》 Dionys Burger, 1965년 《Geometry, Relativity, and the Fourth
 출판사: 부크크(Bookk)
 ISBN: 9791127241346
@@ -2005,12 +2005,12 @@ ISBN: 9791127241346
 출판사: 달꽃
 ISBN: 9791162671764
 출간일시: 2021-07-27T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5804270&q=%EC%9D%B4%EC%86%9D%EC%9A%B0%ED%99%94_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 10.00, -1, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5804270', 18, 92, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5804270&q=%EC%9D%B4%EC%86%9D%EC%9A%B0%ED%99%94_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 10.00, 2700, 44, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5804270', 18, 92, 'ACTIVATE', NULL),
     (407, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '주홍글자 - 영어 원서로 보는 고전 소설', '너새니얼 호손', '9791162672525', '주홍글자 영어 도서입니다.
 출판사: 달꽃
 ISBN: 9791162672525
 출간일시: 2022-04-15T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6131411&q=%EC%A3%BC%ED%99%8D%EA%B8%80%EC%9E%90+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, -1, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6131411', 21, 94, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6131411&q=%EC%A3%BC%ED%99%8D%EA%B8%80%EC%9E%90+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, 2550, 8, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6131411', 21, 94, 'ACTIVATE', NULL),
     (408, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '권으로 읽는 ‘셰익스피어’ 명작 소설 : Tales from Shakespeare (영어 원서)', 'Charles Lamb and Mary Lamb  Shakespeare', '9791127244309', '한 권으로 읽는 ‘셰익스피어’ 명작 소설 : Tales from Shakespeare (영어 원서)  World Classic reading Book (세계 고전문학 리딩북)  - 한 권으로 끝내는 셰익스피어 희곡 소설 20편 - 셰익스피어 4대 비극 + 5대 희극 수록 - 미국대학위원회(SAT) 추천 작품 - 쉽게 읽을 수 있도록 이야기 구성(소설)  01.THE TEMPEST  (템페스트) 02. A MIDSUMMER NIGHT''s DREAM  (한여름
 출판사: 부크크(Bookk)
 ISBN: 9791127244309
@@ -2020,67 +2020,67 @@ ISBN: 9791127244309
 출판사: 달꽃
 ISBN: 9791162673270
 출간일시: 2022-12-26T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6252587&q=%ED%81%AC%EB%A6%AC%EC%8A%A4%EB%A7%88%EC%8A%A4+%EC%BA%90%EB%A1%A4_%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 3000, 5.00, -1, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252587', 27, 98, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6252587&q=%ED%81%AC%EB%A6%AC%EC%8A%A4%EB%A7%88%EC%8A%A4+%EC%BA%90%EB%A1%A4_%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 3000, 5.00, 2850, 10, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252587', 27, 98, 'ACTIVATE', NULL),
     (410, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '올리버 트위스트 - 영어 원서로 보는 고전 소설', '찰스 디킨스', '9791162672471', '올리버 트위스트 영어 도서입니다.
 출판사: 달꽃
 ISBN: 9791162672471
 출간일시: 2022-04-06T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6052044&q=%EC%98%AC%EB%A6%AC%EB%B2%84+%ED%8A%B8%EC%9C%84%EC%8A%A4%ED%8A%B8+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 10.00, -1, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052044', 30, 100, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6052044&q=%EC%98%AC%EB%A6%AC%EB%B2%84+%ED%8A%B8%EC%9C%84%EC%8A%A4%ED%8A%B8+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 10.00, 2700, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052044', 30, 100, 'ACTIVATE', NULL),
     (411, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '피터팬_영어 원서로 보는 고전 소설', '제임스 배리', '9791162672105', '피터팬 영어 원서입니다.
 출판사: 달꽃
 ISBN: 9791162672105
 출간일시: 2021-11-02T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5885004&q=%ED%94%BC%ED%84%B0%ED%8C%AC_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, -1, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5885004', 33, 102, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5885004&q=%ED%94%BC%ED%84%B0%ED%8C%AC_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, 2550, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5885004', 33, 102, 'ACTIVATE', NULL),
     (412, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '세계문학 위대한 단편소설 영어원서 2집', '글사랑책사랑편집부', '9791167631435', '세계문학 위대한 단편소설 영어원서 2집  - 유명 작가 작품 모음집 - 노벨문학상 수상 작가(수록)  단편소설(短篇小說): 산문 형식으로 쓰는 서술체의 허구적인 이야기 단일한 효과를 목적으로 단일한 인상, 단일한 효과 및 통일성이 강조 표현한 이야기이다.  01편. The Last Leaf - O. Henry  02편. The Diamond Necklace - Guy de Maupassant  03편. The Betrothed - Anton Pavlovich Chekhov
 출판사: 유페이퍼
 ISBN: 9791167631435
 출간일시: 2022-01-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5964331&q=%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99+%EC%9C%84%EB%8C%80%ED%95%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+2%EC%A7%91', 5000, 0.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964331', 36, 104, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5964331&q=%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99+%EC%9C%84%EB%8C%80%ED%95%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+2%EC%A7%91', 5000, 0.00, 5000, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964331', 36, 104, 'ACTIVATE', NULL),
     (413, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '세계문학 위대한 단편소설 영어원서 1집', '글사랑책사랑편집부', '9791167631428', '세계문학 위대한 단편소설 영어원서 1집  - 유명 작가 작품 모음집 - 노벨문학상 수상 작가  단편소설(短篇小說): 산문 형식으로 쓰는 서술체의 허구적인 이야기 단일한 효과를 목적으로 단일한 인상, 단일한 효과 및 통일성이 강조 표현한 이야기!  01편. The Gift of the Magi - O. Henry  02편. Ball of Fat (Boule de suif) - Guy de Maupassant  03편. The Lady With the Dog
 출판사: 유페이퍼
 ISBN: 9791167631428
 출간일시: 2022-01-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5964227&q=%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99+%EC%9C%84%EB%8C%80%ED%95%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+1%EC%A7%91', 5000, 5.00, -1, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964227', 39, 106, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5964227&q=%EC%84%B8%EA%B3%84%EB%AC%B8%ED%95%99+%EC%9C%84%EB%8C%80%ED%95%9C+%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4+%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C+1%EC%A7%91', 5000, 5.00, 4750, 14, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5964227', 39, 106, 'ACTIVATE', NULL),
     (414, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '위대한 유산_영어 원서로 보는 고전소설', '찰스 디킨스', '9791162673287', '찰스 디킨스의 위대한 유산 영어원서입니다.
 출판사: 달꽃
 ISBN: 9791162673287
 출간일시: 2022-12-26T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6252737&q=%EC%9C%84%EB%8C%80%ED%95%9C+%EC%9C%A0%EC%82%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 4000, 10.00, -1, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252737', 42, 108, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6252737&q=%EC%9C%84%EB%8C%80%ED%95%9C+%EC%9C%A0%EC%82%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 4000, 10.00, 3600, 15, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6252737', 42, 108, 'ACTIVATE', NULL),
     (415, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어원서읽기러시아단편소설집Best Russian Short Storie', 'Dr K 엮음', '9791166780653', '쉬운 일은 아닙니다. 바빠서라고들 하죠. 맞습니다.  그렇지만 오랫동안 사랑 받고 있는 작품들을 그냥 지나치기엔 아쉬움이 많습니다. 원작에는 어떤 것이 들어있을까. 궁금하시다면 당신이 처음 만나는 원작, 이 책으로 만나보세요.  원서로 읽으면 더 깊이 보인다  그런데 영어라서 부담이 된다고요?  그렇게 어렵지 않습니다. 어려운 단어라고는 특수한 상황을 묘사한 대목 정도라고 할 수 있습니다. 그 동안의 영어 실력이라면 충분히 소화할 수 있는 정도의 난이도입니다
 출판사: 유페이퍼
 ISBN: 9791166780653
 출간일시: 2021-02-02T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5592459&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EC%9D%BD%EA%B8%B0%EB%9F%AC%EC%8B%9C%EC%95%84%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%A7%91Best+Russian+Short+Storie', 2000, 15.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5592459', 45, 110, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5592459&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EC%9D%BD%EA%B8%B0%EB%9F%AC%EC%8B%9C%EC%95%84%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%A7%91Best+Russian+Short+Storie', 2000, 15.00, 1700, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5592459', 45, 110, 'ACTIVATE', NULL),
     (416, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '셜록 홈즈의 모험 - 영어 원서로 보는 고전 소설', '아서 코난 도일', '9791162672464', '셜록 홈즈의 모험 영어 도서입니다.
 출판사: 달꽃
 ISBN: 9791162672464
 출간일시: 2022-04-06T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6052054&q=%EC%85%9C%EB%A1%9D+%ED%99%88%EC%A6%88%EC%9D%98+%EB%AA%A8%ED%97%98+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 0.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052054', 48, 112, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6052054&q=%EC%85%9C%EB%A1%9D+%ED%99%88%EC%A6%88%EC%9D%98+%EB%AA%A8%ED%97%98+-+%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 0.00, 3000, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6052054', 48, 112, 'ACTIVATE', NULL),
     (417, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '허클베리 핀의 모험-영어 원서로 보는 고전 소설', '마크 트웨인', '9791162672679', '허클베리 핀의 모험 영어 도서입니다.
 출판사: 달꽃
 ISBN: 9791162672679
 출간일시: 2022-05-03T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=6065965&q=%ED%97%88%ED%81%B4%EB%B2%A0%EB%A6%AC+%ED%95%80%EC%9D%98+%EB%AA%A8%ED%97%98-%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 5.00, -1, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6065965%3Ftimestamp%3D20240731160917', 51, 114, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=6065965&q=%ED%97%88%ED%81%B4%EB%B2%A0%EB%A6%AC+%ED%95%80%EC%9D%98+%EB%AA%A8%ED%97%98-%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 5.00, 2850, 18, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F6065965%3Ftimestamp%3D20240731160917', 51, 114, 'ACTIVATE', NULL),
     (418, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '행복한 왕자와 그 밖의 이야기_영어 원서로 보는 고전소설', '오스카 와일드', '9791162672013', '오스카 와일드의영어 소설 2편을 수록하였습니다.
 출판사: 달꽃
 ISBN: 9791162672013
 출간일시: 2021-10-19T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5873867&q=%ED%96%89%EB%B3%B5%ED%95%9C+%EC%99%95%EC%9E%90%EC%99%80+%EA%B7%B8+%EB%B0%96%EC%9D%98+%EC%9D%B4%EC%95%BC%EA%B8%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 1000, 10.00, -1, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873867', 54, 116, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5873867&q=%ED%96%89%EB%B3%B5%ED%95%9C+%EC%99%95%EC%9E%90%EC%99%80+%EA%B7%B8+%EB%B0%96%EC%9D%98+%EC%9D%B4%EC%95%BC%EA%B8%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 1000, 10.00, 900, 19, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873867', 54, 116, 'ACTIVATE', NULL),
     (419, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '이상한 나라의 앨리스_영어 원서로 보는 고전 소설', '루이스 캐롤', '9791162672099', '이상한 나라의 앨리스 영어 원서입니다.
 출판사: 달꽃
 ISBN: 9791162672099
 출간일시: 2021-11-02T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5884961&q=%EC%9D%B4%EC%83%81%ED%95%9C+%EB%82%98%EB%9D%BC%EC%9D%98+%EC%95%A8%EB%A6%AC%EC%8A%A4_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5884961', 57, 118, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5884961&q=%EC%9D%B4%EC%83%81%ED%95%9C+%EB%82%98%EB%9D%BC%EC%9D%98+%EC%95%A8%EB%A6%AC%EC%8A%A4_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84+%EC%86%8C%EC%84%A4', 3000, 15.00, 2550, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5884961', 57, 118, 'ACTIVATE', NULL),
     (420, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '헌신적인 친구와 그 밖의 이야기_영어 원서로 보는 고전소설', '오스카 와일드', '9791162672006', '오스카 와일드의 영어 소설 3편을 수록하였습니다.
 출판사: 달꽃
 ISBN: 9791162672006
 출간일시: 2021-10-19T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5873857&q=%ED%97%8C%EC%8B%A0%EC%A0%81%EC%9D%B8+%EC%B9%9C%EA%B5%AC%EC%99%80+%EA%B7%B8+%EB%B0%96%EC%9D%98+%EC%9D%B4%EC%95%BC%EA%B8%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 1000, 0.00, -1, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873857', 60, 0, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5873857&q=%ED%97%8C%EC%8B%A0%EC%A0%81%EC%9D%B8+%EC%B9%9C%EA%B5%AC%EC%99%80+%EA%B7%B8+%EB%B0%96%EC%9D%98+%EC%9D%B4%EC%95%BC%EA%B8%B0_%EC%98%81%EC%96%B4+%EC%9B%90%EC%84%9C%EB%A1%9C+%EB%B3%B4%EB%8A%94+%EA%B3%A0%EC%A0%84%EC%86%8C%EC%84%A4', 1000, 0.00, 1000, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5873857', 60, 0, 'ACTIVATE', NULL),
     (421, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '영어원서읽는시간 모파상단편소설집1Maupassant Short Sto', 'Dr K 엮음', '9791166126185', '쉬운 일은 아닙니다. 바빠서라고들 하죠. 맞습니다.  그렇지만 오랫동안 사랑 받고 있는 작품들을 그냥 지나치기엔 아쉬움이 많습니다. 원작에는 어떤 것이 들어있을까. 궁금하시다면 당신이 처음 만나는 원작, 이 책으로 만나보세요.  원서로 읽으면 더 깊이 보인다  그런데 영어라서 부담이 된다고요?  그렇게 어렵지 않습니다. 어려운 단어라고는 특수한 상황을 묘사한 대목 정도라고 할 수 있습니다. 그 동안의 영어 실력이라면 충분히 소화할 수 있는 정도의 난이도입니다
 출판사: 유페이퍼
 ISBN: 9791166126185
 출간일시: 2020-11-05T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5512282&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EC%9D%BD%EB%8A%94%EC%8B%9C%EA%B0%84+%EB%AA%A8%ED%8C%8C%EC%83%81%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%A7%911Maupassant+Short+Sto', 2000, 5.00, -1, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5512282', 63, 2, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5512282&q=%EC%98%81%EC%96%B4%EC%9B%90%EC%84%9C%EC%9D%BD%EB%8A%94%EC%8B%9C%EA%B0%84+%EB%AA%A8%ED%8C%8C%EC%83%81%EB%8B%A8%ED%8E%B8%EC%86%8C%EC%84%A4%EC%A7%911Maupassant+Short+Sto', 2000, 5.00, 1900, 22, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5512282', 63, 2, 'ACTIVATE', NULL),
     (422, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 2, 6, '햄릿 영어 소설 쓰기 (주니어-영어원서) : HAMLET - Shakespeare''s English...', '셰익스피어 (William Shakespeare)', '9791127298548', '햄릿 영어 소설 쓰기 (주니어-영어원서) : HAMLET - Shakespeare''s English Novel Writing  *부제: ''셰익스피어'' 소설 따라쓰기  주니어 잉글리시(Junior English)  셰익스피어 4대 비극  《햄릿》 Hamlet (추정 1600-01) 셰익스피어 비극.  - 원제: 《덴마크 왕자 햄릿의 비극》 (The Tragedy of Hamlet, Prince of Denmark)  덴마크의 왕자인 햄릿은 아버지가
 출판사: 부크크(Bookk)
 ISBN: 9791127298548
@@ -2325,7 +2325,7 @@ ISBN: 9788925406770
 출판사: 한국어린이문학협의회
 ISBN: 9771598670500
 출간일시: 2009-03-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5671563&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%AC%B8%ED%95%99%28%EB%B4%84%ED%98%B8%29', 9000, 10.00, -1, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5671563%3Ftimestamp%3D20250531154525', 10, 100, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5671563&q=%EC%96%B4%EB%A6%B0%EC%9D%B4%EB%AC%B8%ED%95%99%28%EB%B4%84%ED%98%B8%29', 9000, 10.00, 8100, 34, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5671563%3Ftimestamp%3D20250531154525', 10, 100, 'ACTIVATE', NULL),
     (471, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '딱친구 강만기(푸른숲 어린이 문학 002)', '문선이', '9788971845370', '2000년 &lt;나의 비밀 일기장&gt;으로 MBC 창작동화대상을 수상한 이후 지금까지 여러 권의 장편 동화를 썼습니다. 작품으로 『제키의 지구 여행』『양파의 왕따 일기』『엄마의 마지막 선물』『벌레 구멍 속으로』가 있습니다. 지금까지 어린이들의 가장 민감한 문제를 동화 속에 펼쳐 보였으며, 앞으로도 어린이의 아픈 마음을 끌어안는 작품을 쓰고자 합니다.    그림  민애수  서해 강화도에서 태어났습니다. 홍익대학교 회화과를 졸업했고, 『라몬의 바다』『비밀스럽게』에
 출판사: 푸른숲
 ISBN: 9788971845370
@@ -2334,7 +2334,7 @@ ISBN: 9788971845370
     (472, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '어린이 문학(6월호)', '한국어린이문학협의회 편집부', '2016163000014', '출판사: 한국어린이문학협의회
 ISBN: 2016163000014
 출간일시: 2003-08-07T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=298669&q=%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99%286%EC%9B%94%ED%98%B8%29', 4000, 0.00, -1, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F298669%3Ftimestamp%3D20250425170037', 16, 104, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=298669&q=%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99%286%EC%9B%94%ED%98%B8%29', 4000, 0.00, 4000, 36, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F298669%3Ftimestamp%3D20250425170037', 16, 104, 'ACTIVATE', NULL),
     (473, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '내 친구 고슴도치(푸른숲 어린이 문학 006)', '문선이', '9788971845578', '출판사: 푸른숲
 ISBN: 9788971845578
 출간일시: 2004-12-24T00:00:00.000+09:00
@@ -2348,7 +2348,7 @@ ISBN: 9791185871424
 출판사: 푸른숲주니어
 ISBN: 9788971846650
 출간일시: 2011-12-27T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=989531&q=%EA%B1%B0%EB%A6%AC%EC%9D%98+%EC%95%84%EC%9D%B4+%ED%86%A0%ED%86%A0%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+26%29', 9000, 15.00, -1, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989531%3Ftimestamp%3D20220904153435', 25, 110, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=989531&q=%EA%B1%B0%EB%A6%AC%EC%9D%98+%EC%95%84%EC%9D%B4+%ED%86%A0%ED%86%A0%28%ED%91%B8%EB%A5%B8%EC%88%B2+%EC%96%B4%EB%A6%B0%EC%9D%B4+%EB%AC%B8%ED%95%99+26%29', 9000, 15.00, 7650, 39, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F989531%3Ftimestamp%3D20220904153435', 25, 110, 'ACTIVATE', NULL),
     (476, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 13, '화장실 몬스터(라임 어린이 문학 5)', '사스키아 훌라', '9791185871080', '사스키아 훌라 동화 『화장실 몬스터』. 화장실에 나타난 커다란 검정색 구두에서 비롯된 의문과 두려움이 아이들의 기발한 상상력을 통과하면서 무시무시한 소문으로 몸집을 불렸다가, 뒤이어 웃지 못할 몬스터 퇴치 작전 소동을 불러오는 과정을 능청스럽게 그린 작품이다. ‘학교 화장실’이라는 다소 불편한 공간에 대한 아이들의 솔직한 속내를 들여다볼 수 있는 것은 물론이고, ‘소문’이 어떻게 시작되고 전해지는지 그 속성을 재치 있게 그려냈다.
 출판사: 라임
 ISBN: 9791185871080
@@ -2438,7 +2438,7 @@ ISBN: 9788999712258
 출판사: 창지사
 ISBN: 9788942606634
 출간일시: 2012-08-24T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=580957&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 18000, 5.00, -1, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F580957%3Ftimestamp%3D20240316112740', 79, 26, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=580957&q=%EB%B6%80%EB%AA%A8%EA%B5%90%EC%9C%A1', 18000, 5.00, 17100, 20, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F580957%3Ftimestamp%3D20240316112740', 79, 26, 'ACTIVATE', NULL),
     (494, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 15, '부모교육(2판)', '강영식, 오경숙, 박창옥', '9791161051673', '[부모교육]은 부모와 자녀 모두를 위한 내용을 담고 있다. 부모의 역할, 어떤 양육 태도를 가지고 있어야 하는지 등 꼭 필요한 조언을 아끼지 않는다. 더불어 유아교육기관에서 부모를 알려주기 위한 교육자들을 위한 내용도 수록되어 있다. 부모교육의 계획단계부터 실천까지, 관련 업종에 종사하는 사람들은 업무적 조언을 얻는다.
 출판사: 공동체
 ISBN: 9791161051673
@@ -2577,7 +2577,7 @@ ISBN: 9788952764454
 출판사: 노란돼지
 ISBN: 9788996359715
 출간일시: 2010-04-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1460167&q=%EB%AC%B4%EC%8B%9C%EB%AC%B4%EC%8B%9C%ED%95%9C+%EA%B3%B5%EB%A3%A1%EC%9D%B4%EB%B9%A8+%EB%82%98%EA%B2%8C+%ED%95%B4%EC%A4%84%EA%B9%8C%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+2+%EC%84%B1%EC%9E%A5%EC%9D%B4%EC%95%BC%EA%B8%B0%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 5.00, -1, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1460167%3Ftimestamp%3D20220630124032', 163, 82, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1460167&q=%EB%AC%B4%EC%8B%9C%EB%AC%B4%EC%8B%9C%ED%95%9C+%EA%B3%B5%EB%A3%A1%EC%9D%B4%EB%B9%A8+%EB%82%98%EA%B2%8C+%ED%95%B4%EC%A4%84%EA%B9%8C%28%EB%85%B8%EB%9E%80%EB%8F%BC%EC%A7%80+%EC%B0%BD%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+2+%EC%84%B1%EC%9E%A5%EC%9D%B4%EC%95%BC%EA%B8%B0%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 10000, 5.00, 9500, 11, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1460167%3Ftimestamp%3D20220630124032', 163, 82, 'ACTIVATE', NULL),
     (522, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '베스트 겨울 노부영 그림책 2종 세트(New)', '편집부', '8809448445303', '[노부영 Snow]는 칼데콧상을 수상한 Snow는 특유의 차분한 수채화 그림을 통해 아이들의 아름다운 시각을 보여줍니다.  [베오영 Snowman]는 단편영화로도 제작되었으며, 따뜻한 그림과 재미있는 페이지 구성을 통해 아이들의 기발한 상상력을 보여줍니다.
 출판사: 제이와이북스
 ISBN: 8809448445303
@@ -2587,7 +2587,7 @@ ISBN: 8809448445303
 출판사: 현북스
 ISBN: 9788997175048
 출간일시: 2011-11-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1480371&q=%EA%B2%AC%EC%9A%B0%EC%99%80+%EC%A7%81%EB%85%80%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+9%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 15.00, -1, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1480371%3Ftimestamp%3D20220929013911', 169, 86, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1480371&q=%EA%B2%AC%EC%9A%B0%EC%99%80+%EC%A7%81%EB%85%80%28%EC%95%8C%EC%9D%B4%EC%95%8C%EC%9D%B4+%EB%AA%85%EC%9E%91%EA%B7%B8%EB%A6%BC%EC%B1%85+9%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 12000, 15.00, 10200, 13, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1480371%3Ftimestamp%3D20220929013911', 169, 86, 'ACTIVATE', NULL),
     (524, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '동동동 아기 돼지(무지개 그림책 2)(양장본 HardCover)', '이상교', '9788959791293', '''무지개 그림책'' 시리즈, 제2권 『동동동 아기 돼지』. 동시 작가 이상교와 그림 작가 장기석이 함께 만든 그림책입니다. 맛깔스러운 의성어가 풍부하게 곁들여져, 동시처럼 운율감이 살아있는 이야기가 읽는 재미와 듣는 재미를 동시에 안겨줍니다.  또한 돼지, 닭, 생쥐, 개, 염소, 그리고 고양이 등 동물들의 표정과 행동을 생생하면서도 익살맞게 묘사해낸 생생한 그림이 아이들의 눈을 즐겁게 합니다. 동물들에 대한 인지력을 키우는 데에도 도움을 줍니다.  달이네 뚱뚱이
 출판사: 작은책방
 ISBN: 9788959791293
@@ -2697,7 +2697,7 @@ ISBN: 9788997174614
 출판사: 성안당
 ISBN: 9788931551839
 출간일시: 2012-05-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=487529&q=OS%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 15000, 5.00, -1, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487529%3Ftimestamp%3D20221025145708', 35, 10, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=487529&q=OS%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 15000, 5.00, 14250, 35, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487529%3Ftimestamp%3D20221025145708', 35, 10, 'ACTIVATE', NULL),
     (546, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '엄마랑 꼭꼭 약속해(아기발달 2단계 그림책 2)(양장본 HardCover)', '김별', '9788991963979', '『엄마랑 꼭꼭 약속해』는 외출 과정에서 일어날 수 있는 다양한 상황들을 제시하며 아이가 지켜야 할 행동에 대해 알려주는 예절그림책이다. 주인공 산이가 엄마랑 놀러 가기로 한 날, 엄마와 약속한 공공장소에서 지켜야 할 규칙들을 하나씩 실천하면서 스스로 뿌듯함을 느끼는 이야기다. 특히 산이가 공공예절을 지키지 않는 모습과 지키는 모습을 비교하여 보여주어 아이들은 공공예절을 안 지켰을 때 주변에 어떤 피해를 주는지 실질적으로 깨닫게 된다. 마지막 장에는 실생활
 출판사: 큰북작은북
 ISBN: 9788991963979
@@ -2913,7 +2913,7 @@ ISBN: 9788997175741
 출판사: 성안당
 ISBN: 9788931553413
 출간일시: 2015-02-27T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=487003&q=%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9D%B4+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 15000, 5.00, -1, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487003%3Ftimestamp%3D20221025145611', 167, 98, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=487003&q=%EC%95%8C%EA%B3%A0%EB%A6%AC%EC%A6%98%EC%9D%B4+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 15000, 5.00, 14250, 42, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487003%3Ftimestamp%3D20221025145611', 167, 98, 'ACTIVATE', NULL),
     (590, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '쌀이 된 프랭키(프랭키와 친구들 친환경 참살이 그림책)', '리퀴드 브레인', '9788966071050', '『쌀이 된 프랭키』은 눈사람을 닮은 꼬마 곰 프랭키와 황토 빛 땅을 상징하는 꼬마 도깨비 뚜, 파란 물을 상징하는 꼬마 도깨비 쿠앙, 초록 식물을 상징하는 꼬마 도깨비 퐁의 모험 가득한 이야기가 대자연 속에서 펼쳐진다. 바라만 봐도 기분이 좋아지는 싱그러운 그림과 상큼한 글 속에는 ‘자연’과 ‘먹을거리’ 그리고 친구와의 우정에 대한 따듯한 메시지가 살아 숨 쉰다.
 출판사: 거북이북스
 ISBN: 9788966071050
@@ -3032,7 +3032,7 @@ ISBN: 9788983894762
 출판사: 한국학술정보
 ISBN: 9791168011175
 출간일시: 2021-09-13T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=5842002&q=%EC%9A%B0%EB%A6%AC%EC%9D%98+%EA%B3%A0%EC%A0%84%EA%B3%BC+%EC%98%9B+%EA%B5%90%EA%B3%BC%EC%84%9C+629%EC%B1%85.+629+%EA%B5%AD%EB%AF%BC%EA%B5%90%EC%9C%A1%ED%97%8C%EC%9E%A5+%28%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 20500, 10.00, -1, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5842002', 42, 28, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=5842002&q=%EC%9A%B0%EB%A6%AC%EC%9D%98+%EA%B3%A0%EC%A0%84%EA%B3%BC+%EC%98%9B+%EA%B5%90%EA%B3%BC%EC%84%9C+629%EC%B1%85.+629+%EA%B5%AD%EB%AF%BC%EA%B5%90%EC%9C%A1%ED%97%8C%EC%9E%A5+%28%EA%B7%B8%EB%A6%BC%EC%B1%85%29', 20500, 10.00, 18450, 30, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F5842002', 42, 28, 'ACTIVATE', NULL),
     (615, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '꼬마 책도둑(개정판)(햇살그림책 16)(양장본 HardCover)', '헬렌 도허티', '9791186979280', '잠잘 준비를 마친 아이들에게 그림책을 읽어 주는 것은 어느 집에서나 볼 수 있는 풍경이지요. 그런데 엄마 아빠가 밤마다 읽어주던 그림책들이 모두 사라진다면 어떤 일이 벌어질까요? 버로운 다운 마을에 놀라운 일들이 일어났어요. 엘리자가 잠자기 전 책을 읽고 있는데, 창문이 저절로 열리더니 읽고 있던 책들이 눈 깜짝할 사이에 없어졌어요. 그런데 책이 없어진 집은 엘리자네 집뿐만 아니었어요. 아기 올빼미네 집도, 아기 다람쥐네 집에서도, 매일 밤 책이
 출판사: 봄볕
 ISBN: 9791186979280
@@ -3085,7 +3085,7 @@ ISBN: 9788925578774
     (625, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '잭과 못된 나무(네버랜드 세계의 걸작 그림책 64)', '브라이언 와일드스미스', '9788972594178', '출판사: 시공주니어
 ISBN: 9788972594178
 출간일시: 1997-01-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1004098&q=%EC%9E%AD%EA%B3%BC+%EB%AA%BB%EB%90%9C+%EB%82%98%EB%AC%B4%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%84%B8%EA%B3%84%EC%9D%98+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+64%29', 7000, 5.00, -1, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1004098%3Ftimestamp%3D20221025151657', 75, 50, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1004098&q=%EC%9E%AD%EA%B3%BC+%EB%AA%BB%EB%90%9C+%EB%82%98%EB%AC%B4%28%EB%84%A4%EB%B2%84%EB%9E%9C%EB%93%9C+%EC%84%B8%EA%B3%84%EC%9D%98+%EA%B1%B8%EC%9E%91+%EA%B7%B8%EB%A6%BC%EC%B1%85+64%29', 7000, 5.00, 6650, 41, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1004098%3Ftimestamp%3D20221025151657', 75, 50, 'ACTIVATE', NULL),
     (626, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '염소 시즈카(세계 걸작 그림책 지크 78)(양장본 HardCover)', '다시마 세이조', '9788943307967', '일본의 대표적인 예술가 다시마 세이조의 그림책『염소 시즈카』. 화가와 설치 미술가로 널리 알려진 거장 다시마 세이조의 천진하고 역동적인 그림 세계가 집약된 작품이다. 아기 염소 시즈카가 엄마 염소가 되기까지의 과정을 그리고 있다. 나호코네 집에 온 하얀 염소 시즈카가 가족과 친해지고, 풀을 먹고 자라고, 말썽을 피우고, 어른이 되어 새끼를 낳고, 새끼를 떠나 보내고, 다시 듬직한 시즈카로 돌아와 말썽을 피우는 일곱 가지 이야기가 펼쳐진다.
 출판사: 보림
 ISBN: 9788943307967
@@ -3121,7 +3121,7 @@ ISBN: 9788993004137
     (633, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '딸기는 빨개요(알록달록 아기 그림책 5)(보드북)', '베뜨르 호라체크', '9788952723314', '출판사: 시공주니어
 ISBN: 9788952723314
 출간일시: 2002-02-10T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=641912&q=%EB%94%B8%EA%B8%B0%EB%8A%94+%EB%B9%A8%EA%B0%9C%EC%9A%94%28%EC%95%8C%EB%A1%9D%EB%8B%AC%EB%A1%9D+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+5%29%28%EB%B3%B4%EB%93%9C%EB%B6%81%29', 6500, 5.00, -1, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F641912%3Ftimestamp%3D20221025182524', 99, 66, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=641912&q=%EB%94%B8%EA%B8%B0%EB%8A%94+%EB%B9%A8%EA%B0%9C%EC%9A%94%28%EC%95%8C%EB%A1%9D%EB%8B%AC%EB%A1%9D+%EC%95%84%EA%B8%B0+%EA%B7%B8%EB%A6%BC%EC%B1%85+5%29%28%EB%B3%B4%EB%93%9C%EB%B6%81%29', 6500, 5.00, 6175, 12, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F641912%3Ftimestamp%3D20221025182524', 99, 66, 'ACTIVATE', NULL),
     (634, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '알고리즘이 보이는 그림책', 'ANK CO LTD', '9788931555813', '있다. 그러나 실제로 알고리즘만을 떼어서 가르치는 과목은 많지 않고 쉽게 설명하는 책도 흔치 않다. 또, 컴퓨터과학 전공 대학생들에게도 알고리즘은 어려운 과목 중의 하나이다.  이 책은 ‘알고리즘’이라는 어려운 주제를 그림으로 쉽게 설명하는 책이다. 이제는 코딩 교육 시대이므로 꼭 프로그래머가 되겠다는 유소년부터 전공 대학생, 일반인, 전문 프로그래머에게까지 폭넓게 추천할 수 있는 알고리즘 입문서이다. 그림을 이용한 풍부한 예제를 통해 설명함으로써 어려운 내용
 출판사: 성안당
 ISBN: 9788931555813
@@ -3141,7 +3141,7 @@ ISBN: 9788994077581
 출판사: 성안당
 ISBN: 9788931554564
 출간일시: 2016-08-25T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=487241&q=VBA%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 16000, 5.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487241%3Ftimestamp%3D20221025145423', 111, 74, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=487241&q=VBA%EA%B0%80+%EB%B3%B4%EC%9D%B4%EB%8A%94+%EA%B7%B8%EB%A6%BC%EC%B1%85', 16000, 5.00, 15200, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F487241%3Ftimestamp%3D20221025145423', 111, 74, 'ACTIVATE', NULL),
     (638, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '우리 몸 대탐험(살림 지식 그림책 1)(양장본 HardCover)', 'Dan Green', '9788952236005', '의사나 간호사를 꿈꾸는 친구들은 물론, 건강하게 자라고픈 친구들이라면 꼭 읽어야 할 책 『우리 몸 대탐험』. 우리 몸을 거대한 공장의 구조와 부서에 비유하여 정확하면서도 재치 있는 말로 낱낱이 설명해 줍니다. 몸 안팎 어디를 탐험하든, 몸을 위해 일하는 아주 작은 크기의 일꾼들을 만나게 되는데 이 그림들은 우리 몸에서 일어나는 움직임을 정확하면서도 재치 있게 묘사하고 있습니다.
 출판사: 살림어린이
 ISBN: 9788952236005
@@ -3244,7 +3244,7 @@ ISBN: 9788994077116
     (658, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '코비의 따뜻한 겨울(반짝반짝 생각 그림책)(양장본 HardCover)', '김복희', '9788939527973', '출판사: 대교출판
 ISBN: 9788939527973
 출간일시: 2011-03-11T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=558125&q=%EC%BD%94%EB%B9%84%EC%9D%98+%EB%94%B0%EB%9C%BB%ED%95%9C+%EA%B2%A8%EC%9A%B8%28%EB%B0%98%EC%A7%9D%EB%B0%98%EC%A7%9D+%EC%83%9D%EA%B0%81+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, -1, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F558125%3Ftimestamp%3D20220114170832', 174, 116, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=558125&q=%EC%BD%94%EB%B9%84%EC%9D%98+%EB%94%B0%EB%9C%BB%ED%95%9C+%EA%B2%A8%EC%9A%B8%28%EB%B0%98%EC%A7%9D%EB%B0%98%EC%A7%9D+%EC%83%9D%EA%B0%81+%EA%B7%B8%EB%A6%BC%EC%B1%85%29%28%EC%96%91%EC%9E%A5%EB%B3%B8+HardCover%29', 9500, 10.00, 8550, 37, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F558125%3Ftimestamp%3D20220114170832', 174, 116, 'ACTIVATE', NULL),
     (659, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 3, 11, '안녕 또 봐(단비어린이 그림책 8)', '바이동니', '9788963010809', '『안녕 또 봐』는 이사 간 친구 ''시시''에게 작별 인사를 하지 못한 꼬마 소년이 친구를 찾아가는 이야기를 담고 있는 그림책입니다. 시시가 놓고 간 토끼 인형을 통해 친구에 대한 그리움을 보여주고, 동시에 아이의 순수한 마음을 예쁘게 그려냈습니다. 더불어 헤어질 때 하는 ''안녕''이라는 인사말이 끝이 아닌 다음 만남을 기약하고 있다는 비밀까지 알려줍니다.  옆집에 사는 친구 시시가 이사를 갔습니다. ''안녕''이라고 인사도 못했는데 말입니다. 텅 비어 있는 시시
 출판사: 단비어린이
 ISBN: 9788963010809
@@ -3289,7 +3289,7 @@ ISBN: 9791136003447
 출판사: 동아출판
 ISBN: 9788900357189
 출간일시: 2013-11-10T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=341478&q=%EC%A4%91%ED%95%99+%EC%98%81%EB%8B%A8%EC%96%B4+1800%2860%EC%9D%BC+%EC%99%84%EC%84%B1%29%28%EB%9C%AF%EC%96%B4%EB%A8%B9%EB%8A%94%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9000, 15.00, -1, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F341478%3Ftimestamp%3D20221025115824', 1, 14, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=341478&q=%EC%A4%91%ED%95%99+%EC%98%81%EB%8B%A8%EC%96%B4+1800%2860%EC%9D%BC+%EC%99%84%EC%84%B1%29%28%EB%9C%AF%EC%96%B4%EB%A8%B9%EB%8A%94%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 9000, 15.00, 7650, 9, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F341478%3Ftimestamp%3D20221025115824', 1, 14, 'ACTIVATE', NULL),
     (668, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '말빵세 인형의집(말빵세)(스프링)', '헤르미온느 에드워드', '9788963056326', '『말빵세 인형의집』는 엄마랑 재미있는 역할놀이를 할 수 있는 책이다. 접혀 있는 책을 피면 입체적인 인형의 집 공간이 완성된다. 아이들이 스스로 가구를 배치하고 집을 꾸미면서 상상력과 창의력을 키울 수 있다. 추가로 인형, 가구, 스티커가 제공된다.
 출판사: 노란우산
 ISBN: 9788963056326
@@ -3368,7 +3368,7 @@ ISBN: 9791188612789
     (684, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 17, 'Mastering Vue.js 3 and Nuxt.js 4', 'Neudorf Benjamin', '9798264194689', '출판사: Independently Published
 ISBN: 9798264194689
 출간일시: 2025-09-07T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=7039367&q=Mastering+Vue.js+3+and+Nuxt.js+4', 38710, 0.00, -1, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7039367%3Ftimestamp%3D20251014142032', 52, 48, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=7039367&q=Mastering+Vue.js+3+and+Nuxt.js+4', 38710, 0.00, 38710, 26, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F7039367%3Ftimestamp%3D20251014142032', 52, 48, 'ACTIVATE', NULL),
     (685, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 18, '2026 이지패스 ADsP 데이터분석 준전문가', '박현민, 전용문', '9791158396510', '미어캣 2026 최신 기출문제 수록 앱 제공 | 비전공자 20일 완성  ◎ 빠르고 효율적인 공부를 위한 ADsP 수험서 방대한 데이터 분석 콘텐츠를 ADsP 출제 경향에 맞게 핵심적으로 간결하게 정리하여 시간에 쫓기는 수험생들에게 최대한 공부 효율을 높일 수 있도록 구성했습니다.  ◎ 초심자, 비전공자들을 위해 이해하기 쉽게 풀어 쓴 ADsP 수험서 데이터 분석을 처음 접하는 초심자나 비전공자들이 이해하기 쉽도록 용어와 문장을 다듬었습니다. 아울러 초심자
 출판사: 위키북스
 ISBN: 9791158396510
@@ -3526,7 +3526,7 @@ ISBN: 9788997390915
     (716, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '파이썬(열혈강의)(개정판 VER.2)', '이강성', '9788989345770', '출판사: 프리렉
 ISBN: 9788989345770
 출간일시: 2005-08-29T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1297411&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC%28%EC%97%B4%ED%98%88%EA%B0%95%EC%9D%98%29%28%EA%B0%9C%EC%A0%95%ED%8C%90+VER.2%29', 35000, 0.00, -1, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1297411%3Ftimestamp%3D20221025165925', 148, 112, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1297411&q=%ED%8C%8C%EC%9D%B4%EC%8D%AC%28%EC%97%B4%ED%98%88%EA%B0%95%EC%9D%98%29%28%EA%B0%9C%EC%A0%95%ED%8C%90+VER.2%29', 35000, 0.00, 35000, 21, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1297411%3Ftimestamp%3D20221025165925', 148, 112, 'ACTIVATE', NULL),
     (717, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 20, '혼자 공부하는 파이썬', '윤인성', '9791162241882', '이 책은 독학으로 프로그래밍 언어를 처음 배우려는 입문자가, 혹은 파이썬을 배우려는 입문자가 ‘꼭 필요한 내용을 제대로’ 학습할 수 있도록 구성했다. ‘무엇을’, ‘어떻게’ 학습해야 할지조차 모르는 입문자의 막연한 마음을 살펴, 과외 선생님이 알려주듯 친절하게, 그러나 핵심적인 내용만 콕콕 집어준다. 책의 첫 페이지를 펼쳐서 마지막 페이지를 덮을 때까지, 혼자서도 충분히 파이썬을 배울 수 있다는 자신감과 확신이 계속될 것이다!    27명의 베타리더
 출판사: 한빛미디어
 ISBN: 9791162241882
@@ -3561,11 +3561,11 @@ ISBN: 9788945219664
 출판사: 에벤에셀
 ISBN: 9788985615563
 출간일시: 2004-10-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1219334&q=%EC%A3%BC%EA%B8%B0%EB%8F%84%EB%AC%B8+%EC%89%BD%EA%B2%8C+%EC%95%94%EC%86%A1%ED%95%98%EA%B8%B0%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1000, 15.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1219334%3Ftimestamp%3D20190127090905', 169, 6, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1219334&q=%EC%A3%BC%EA%B8%B0%EB%8F%84%EB%AC%B8+%EC%89%BD%EA%B2%8C+%EC%95%94%EC%86%A1%ED%95%98%EA%B8%B0%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1000, 15.00, 850, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1219334%3Ftimestamp%3D20190127090905', 169, 6, 'ACTIVATE', NULL),
     (724, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '공룡이 뱅글뱅글(스프링)(펜포함)(뱅글뱅글 두뇌 트레이닝 3)(스프링)', '편집부', '9788945219688', '출판사: 문공사
 ISBN: 9788945219688
 출간일시: 2010-09-20T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=597215&q=%EA%B3%B5%EB%A3%A1%EC%9D%B4+%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%ED%8E%9C%ED%8F%AC%ED%95%A8%29%28%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+3%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 0.00, -1, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597215%3Ftimestamp%3D20200110141645', 172, 8, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=597215&q=%EA%B3%B5%EB%A3%A1%EC%9D%B4+%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%ED%8E%9C%ED%8F%AC%ED%95%A8%29%28%EB%B1%85%EA%B8%80%EB%B1%85%EA%B8%80+%EB%91%90%EB%87%8C+%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D+3%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 1500, 0.00, 1500, 29, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F597215%3Ftimestamp%3D20200110141645', 172, 8, 'ACTIVATE', NULL),
     (725, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '수능만점영단어 1800+180(60일완성)(뜯어먹는)(스프링)', '동아출판 편집부', '9788900372311', '『수능만점영단어 1800+180(60일완성)』은 수능 기본 단어를 습득한 학습자를 위한 영단어 1800개를 엄선한 책이다. 동사편에서는 영어 구문의 중심이자 여러 파생어의 근간이 되는 동사를 우선 학습하고, 명사편·형용사편에서는 주제별 의미 관련성이 뚜렷한 명사·형용사의 연상적·집중적 암기를 돕는다.
 출판사: 동아출판
 ISBN: 9788900372311
@@ -3610,7 +3610,7 @@ ISBN: 9791189591311
 출판사: SRMUSIC
 ISBN: 9791186471333
 출간일시: 2016-11-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633621&q=%EC%8A%A4%ED%8A%9C%EB%94%94%EC%98%A4+%EC%A7%80%EB%B8%8C%EB%A6%AC+%ED%94%BC%EC%95%84%EB%85%B8+%EC%BB%AC%EB%A0%89%EC%85%98%3A+%EC%99%84%EC%A0%84%ED%8C%90%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 5.00, -1, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633621%3Ftimestamp%3D20190131101442', 199, 26, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1633621&q=%EC%8A%A4%ED%8A%9C%EB%94%94%EC%98%A4+%EC%A7%80%EB%B8%8C%EB%A6%AC+%ED%94%BC%EC%95%84%EB%85%B8+%EC%BB%AC%EB%A0%89%EC%85%98%3A+%EC%99%84%EC%A0%84%ED%8C%90%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 12000, 5.00, 11400, 38, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1633621%3Ftimestamp%3D20190131101442', 199, 26, 'ACTIVATE', NULL),
     (734, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '플루트교실 1(스프링)', '정효숙', '9788932626451', '체계적인 교육 방법을 제시하는 『플루트교실』 제1권. 단체 교습에서도 즐겁게 배울 수 있도록 2중주곡이나 3중주곡들이 수록되어 있다. 알맞은 크기의 악보와 간단명료한 설명을 담았으며, 알아보기 쉬운 운지법 표시들을 덧붙였다. 쉽고 재미있게 배우면서도 실력을 탄탄히 쌓을 수 있는 기회를 제공하는 교본이다. 이번 개정판에는 예제곡을 좀더 현실적인 곡들로 교체하였다.
 출판사: 삼호뮤직
 ISBN: 9788932626451
@@ -3723,7 +3723,7 @@ ISBN: 8809482280274
     (756, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'EMERGENCY CARE(스프링)(HANDBOOK OF)(스프링)', '김호중', '9788964804049', '출판사: E PUBLIC
 ISBN: 9788964804049
 출간일시: 2011-01-10T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=906151&q=EMERGENCY+CARE%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28HANDBOOK+OF%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 28000, 0.00, -1, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906151%3Ftimestamp%3D20221025135545', 68, 72, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=906151&q=EMERGENCY+CARE%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28HANDBOOK+OF%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 28000, 0.00, 28000, 24, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F906151%3Ftimestamp%3D20221025135545', 68, 72, 'ACTIVATE', NULL),
     (757, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '일반생물학실험(스프링)', '남석현, 민철기', '9788997140268', '『일반생물학실험』은 그동안 저자가 학생들의 실험교육을 담당해 온 경험을 바탕으로 일반생물학의 실험교육내용을 정리하여 엮은 책이다. 실험실에서 지켜야 할 기본적인 주의사항 및 실험보고서 작성 요령을 담은 생물학 실험안내부터 식물의 구조와 기능을 이해하기 위해 식물의 잎과 줄기의 관찰, 식물의 증산작용, 광합성, 식물의 호흡에 대한 실험을 소개한다.
 출판사: 범문에듀케이션
 ISBN: 9788997140268
@@ -3867,7 +3867,7 @@ ISBN: 9788966853229
     (786, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '감각. 1(점자)(스프링)', '편집부', '9788996155423', '출판사: 빛을만지는아이들
 ISBN: 9788996155423
 출간일시: 2008-11-03T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1464413&q=%EA%B0%90%EA%B0%81.+1%28%EC%A0%90%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 43000, 10.00, -1, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1464413%3Ftimestamp%3D20190130051656', 158, 12, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1464413&q=%EA%B0%90%EA%B0%81.+1%28%EC%A0%90%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 43000, 10.00, 38700, 17, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1464413%3Ftimestamp%3D20190130051656', 158, 12, 'ACTIVATE', NULL),
     (787, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, 'DIAT 워드프로세서 한글 2010(2019)(이공자)(스프링)', 'KIE기획팀', '9788984559509', '◆ 출제유형 완전정복하기 : 최근에 출제된 DIAT 시험의 출제유형을 분석하여 새롭게 변경된 내용과 시험에 자주 출제되는 부분을 단계별로 체크하고 작성할 수 있도록 구성하였습니다. ◆ 유형정복 모의고사 20회 : 출제유형에서 학습한 내용을 참고하여 시험에 대한 전반적인 유형을 파악하고 실력을 향상시킬 수 있도록 모의고사를 구성하였습니다. ◆ 최신 기출 유형문제 10회 : 최근에 출제된 기출문제의 유형을 파악하여 DIAT 시험을 완벽하게 대비할 수
 출판사: 아카데미소프트
 ISBN: 9788984559509
@@ -4046,7 +4046,7 @@ ISBN: 9788994291406
 출판사: 아카데미소프트
 ISBN: 9788984558564
 출간일시: 2015-07-28T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1190919&q=ITQ+%ED%95%9C%EA%B8%80+2007%282016%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1190919%3Ftimestamp%3D20190127061926', 66, 84, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1190919&q=ITQ+%ED%95%9C%EA%B8%80+2007%282016%29%28%EC%9D%B4%EA%B3%B5%EC%9E%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 15000, 10.00, 13500, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1190919%3Ftimestamp%3D20190127061926', 66, 84, 'ACTIVATE', NULL),
     (823, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '내손에 헌법(6판)(스프링)', '윤우혁', '9791130339474', '이 책은 공무원헌법에 대해 다룬 도서입니다. 공무원헌법에 대한 기초적이고 전반적인 내용을 확인할 수 있도록 구성했습니다.
 출판사: 박영사
 ISBN: 9791130339474
@@ -4079,7 +4079,7 @@ ISBN: 9788903415053
 출판사: 박영사
 ISBN: 9791130330594
 출간일시: 2017-07-30T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=1533817&q=%EB%82%B4+%EC%86%90%EC%97%90+%ED%97%8C%EB%B2%95%282%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 5.00, -1, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1533817%3Ftimestamp%3D20211107145230', 87, 98, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=1533817&q=%EB%82%B4+%EC%86%90%EC%97%90+%ED%97%8C%EB%B2%95%282%ED%8C%90%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 10000, 5.00, 9500, 23, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F1533817%3Ftimestamp%3D20211107145230', 87, 98, 'ACTIVATE', NULL),
     (830, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '뱅글뱅글 관찰력 50(온 가족이 함께)(언제 어디서나 두뇌 트레이닝 10)(스프링)', '브레인 스쿨', '9788945219572', '「언제 어디서나 두뇌 트레이닝」시리즈 제10권 『뱅글뱅글 관찰력 50』. 이 책은 사고력과 두뇌 회전이 필요한 재미있는 관찰력 퍼즐 50가지를 소개한다. 숨어 있는 정사각형, 알쏭달쏭 그림 문자, 미로 찾기 등 눈과 머리가 맑아지는 관찰력 두뇌 퍼즐이 가득 들어있다. 펜으로 책에 직접 쓰고 지울 수 있도록 코팅지로 제작하였으며, 마카펜이 포함되어 있다. [스프링]
 출판사: 문공사
 ISBN: 9788945219572
@@ -4228,7 +4228,7 @@ ISBN: 9788931453263
 출판사: 생활성서사
 ISBN: 2003237000735
 출간일시: 1996-10-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=117173&q=%EC%93%B0%EA%B8%B0%EC%84%B1%EA%B2%BD%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6000, 15.00, -1, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F117173%3Ftimestamp%3D20250501133628', 177, 38, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=117173&q=%EC%93%B0%EA%B8%B0%EC%84%B1%EA%B2%BD%28%EC%8A%A4%ED%94%84%EB%A7%81%29', 6000, 15.00, 5100, 16, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F117173%3Ftimestamp%3D20250501133628', 177, 38, 'ACTIVATE', NULL),
     (860, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '시나리오 견적서(슈퍼 히어로편)(스프링)', '온우주 편집부', '9788998711337', '어느 날 문득, 반짝 하고 기가 막힌 아이디어가 떠오르지만, 아이디어 하나를 붙잡고 이야기로 빚으려면 대체?어디서부터 시작해야 할지 막막해집니다. 아이디어는 누구나 생각할 수 있습니다. 하지만 짧게라도 스토리를 완성하는 건 생각보다 큰 부담입니다. &lt;시나리오 견적서&gt;는 쉽게 스토리를 완성하기 위해 최초로 만들어진 도구입니다.  &lt;시나리오 견적서-히어로 편&gt;은 히어로물의 장르 특성에 따라 이야기에 꼭 필요한 요소만을 잘 담아냈습니다
 출판사: 온우주
 ISBN: 9788998711337
@@ -4286,7 +4286,7 @@ ISBN: 9788996415909
 출판사: 두란노서원
 ISBN: 9788953118041
 출간일시: 2013-01-01T00:00:00.000+09:00
-참고 URL: https://search.daum.net/search?w=bookpage&bookId=663441&q=%ED%86%B5%ED%81%B0+%ED%86%B5%EB%8F%85+%EC%9D%B8%EB%8F%84%EC%9E%90+%EC%A7%80%EC%B9%A8%EC%84%9C%28%ED%95%98%EB%82%98%EB%8B%98+%EB%82%98%EB%9D%BC+%EA%B4%80%EC%A0%90%EC%97%90%EC%84%9C+%EC%9D%BD%EB%8A%94%29%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%A0%843%EA%B6%8C%29', 60000, 15.00, -1, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F663441%3Ftimestamp%3D20211209152013', 13, 62, 'ACTIVATE', NULL),
+참고 URL: https://search.daum.net/search?w=bookpage&bookId=663441&q=%ED%86%B5%ED%81%B0+%ED%86%B5%EB%8F%85+%EC%9D%B8%EB%8F%84%EC%9E%90+%EC%A7%80%EC%B9%A8%EC%84%9C%28%ED%95%98%EB%82%98%EB%8B%98+%EB%82%98%EB%9D%BC+%EA%B4%80%EC%A0%90%EC%97%90%EC%84%9C+%EC%9D%BD%EB%8A%94%29%28CD1%EC%9E%A5%ED%8F%AC%ED%95%A8%29%28%EC%8A%A4%ED%94%84%EB%A7%81%29%28%EC%A0%843%EA%B6%8C%29', 60000, 15.00, 51000, 28, 'https://search1.kakaocdn.net/thumb/R120x174.q85/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flbook%2Fimage%2F663441%3Ftimestamp%3D20211209152013', 13, 62, 'ACTIVATE', NULL),
     (872, '2026-04-13 09:02:00', '2026-04-13 09:02:00', 4, 16, '문화 여행: 경상남도(엄마 아빠와 함께 떠나는)(굿모닝 사회탐구 68)(스프링)', '지민이 (기획 구성), 강은일 (기획 구성)', '9788956949680', '정치, 경제, 생활문화, 지리, 역사 등의 기본 개념과 원리를 발견하고 탐구하는 능력을 키우도록 구성한「굿모닝 사회탐구」시리즈. 사회 현상에 대한 기초적인 지식을 배우고, 나아가 현대 사회 문제를 창의적이고 합리적으로 해결하는 능력을 키우게 됩니다. 풍부한 사진자료와 일러스트레이터의 그림 등이 내용 이해를 돕습니다. 한국의 문화 여행은 우리나라 전국의 고유한 특성과 그 지역 가운데 찾아가 볼 만한 명소와 역사 문화적 체험 학습에 적합한 장소를 소개
 출판사: 한국슈바이처
 ISBN: 9788956949680
