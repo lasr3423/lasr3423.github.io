@@ -5,7 +5,7 @@
         <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Admin</p>
         <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">상품 수정</h1>
         <p class="mt-2 text-sm leading-6 text-slate-500">
-          카테고리 이름을 기준으로 상품 분류를 변경하고, 필요하면 이 화면 안에서 카테고리 자체도 수정할 수 있습니다.
+          등록된 상품 정보를 최신 상태로 수정하고 카테고리, 가격, 재고 정보를 다시 정리합니다.
         </p>
       </div>
       <router-link

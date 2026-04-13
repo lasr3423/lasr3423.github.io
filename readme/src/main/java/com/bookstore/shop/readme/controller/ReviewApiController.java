@@ -12,7 +12,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -23,53 +31,59 @@ public class ReviewApiController {
 
     private final ReviewService reviewService;
 
-    // 상품 페이지 리뷰 목록 — REQ-R-001
+    @GetMapping("/recent")
+    public ResponseEntity<Page<ReviewResponse>> getRecentReviews(
+            @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        return reviewService.getRecentReviews(pageable);
+    }
+
     @GetMapping
     public ResponseEntity<Page<ReviewResponse>> getReviews(
             @RequestParam Long productId,
-            @PageableDefault(size = 10, sort = "createdAt",
-                    direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
         return reviewService.getReviews(productId, pageable);
     }
 
-    // 리뷰 상세 조회 (hits 자동 증가) — REQ-R-005
     @GetMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> getReviewDetail(@PathVariable Long reviewId) {
         return reviewService.getReviewDetail(reviewId);
     }
 
-    // 리뷰 등록 — REQ-R-002
     @PostMapping
     public ResponseEntity<Long> createReview(
-            @RequestBody ReviewCreateRequest req,
-            @AuthenticationPrincipal CustomUserDetails user) {
-        return reviewService.createReview(req, user.getMemberId());
+            @RequestBody ReviewCreateRequest request,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        return reviewService.createReview(request, user.getMemberId());
     }
 
-    // 리뷰 수정 — REQ-M-018
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> updateReview(
             @PathVariable Long reviewId,
-            @RequestBody ReviewUpdateRequest req,
-            @AuthenticationPrincipal CustomUserDetails user) {
-        return reviewService.updateReview(reviewId, req, user.getMemberId());
+            @RequestBody ReviewUpdateRequest request,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        return reviewService.updateReview(reviewId, request, user.getMemberId());
     }
 
-    // 리뷰 삭제 — REQ-M-019
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<String> deleteReview(
             @PathVariable Long reviewId,
-            @AuthenticationPrincipal CustomUserDetails user) {
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
         return reviewService.deleteReview(reviewId, user.getMemberId());
     }
 
-    // 리뷰 반응 토글 (좋아요/싫어요) — REQ-R-004
-    // body: { "reactionType": "LIKE" } 또는 { "reactionType": "DISLIKE" }
     @PostMapping("/{reviewId}/reaction")
     public ResponseEntity<String> toggleReaction(
             @PathVariable Long reviewId,
             @RequestBody Map<String, String> body,
-            @AuthenticationPrincipal CustomUserDetails user) {
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
         return reviewService.toggleReaction(reviewId, body.get("reactionType"), user.getMemberId());
     }
 }

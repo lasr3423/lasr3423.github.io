@@ -4,6 +4,7 @@ import com.bookstore.shop.readme.domain.Product;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 public class ProductListResponse {
@@ -16,6 +17,8 @@ public class ProductListResponse {
     private final BigDecimal discountRate;
     private final String thumbnail;
     private final int salesCount;
+    private final int stock;
+    private final LocalDateTime createdAt;
     private final Long categoryTopId;
     private final String categoryTopName;
     private final Long categorySubId;
@@ -31,6 +34,8 @@ public class ProductListResponse {
         this.discountRate = product.getDiscountRate();
         this.thumbnail = product.getThumbnail();
         this.salesCount = product.getSalesCount();
+        this.stock = product.getStock();
+        this.createdAt = product.getCreatedAt();
         this.categoryTopId = product.getCategoryTop().getId();
         this.categoryTopName = product.getCategoryTop().getName();
         this.categorySubId = product.getCategorySub().getId();

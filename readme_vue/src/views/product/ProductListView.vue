@@ -90,7 +90,7 @@
             <p class="text-sm font-semibold text-brand-700">Results</p>
             <p class="text-sm text-slate-500">총 {{ productStore.totalElements.toLocaleString() }}권의 도서가 검색되었습니다.</p>
           </div>
-          <p class="text-xs text-slate-400">최신 등록순 기준</p>
+          <p class="text-xs text-slate-400">{{ resultSortLabel }}</p>
         </div>
 
         <div v-if="productStore.products.length === 0" class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
@@ -255,6 +255,13 @@ const subCategoryTabs = computed(() => {
   ];
 });
 
+const resultSortLabel = computed(() => {
+  if (sortField.value === 'salesCount' && sortDirection.value === 'desc') return '판매량 높은 순 기준';
+  if (sortField.value === 'stock' && sortDirection.value === 'desc') return '재고 많은 순 기준';
+  if (sortField.value === 'createdAt' && sortDirection.value === 'desc') return '최신 등록순 기준';
+  return '조건별 정렬 기준';
+});
+
 const pageRange = computed(() => {
   const current = productStore.currentPage;
   const total = productStore.totalPages;
@@ -268,6 +275,10 @@ function syncFromRoute() {
   selectedSubId.value = route.query.subId ? Number(route.query.subId) : null;
   searchKeyword.value = typeof route.query.keyword === 'string' ? route.query.keyword : '';
   searchType.value = typeof route.query.searchType === 'string' ? route.query.searchType : 'title';
+  sortField.value = typeof route.query.sortField === 'string'
+    ? route.query.sortField
+    : (route.query.sort === 'bestseller' ? 'salesCount' : route.query.sort === 'new' ? 'createdAt' : 'createdAt');
+  sortDirection.value = typeof route.query.sortDirection === 'string' ? route.query.sortDirection : 'desc';
 }
 
 function updateRoute(page = 0) {
@@ -276,6 +287,8 @@ function updateRoute(page = 0) {
   if (selectedSubId.value !== null) query.subId = selectedSubId.value;
   if (searchKeyword.value.trim()) query.keyword = searchKeyword.value.trim();
   if (searchType.value) query.searchType = searchType.value;
+  if (sortField.value && sortField.value !== 'createdAt') query.sortField = sortField.value;
+  if (sortDirection.value && sortDirection.value !== 'desc') query.sortDirection = sortDirection.value;
   if (page > 0) query.page = page;
 
   router.push({ path: '/product', query });
@@ -316,15 +329,25 @@ async function addToCart(productId) {
   try {
     await cartStore.addItem(productId, 1);
     alert('장바구니에 담았습니다.');
-  } catch (e) {
+  } catch (error) {
     alert('장바구니 담기에 실패했습니다.');
+    console.error(error);
   }
 }
 
 async function fetchByRoute() {
   syncFromRoute();
   const page = route.query.page ? Number(route.query.page) : 0;
-  await productStore.fetchProducts(page, selectedTopId.value, selectedSubId.value, searchKeyword.value);
+  await productStore.fetchProducts(
+    page,
+    selectedTopId.value,
+    selectedSubId.value,
+    searchKeyword.value,
+    {
+      sortField: sortField.value,
+      sortDirection: sortDirection.value,
+    },
+  );
 }
 
 async function fetchCategories() {
