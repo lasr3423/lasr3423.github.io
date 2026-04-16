@@ -15,7 +15,8 @@
 | 이름 | 역할 | 담당 |
 |------|------|------|
 | 유환희 | Frontend | Vue 3 전체 화면 구현, 레이아웃 설계, Pinia 상태 관리, 결제 흐름, 라우터 가드 |
-| 팀원 | Backend | Spring Boot REST API, JPA 엔티티 설계, Spring Security + JWT, OAuth2 소셜 로그인, 결제 연동 |
+| 백경서(팀장) | Backend | Spring Boot REST API, JPA 엔티티 설계, Spring Security + JWT, OAuth2 소셜 로그인, 결제 연동 |
+| 박주환 | DB | DB 설계 |
 
 ---
 
