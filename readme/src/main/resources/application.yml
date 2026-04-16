@@ -6,7 +6,7 @@ spring:
     name: readme
 
   datasource:
-    url: jdbc:postgresql://localhost:5420/readme
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5420}/${DB_NAME:readme}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
