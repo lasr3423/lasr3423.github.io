@@ -252,7 +252,7 @@ docker compose down
 | 서비스 | 호스트 포트 | 컨테이너 포트 |
 |--------|-------------|---------------|
 | Frontend (Nginx) | 80 | 80 |
-| Backend (Spring Boot) | — (내부 only) | 8202 |
+| Backend (Spring Boot) | 8202 | 8202 |
 | PostgreSQL | 5420 | 5432 |
 
 ---
