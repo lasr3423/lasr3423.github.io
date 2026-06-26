@@ -2,13 +2,22 @@ import axios from "axios";
 import { useAuthStore } from '@/store/auth';
 import router from '@/router';
 
+const configuredBaseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8202';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8202',
+    baseURL: configuredBaseURL,
     timeout: 10000,
 })
 
 // 요청: AccessToken 자동 첨부
 api.interceptors.request.use((config) => {
+    // Docker/Nginx 환경에서는 baseURL이 "/api" 이고,
+    // 각 API 함수도 "/api/..." 경로를 넘겨 이중 "/api/api/..."가 생길 수 있다.
+    // 이 경우 요청 URL 앞의 "/api" 하나만 제거해서 실제 프록시 경로를 맞춘다.
+    if (configuredBaseURL.endsWith('/api') && config.url?.startsWith('/api/')) {
+        config.url = config.url.replace(/^\/api/, '');
+    }
+
     const { accessToken } = useAuthStore();
     if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
     return config;

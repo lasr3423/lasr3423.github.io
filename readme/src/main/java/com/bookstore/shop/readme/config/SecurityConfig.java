@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/api/auth/signup",
                                 "/api/auth/signin",
                                 "/api/auth/refresh",
+                                "/api/auth/signout",
                                 "/api/order/payment/fail"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
